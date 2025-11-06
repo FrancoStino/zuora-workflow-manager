@@ -1,0 +1,22 @@
+name: zuora-workflow
+recipe: laravel
+config:
+  php: 8.4
+  composer_version: '2'
+  via: nginx
+  webroot: public
+  database: mariadb:11.4
+  cache: redis
+  xdebug: true
+services:
+  node:
+    type: node:20
+    build:
+      - "npm install -g yarn"
+tooling:
+  yarn:
+    service: node
+  npm:
+    service: node
+  npx:
+    service: node
