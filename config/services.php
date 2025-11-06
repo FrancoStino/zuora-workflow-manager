@@ -42,7 +42,7 @@ return [
     'google' => [
         'client_id'     => env ( 'GOOGLE_CLIENT_ID' ),
         'client_secret' => env ( 'GOOGLE_CLIENT_SECRET' ),
-        'redirect'      => 'https://zuora-workflow.lndo.site/admin/oauth/callback/google',
+        'redirect' => env ( 'GOOGLE_REDIRECT_URI' ),
     ],
 
 ];
