@@ -61,12 +61,8 @@ class AdminPanelProvider extends PanelProvider
             -> plugin (
                 FilamentSocialitePlugin ::make ()
                                         -> registration ( true )
-                                        -> showDivider ( false )
-                                        -> domainAllowList ( 
-                                            env('OAUTH_ALLOWED_DOMAINS') 
-                                                ? explode(',', env('OAUTH_ALLOWED_DOMAINS')) 
-                                                : [] 
-                                        )
+                    -> showDivider ( false )
+                    -> domainAllowList ( config ( 'services.oauth.allowed_domains', [] ) )
                                         -> providers ( [
                                             Provider ::make ( 'google' )
                                                      -> label ( 'Google' )
