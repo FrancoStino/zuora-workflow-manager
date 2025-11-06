@@ -42,7 +42,12 @@ return [
     'google' => [
         'client_id'     => env ( 'GOOGLE_CLIENT_ID' ),
         'client_secret' => env ( 'GOOGLE_CLIENT_SECRET' ),
-        'redirect' => env ( 'GOOGLE_REDIRECT_URI' ),
+        'redirect'      => env ( 'GOOGLE_REDIRECT_URI' ),
+    ],
+
+    'zuora' => [
+        'client_id'     => env ( 'ZUORA_CLIENT_ID' ),
+        'client_secret' => env ( 'ZUORA_CLIENT_SECRET' ),
     ],
 
 ];
