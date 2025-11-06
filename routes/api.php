@@ -17,3 +17,16 @@ Route ::middleware ( 'auth:sanctum' ) -> get ( '/zuora/token', function () {
         return response () -> json ( [ 'error' => $e -> getMessage () ], 500 );
     }
 } );
+
+Route ::middleware ( 'auth:sanctum' ) -> get ( '/zuora/download/{workflowId}', function ( $workflowId, Request $request ) {
+    try {
+        $clientId     = $request -> query ( 'client_id' );
+        $clientSecret = $request -> query ( 'client_secret' );
+        $baseUrl      = $request -> query ( 'base_url', 'https://rest.zuora.com' );
+        $service      = new ZuoraService();
+        $data         = $service -> downloadWorkflow ( $clientId, $clientSecret, $baseUrl, $workflowId );
+        return response () -> json ( $data );
+    } catch ( Exception $e ) {
+        return response () -> json ( [ 'error' => $e -> getMessage () ], 500 );
+    }
+} );

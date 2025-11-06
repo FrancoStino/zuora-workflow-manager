@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Pages\Auth\Login;
+use App\Filament\Pages\WorkflowDashboard;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use DutchCodingCompany\FilamentSocialite\FilamentSocialitePlugin;
 use DutchCodingCompany\FilamentSocialite\Provider;
@@ -39,6 +40,7 @@ class AdminPanelProvider extends PanelProvider
             -> discoverPages ( in : app_path ( 'Filament/Pages' ), for : 'App\Filament\Pages' )
             -> pages ( [
                 Dashboard::class,
+                WorkflowDashboard::class,
             ] )
             -> discoverWidgets ( in : app_path ( 'Filament/Widgets' ), for : 'App\Filament\Widgets' )
             -> widgets ( [
