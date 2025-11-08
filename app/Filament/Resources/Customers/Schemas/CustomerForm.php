@@ -13,10 +13,12 @@ class CustomerForm
         return $schema
             -> components ( [
                 TextInput ::make ( 'name' )
+                          -> label ( 'Name' )
                           -> required ()
                           -> maxLength ( 255 ),
 
                 TextInput ::make ( 'client_id' )
+                          -> label ( 'Client ID' )
                           -> required ()
                           -> maxLength ( 255 ),
 
@@ -30,6 +32,7 @@ class CustomerForm
                           -> placeholder ( fn ( $record ) => $record ? '***** (già impostato)' : null ),
 
                 Select ::make ( 'base_url' )
+                       -> label ( 'Base URL' )
                        -> options ( [
                            'https://rest.zuora.com'            => 'https://rest.zuora.com',
                            'https://rest.test.zuora.com'       => 'https://rest.test.zuora.com',
