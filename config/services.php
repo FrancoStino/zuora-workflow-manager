@@ -18,8 +18,10 @@ return [
         'key' => env ( 'POSTMARK_API_KEY' ),
     ],
 
-    'oauth' => [
-        'allowed_domains' => env ( 'OAUTH_ALLOWED_DOMAINS' ) ? explode ( ',', env ( 'OAUTH_ALLOWED_DOMAINS' ) ) : [],
+    # OAuth Allowed Domains (comma separated, leave empty to allow all domains)
+    # Example: OAUTH_ALLOWED_DOMAINS=example.com,anotherdomain.com
+    'oauth'    => [
+        'allowed_domains' => [ 'gmail.com', 'sideagroup.com' ]
     ],
 
     'resend' => [
