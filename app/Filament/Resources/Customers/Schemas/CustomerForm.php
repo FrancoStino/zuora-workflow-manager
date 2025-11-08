@@ -32,6 +32,7 @@ class CustomerForm
                 Select ::make ( 'base_url' )
                        -> options ( [
                            'https://rest.zuora.com'            => 'https://rest.zuora.com',
+                           'https://rest.test.zuora.com'       => 'https://rest.test.zuora.com',
                            'https://rest.apisandbox.zuora.com' => 'https://rest.apisandbox.zuora.com',
                        ] )
             ] );
