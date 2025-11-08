@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 
+// Redirect to Filament admin panel
 Route ::get ( '/', function () {
-    return view ( 'welcome' );
+    return redirect () -> to ( '/admin' );
 } );
