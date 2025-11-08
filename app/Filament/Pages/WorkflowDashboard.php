@@ -4,9 +4,11 @@ namespace App\Filament\Pages;
 
 use App\Models\Customer;
 use App\Services\ZuoraService;
+use BackedEnum;
 use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Exception;
 use Filament\Pages\Page;
+use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
@@ -20,6 +22,8 @@ class WorkflowDashboard extends Page implements HasTable
 {
     use HasPageShield;
     use InteractsWithTable;
+
+    protected static string | null | BackedEnum $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     protected static ?string $title            = 'Workflow Dashboard';
     protected static ?string $navigationLabel  = 'Workflows';
