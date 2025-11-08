@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Customers\Schemas;
 
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
 
@@ -28,11 +29,11 @@ class CustomerForm
                           -> dehydrateStateUsing ( fn ( $state, $record ) => $state ? : ( $record ? $record -> client_secret : null ) )
                           -> placeholder ( fn ( $record ) => $record ? '***** (già impostato)' : null ),
 
-                TextInput ::make ( 'base_url' )
-                          -> label ( 'Base URL' )
-                          -> default ( 'https://rest.zuora.com' )
-                          -> url ()
-                          -> maxLength ( 255 ),
+                Select ::make ( 'base_url' )
+                       -> options ( [
+                           'https://rest.zuora.com'            => 'https://rest.zuora.com',
+                           'https://rest.apisandbox.zuora.com' => 'https://rest.apisandbox.zuora.com',
+                       ] )
             ] );
     }
 }
