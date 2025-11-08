@@ -18,7 +18,7 @@ Route ::middleware ( 'auth:sanctum' ) -> get ( '/zuora/token', function () {
     }
 } );
 
-Route ::middleware ( 'auth:sanctum' ) -> get ( '/zuora/download/{workflowId}', function ( $workflowId, Request $request ) {
+Route ::get ( '/zuora/download/{workflowId}', function ( $workflowId, Request $request ) {
     try {
         $clientId     = $request -> query ( 'client_id' );
         $clientSecret = $request -> query ( 'client_secret' );

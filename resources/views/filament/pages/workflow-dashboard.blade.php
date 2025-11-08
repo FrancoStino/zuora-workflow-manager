@@ -38,12 +38,16 @@
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{{ $workflow['id'] }}</td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{{ $workflow['name'] }}</td>
                                             <td class="px-6 py-4 whitespace-nowrap">
-                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                                    @if($workflow['state'] === 'Active') bg-green-100 text-green-800
-                                                    @elseif($workflow['state'] === 'Inactive') bg-gray-100 text-gray-800
-                                                    @else bg-red-100 text-red-800 @endif">
-                                                    {{ $workflow['state'] }}
-                                                </span>
+                                                @if(isset($workflow['state']))
+                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                                        @if($workflow['state'] === 'Active') bg-green-100 text-green-800
+                                                        @elseif($workflow['state'] === 'Inactive') bg-gray-100 text-gray-800
+                                                        @else bg-red-100 text-red-800 @endif">
+                                                        {{ $workflow['state'] }}
+                                                    </span>
+                                                @else
+                                                    <span class="text-gray-500">N/A</span>
+                                                @endif
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{{ $workflow['created_on'] }}</td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{{ $workflow['updated_on'] }}</td>
