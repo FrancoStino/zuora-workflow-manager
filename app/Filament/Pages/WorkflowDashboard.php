@@ -45,7 +45,8 @@ class WorkflowDashboard extends Page implements HasTable
         try {
             $service = new ZuoraService();
             $data    = $service -> listWorkflows ( $customer -> client_id, $customer -> client_secret, $customer -> base_url, 1, 50 );
-            return $data[ 'workflows' ] ?? [];
+            // Normalized API returns data in 'data' key
+            return $data[ 'data' ] ?? $data[ 'workflows' ] ?? [];
         } catch ( Exception $e ) {
             // For debugging, return error message
             return [ 'error' => $e -> getMessage () ];
