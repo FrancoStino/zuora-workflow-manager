@@ -21,9 +21,10 @@ class WorkflowDashboard extends Page implements HasTable
 {
     use InteractsWithTable;
 
+    protected static ?string                    $slug           = 'workflows';
     protected static string | null | BackedEnum $navigationIcon = Heroicon::OutlinedRectangleStack;
 
-    protected static ?string $title            = 'Workflow Dashboard';
+    protected static ?string $title            = 'Workflows Dashboard';
     protected static ?string $navigationLabel  = 'Workflows';
     protected static ?int    $navigationSort   = 2;
     public ?Customer         $selectedCustomer = null;
