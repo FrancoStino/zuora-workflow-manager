@@ -7,7 +7,6 @@ use App\Models\Workflow;
 use App\Services\ZuoraService;
 use Exception;
 use Filament\Actions\Action;
-use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
@@ -117,10 +116,13 @@ class CustomerWorkflows extends Page implements HasTable
                 Action ::make ( 'download' )
                        -> label ( 'Download' )
                        -> icon ( 'heroicon-o-arrow-down-tray' )
-                       -> action ( function ( $record ) {
-                           $workflowId = is_array ( $record ) ? $record[ 'id' ] : $record -> id;
-                           $this -> downloadWorkflow ( $workflowId );
-                       } ),
+                       -> visible ( fn ( $record ) => $record !== null )
+                       -> url ( fn ( $record ) => route ( 'workflow.download', [
+                           'customer'   => $this -> customer,
+                           'workflowId' => is_array ( $record ) ? $record[ 'id' ] : $record -> id,
+                           'name'       => is_array ( $record ) ? $record[ 'name' ] : $record -> name,
+                       ] ) ),
+
             ] )
             -> paginated ( [ 10, 25, 50, 100 ] );
     }
@@ -130,34 +132,6 @@ class CustomerWorkflows extends Page implements HasTable
         return Workflow ::query () -> whereRaw ( '1 = 0' );
     }
 
-    public function downloadWorkflow ( string $workflowId )
-    {
-        try {
-            $service  = new ZuoraService();
-            $workflow = $service -> downloadWorkflow (
-                $this -> customerModel -> client_id,
-                $this -> customerModel -> client_secret,
-                $this -> customerModel -> base_url,
-                $workflowId
-            );
-
-            $fileName = "workflow_{$workflowId}.json";
-            $content  = json_encode ( $workflow, JSON_PRETTY_PRINT );
-
-            return response () -> streamDownload ( function () use ( $content ) {
-                echo $content;
-            }, $fileName, [
-                'Content-Type' => 'application/json',
-            ] );
-        } catch ( Exception $e ) {
-            Notification ::make ()
-                         -> danger ()
-                         -> title ( 'Download Failed' )
-                         -> body ( "Error downloading workflow: " . $e -> getMessage () )
-                         -> send ();
-        }
-        return null;
-    }
 
     public function getTableRecords () : Collection
     {
