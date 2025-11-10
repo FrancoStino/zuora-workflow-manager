@@ -10,23 +10,23 @@ use Filament\Tables\Table;
 
 class UsersTable
 {
-	public static function configure ( Table $table ) : Table
-	{
-		return $table
-			-> columns ( [
-				TextColumn ::make ( 'name' ) -> searchable (),
-				TextColumn ::make ( 'email' ) -> searchable (),
-			] )
-			-> filters ( [
-				//
-			] )
-			-> recordActions ( [
-				EditAction ::make (),
-			] )
-			-> toolbarActions ( [
-				BulkActionGroup ::make ( [
-					DeleteBulkAction ::make (),
-				] ),
-			] );
-	}
+    public static function configure(Table $table): Table
+    {
+        return $table
+            ->columns([
+                TextColumn::make('name')->searchable(),
+                TextColumn::make('email')->searchable(),
+            ])
+            ->filters([
+                //
+            ])
+            ->recordActions([
+                EditAction::make(),
+            ])
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                ]),
+            ]);
+    }
 }
