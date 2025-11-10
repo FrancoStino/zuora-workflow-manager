@@ -65,26 +65,28 @@ jobs:
         run: |
           jq --arg version "${{ steps.next_version.outputs.next_version }}" '.version = $version' composer.json > composer.json.tmp && mv composer.json.tmp composer.json
 
-      - name: Commit version bump
-        uses: stefanzweifel/git-auto-commit-action@v4
-        with:
-          commit_message: "chore: Bump version to ${{ steps.next_version.outputs.next_version }}"
-          branch: master
-          file_pattern: composer.json
-
-      - name: Create Git Tag
-        run: |
-          git tag "v${{ steps.next_version.outputs.next_version }}"
-          git push origin "v${{ steps.next_version.outputs.next_version }}"
-
       - name: Generate Changelog
         id: changelog
         uses: TriPSs/conventional-changelog-action@v3
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           tag-prefix: "v"
+          output-file: "CHANGELOG.md"
+
+      - name: Commit version bump
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "chore: Bump version to ${{ steps.next_version.outputs.next_version }}"
+          branch: master
+          file_pattern: composer.json CHANGELOG.md
+
+      - name: Create Git Tag
+        run: |
+          git tag "v${{ steps.next_version.outputs.next_version }}"
+          git push origin "v${{ steps.next_version.outputs.next_version }}"
 
       - name: Create Release
+        id: create_release
         uses: actions/create-release@v1
         with:
           tag_name: "v${{ steps.next_version.outputs.next_version }}"
