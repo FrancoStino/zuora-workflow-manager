@@ -1,3 +1,12 @@
+# [0.4.0](https://github.com/FrancoStino/zuora-workflows/compare/v0.3.0...v0.4.0) (2025-11-10)
+
+
+### Features
+
+* **ci:** add production deployment workflow ([d9709dc](https://github.com/FrancoStino/zuora-workflows/commit/d9709dc0b9730bada551ce6caa7cba331730d5e1))
+
+
+
 # [0.3.0](https://github.com/FrancoStino/zuora-workflows/compare/v0.2.1...v0.3.0) (2025-11-10)
 
 
