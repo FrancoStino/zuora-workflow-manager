@@ -1,4 +1,8 @@
-# [0.2.0](https://github.com/FrancoStino/zuora-workflows/compare/v0.1.0...v0.2.0) (2025-11-10)
+## [0.1.2](https://github.com/FrancoStino/zuora-workflows/compare/v0.1.1...v0.1.2) (2025-11-10)
+
+
+
+## [0.1.1](https://github.com/FrancoStino/zuora-workflows/compare/v0.1.0...v0.1.1) (2025-11-10)
 
 
 ### Bug Fixes
