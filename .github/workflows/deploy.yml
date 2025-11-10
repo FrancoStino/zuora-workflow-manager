@@ -103,29 +103,17 @@ jobs:
           echo "VITE_PUSHER_APP_KEY=" >> .env
           echo "VITE_PUSHER_APP_CLUSTER=mt1" >> .env
 
-      - name: Install rsync
-        run: sudo apt-get update && sudo apt-get install -y rsync
-
-      - name: Setup SSH key
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
-
-      - name: Deploy with rsync
-        run: |
-          rsync -avz --delete \
-            -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" \
-            --exclude='.git' \
-            --exclude='.github' \
-            --exclude='node_modules' \
-            --exclude='tests' \
-            --exclude='.gitignore' \
-            --exclude='.editorconfig' \
-            --exclude='phpunit.xml' \
-            --exclude='README.md' \
-            ./ ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:/home/${{ secrets.SSH_USERNAME }}/domains/zuora.workflows.davideladisa.it/public_html/
+      - name: Deploy files via SCP
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: ".env,app,bootstrap,config,database,public,resources,routes,storage,artisan,composer.json,composer.lock,vendor"
+          target: "/home/${{ secrets.SSH_USERNAME }}/domains/zuora.workflows.davideladisa.it/public_html/"
+          strip_components: 0
+          overwrite: true
+          rm: false
 
       - name: Run post-deployment commands
         uses: appleboy/ssh-action@master
