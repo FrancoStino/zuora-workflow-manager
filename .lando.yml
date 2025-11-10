@@ -17,7 +17,5 @@ services:
 tooling:
   yarn:
     service: node
-  npm:
-    service: node
   npx:
     service: node
