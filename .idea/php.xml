@@ -164,6 +164,7 @@
       <path value="$PROJECT_DIR$/vendor/bezhansalleh/filament-plugin-essentials" />
       <path value="$PROJECT_DIR$/vendor/bezhansalleh/filament-shield" />
       <path value="$PROJECT_DIR$/vendor/spatie/laravel-permission" />
+      <path value="$PROJECT_DIR$/vendor/resma/filament-awin-theme" />
     </include_path>
   </component>
   <component name="PhpProjectSharedConfiguration" php_language_level="8.4" />

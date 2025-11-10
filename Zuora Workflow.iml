@@ -165,6 +165,7 @@
       <excludeFolder url="file://$MODULE_DIR$/vendor/bezhansalleh/filament-plugin-essentials" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/bezhansalleh/filament-shield" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/spatie/laravel-permission" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/resma/filament-awin-theme" />
     </content>
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
