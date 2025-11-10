@@ -19,23 +19,7 @@ class ZuoraService
             ]);
 
         if ($response->failed()) {
-            $statusCode = $response->status();
-            $errorBody = $response->body();
-            $errorJson = $response->json();
-
-            $errorMessage = "HTTP {$statusCode}: ";
-
-            if (isset($errorJson['message'])) {
-                $errorMessage .= $errorJson['message'];
-            } elseif (isset($errorJson['error'])) {
-                $errorMessage .= $errorJson['error'];
-            } elseif (isset($errorJson['error_description'])) {
-                $errorMessage .= $errorJson['error_description'];
-            } else {
-                $errorMessage .= $errorBody;
-            }
-
-            throw new Exception($errorMessage);
+            $this->throwHttpException($response);
         }
 
         $data = $response->json();
@@ -118,25 +102,45 @@ class ZuoraService
             ->get($baseUrl."/workflows/{$workflowId}/export");
 
         if ($response->failed()) {
-            $statusCode = $response->status();
-            $errorBody = $response->body();
-            $errorJson = $response->json();
-
-            $errorMessage = "HTTP {$statusCode}: ";
-
-            if (isset($errorJson['message'])) {
-                $errorMessage .= $errorJson['message'];
-            } elseif (isset($errorJson['error'])) {
-                $errorMessage .= $errorJson['error'];
-            } elseif (isset($errorJson['error_description'])) {
-                $errorMessage .= $errorJson['error_description'];
-            } else {
-                $errorMessage .= $errorBody;
-            }
-
-            throw new Exception($errorMessage);
+            $this->throwHttpException($response);
         }
 
         return $response->json();
+    }
+
+    /**
+     * Extract error message from failed HTTP response.
+     * Attempts multiple error keys before falling back to raw body.
+     */
+    private function extractErrorMessage(array $errorJson, string $errorBody): string
+    {
+        if (isset($errorJson['message'])) {
+            return $errorJson['message'];
+        }
+
+        if (isset($errorJson['error'])) {
+            return $errorJson['error'];
+        }
+
+        if (isset($errorJson['error_description'])) {
+            return $errorJson['error_description'];
+        }
+
+        return $errorBody;
+    }
+
+    /**
+     * Throw formatted exception from failed HTTP response.
+     */
+    private function throwHttpException($response): void
+    {
+        $statusCode = $response->status();
+        $errorBody = $response->body();
+        $errorJson = $response->json() ?? [];
+
+        $message = $this->extractErrorMessage($errorJson, $errorBody);
+        $errorMessage = "HTTP {$statusCode}: {$message}";
+
+        throw new Exception($errorMessage);
     }
 }
