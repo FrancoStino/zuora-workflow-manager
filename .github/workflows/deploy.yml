@@ -19,105 +19,123 @@ jobs:
     environment: production
 
     steps:
-      - name: Deploy with SSH
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick
+          ini-values: post_max_size=256M, upload_max_filesize=256M
+          coverage: none
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '23'
+
+      - name: Install Composer dependencies
+        run: composer install --no-dev --prefer-dist --optimize-autoloader
+
+      - name: Install Yarn dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build assets
+        run: yarn run build
+
+      - name: Create .env file
+        run: |
+          echo "APP_NAME='Zuora Workflow'" > .env
+          echo "APP_ENV=${{ github.event.inputs.app_env }}" >> .env
+          echo "APP_KEY=${{ secrets.APP_KEY }}" >> .env
+          echo "APP_DEBUG=${{ github.event.inputs.app_debug }}" >> .env
+          echo "APP_URL=https://zuora.workflows.davideladisa.it" >> .env
+          
+          echo "LOG_CHANNEL=stack" >> .env
+          echo "LOG_DEPRECATIONS_CHANNEL=null" >> .env
+          echo "LOG_LEVEL=debug" >> .env
+          
+          echo "DB_CONNECTION=mysql" >> .env
+          echo "DB_HOST=${{ secrets.DB_HOST }}" >> .env
+          echo "DB_PORT=${{ secrets.DB_PORT }}" >> .env
+          echo "DB_DATABASE=${{ secrets.DB_DATABASE }}" >> .env
+          echo "DB_USERNAME=${{ secrets.DB_USERNAME }}" >> .env
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
+          
+          echo "BROADCAST_DRIVER=log" >> .env
+          echo "CACHE_DRIVER=file" >> .env
+          echo "FILESYSTEM_DISK=local" >> .env
+          echo "QUEUE_CONNECTION=sync" >> .env
+          echo "SESSION_DRIVER=file" >> .env
+          echo "SESSION_LIFETIME=120" >> .env
+          
+          echo "MEMCACHED_HOST=127.0.0.1" >> .env
+          
+          echo "REDIS_HOST=127.0.0.1" >> .env
+          echo "REDIS_PASSWORD=null" >> .env
+          echo "REDIS_PORT=6379" >> .env
+          
+          echo "MAIL_MAILER=smtp" >> .env
+          echo "MAIL_HOST=mailpit" >> .env
+          echo "MAIL_PORT=1025" >> .env
+          echo "MAIL_USERNAME=null" >> .env
+          echo "MAIL_PASSWORD=null" >> .env
+          echo "MAIL_ENCRYPTION=null" >> .env
+          echo "MAIL_FROM_ADDRESS='hello@example.com'" >> .env
+          echo "MAIL_FROM_NAME='Zuora Workflow'" >> .env
+          
+          echo "AWS_ACCESS_KEY_ID=" >> .env
+          echo "AWS_SECRET_ACCESS_KEY=" >> .env
+          echo "AWS_DEFAULT_REGION=us-east-1" >> .env
+          echo "AWS_BUCKET=" >> .env
+          echo "AWS_USE_PATH_STYLE_ENDPOINT=false" >> .env
+          
+          echo "PUSHER_APP_ID=" >> .env
+          echo "PUSHER_APP_KEY=" >> .env
+          echo "PUSHER_APP_SECRET=" >> .env
+          echo "PUSHER_HOST=" >> .env
+          echo "PUSHER_PORT=443" >> .env
+          echo "PUSHER_SCHEME=https" >> .env
+          echo "PUSHER_APP_CLUSTER=mt1" >> .env
+          
+          echo "VITE_APP_NAME='Zuora Workflow'" >> .env
+          echo "VITE_PUSHER_APP_KEY=" >> .env
+          echo "VITE_PUSHER_APP_CLUSTER=mt1" >> .env
+
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy with rsync
+        run: |
+          rsync -avz --delete \
+            -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='node_modules' \
+            --exclude='tests' \
+            --exclude='.gitignore' \
+            --exclude='.editorconfig' \
+            --exclude='phpunit.xml' \
+            --exclude='README.md' \
+            ./ ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:/home/${{ secrets.SSH_USERNAME }}/domains/zuora.workflows.davideladisa.it/public_html/
+
+      - name: Run post-deployment commands
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            # Define the deployment path and repository URL
-            DEPLOY_PATH="/home/um5i6722/domains/zuora.workflows.davideladisa.it/public_html"
-            REPO_URL="https://github.com/FrancoStino/zuora-workflows"
-
-            # CRITICAL: Navigate to deployment directory FIRST
-            cd "$DEPLOY_PATH" || {
-              echo "Error: Cannot access deployment directory"
-              exit 1
-            }
-
-            # Check if it's a Git repository
-            if [ -d ".git" ]; then
-              echo "Existing Git repository found, pulling latest changes..."
-              git pull origin main
-            else
-              echo "No Git repository found. Initializing..."
-              # SAFE: Only remove files in the CURRENT directory (DEPLOY_PATH)
-              # This will NOT affect other directories in /home/um5i6722/domains/
-              rm -rf * .[!.]* ..?*
-              git clone $REPO_URL .
-            fi
-
-            # Install Composer dependencies on the server
-            composer install --no-dev --prefer-dist --optimize-autoloader
-
-            # Install Yarn dependencies on the server
-            yarn install --frozen-lockfile
-
-            # Build assets on the server
-            yarn run build
-
-            # Set up .env file
-            echo "APP_NAME='Zuora Workflow'" > .env
-            echo "APP_ENV=${{ github.event.inputs.app_env }}" >> .env
-            echo "APP_KEY=${{ secrets.APP_KEY }}" >> .env
-            echo "APP_DEBUG=${{ github.event.inputs.app_debug }}" >> .env
-            echo "APP_URL=https://zuora.workflows.davideladisa.it" >> .env
-
-            echo "LOG_CHANNEL=stack" >> .env
-            echo "LOG_DEPRECATIONS_CHANNEL=null" >> .env
-            echo "LOG_LEVEL=debug" >> .env
-
-            echo "DB_CONNECTION=mysql" >> .env
-            echo "DB_HOST=${{ secrets.DB_HOST }}" >> .env
-            echo "DB_PORT=${{ secrets.DB_PORT }}" >> .env
-            echo "DB_DATABASE=${{ secrets.DB_DATABASE }}" >> .env
-            echo "DB_USERNAME=${{ secrets.DB_USERNAME }}" >> .env
-            echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
-
-            echo "BROADCAST_DRIVER=log" >> .env
-            echo "CACHE_DRIVER=file" >> .env
-            echo "FILESYSTEM_DISK=local" >> .env
-            echo "QUEUE_CONNECTION=sync" >> .env
-            echo "SESSION_DRIVER=file" >> .env
-            echo "SESSION_LIFETIME=120" >> .env
-
-            echo "MEMCACHED_HOST=127.0.0.1" >> .env
-
-            echo "REDIS_HOST=127.0.0.1" >> .env
-            echo "REDIS_PASSWORD=null" >> .env
-            echo "REDIS_PORT=6379" >> .env
-
-            echo "MAIL_MAILER=smtp" >> .env
-            echo "MAIL_HOST=mailpit" >> .env
-            echo "MAIL_PORT=1025" >> .env
-            echo "MAIL_USERNAME=null" >> .env
-            echo "MAIL_PASSWORD=null" >> .env
-            echo "MAIL_ENCRYPTION=null" >> .env
-            echo "MAIL_FROM_ADDRESS='hello@example.com'" >> .env
-            echo "MAIL_FROM_NAME='${APP_NAME}'" >> .env
-
-            echo "AWS_ACCESS_KEY_ID=" >> .env
-            echo "AWS_SECRET_ACCESS_KEY=" >> .env
-            echo "AWS_DEFAULT_REGION=us-east-1" >> .env
-            echo "AWS_BUCKET=" >> .env
-            echo "AWS_USE_PATH_STYLE_ENDPOINT=false" >> .env
-
-            echo "PUSHER_APP_ID=" >> .env
-            echo "PUSHER_APP_KEY=" >> .env
-            echo "PUSHER_APP_SECRET=" >> .env
-            echo "PUSHER_HOST=" >> .env
-            echo "PUSHER_PORT=443" >> .env
-            echo "PUSHER_SCHEME=https" >> .env
-            echo "PUSHER_APP_CLUSTER=mt1" >> .env
-
-            echo "VITE_APP_NAME='Zuora Workflow'" >> .env
-            echo "VITE_PUSHER_APP_KEY='${PUSHER_APP_KEY}'" >> .env
-            echo "VITE_PUSHER_APP_CLUSTER='${PUSHER_APP_CLUSTER}'" >> .env
-
+            cd /home/${{ secrets.SSH_USERNAME }}/domains/zuora.workflows.davideladisa.it/public_html
+            
             # Run migrations
             php artisan migrate --force
-
+            
             # Clear and cache configurations
             php artisan config:clear
             php artisan cache:clear
@@ -126,9 +144,9 @@ jobs:
             php artisan config:cache
             php artisan route:cache
             php artisan view:cache
-
+            
             # Link storage (if not already linked)
             php artisan storage:link
-
+            
             # Optimize application
             php artisan optimize
