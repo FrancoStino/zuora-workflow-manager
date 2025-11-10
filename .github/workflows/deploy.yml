@@ -58,15 +58,17 @@ jobs:
             # Create directory if it doesn't exist
             mkdir -p $DEPLOY_PATH
 
-            # Check if it's an initial clone or a subsequent pull
-            if [ -d "$DEPLOY_PATH/.git" ]; then
+            # Check if it's a Git repository
+            if [ -d ".git" ]; then
               echo "Existing Git repository found, pulling latest changes..."
-              cd $DEPLOY_PATH
               git pull origin main # Assuming 'main' is your deployment branch
             else
-              echo "No Git repository found, performing initial clone..."
-              git clone $REPO_URL $DEPLOY_PATH
-              cd $DEPLOY_PATH
+              echo "No Git repository found. Cleaning directory and performing initial clone..."
+              # WARNING: This command will remove all files and subdirectories
+              # in the DEPLOY_PATH if it's not a Git repository.
+              # Ensure you have backups or that these files are not critical.
+              rm -rf *
+              git clone $REPO_URL . # Clone into the current directory
             fi
 
             # Set up .env file (create if not exists, update if exists)
