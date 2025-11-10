@@ -16,37 +16,37 @@ use Filament\Tables\Table;
 
 class CustomerResource extends Resource
 {
-	protected static ?string $model = Customer::class;
+    protected static ?string $model = Customer::class;
 
-	protected static string | null | BackedEnum $navigationIcon = Heroicon::OutlinedUserGroup;
+    protected static string|null|BackedEnum $navigationIcon = Heroicon::OutlinedUserGroup;
 
-	protected static ?string $recordTitleAttribute = 'name';
+    protected static ?string $recordTitleAttribute = 'name';
 
-	protected static int $globalSearchResultsLimit = 20;
+    protected static int $globalSearchResultsLimit = 20;
 
-	public static function form ( Schema $schema ) : Schema
-	{
-		return CustomerForm ::configure ( $schema );
-	}
+    public static function form(Schema $schema): Schema
+    {
+        return CustomerForm::configure($schema);
+    }
 
-	public static function table ( Table $table ) : Table
-	{
-		return CustomersTable ::configure ( $table );
-	}
+    public static function table(Table $table): Table
+    {
+        return CustomersTable::configure($table);
+    }
 
-	public static function getRelations () : array
-	{
-		return [
-			//
-		];
-	}
+    public static function getRelations(): array
+    {
+        return [
+            //
+        ];
+    }
 
-	public static function getPages () : array
-	{
-		return [
-			'index'  => ListCustomers ::route ( '/' ),
-			'create' => CreateCustomer ::route ( '/create' ),
-			'edit'   => EditCustomer ::route ( '/{record}/edit' ),
-		];
-	}
+    public static function getPages(): array
+    {
+        return [
+            'index' => ListCustomers::route('/'),
+            'create' => CreateCustomer::route('/create'),
+            'edit' => EditCustomer::route('/{record}/edit'),
+        ];
+    }
 }

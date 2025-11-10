@@ -8,6 +8,6 @@ use Illuminate\Support\Facades\Route;
 //    return redirect () -> to ( '/admin' );
 // } );
 
-Route ::get ( '/download-workflow/{customer}/{workflowId}/{name?}', [ WorkflowDownloadController::class, 'download' ] )
-      -> name ( 'workflow.download' )
-      -> middleware ( 'web' );
+Route::get('/download-workflow/{customer}/{workflowId}/{name?}', [WorkflowDownloadController::class, 'download'])
+    ->name('workflow.download')
+    ->middleware('web');
