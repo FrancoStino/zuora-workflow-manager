@@ -25,7 +25,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.2' # Adjust to your PHP version
+          php-version: '8.4' # Adjust to your PHP version
           extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick
           ini-values: post_max_size=256M, upload_max_filesize=256M
           coverage: none
@@ -33,7 +33,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20' # Adjust to your Node.js version
+          node-version: '23' # Adjust to your Node.js version
 
       - name: Install Composer dependencies
         run: composer install --no-dev --prefer-dist --optimize-autoloader
