@@ -16,7 +16,14 @@ on:
 jobs:
   release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
+      - name: Enforce master branch
+        if: github.ref != 'refs/heads/master'
+        run: |
+          echo "This workflow can only be run from the master branch."
+          exit 1
       - name: Checkout code
         uses: actions/checkout@v3
         with:
