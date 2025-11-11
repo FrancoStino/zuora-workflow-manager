@@ -3,10 +3,15 @@ name: Create Release
 on:
   workflow_dispatch:
     inputs:
-      release_as:
-        description: 'Release type (patch, minor, major) or specific version (e.g. 1.2.3)'
+      version_type:
+        description: 'Version bump type'
         required: true
         default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
 
 permissions:
   contents: write
@@ -26,7 +31,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -38,64 +42,83 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Install standard-version
-        run: npm install -g standard-version
-
-      - name: Get current version
-        id: current
+      - name: Calculate new version
+        id: version
         run: |
-          CURRENT=$(jq -r '.version' composer.json)
-          echo "version=$CURRENT" >> $GITHUB_OUTPUT
-          echo "📦 Current version: $CURRENT"
-
-      - name: Run standard-version
-        id: release
-        run: |
-          # Create package.json if it doesn't exist
-          if [ ! -f package.json ]; then
-            echo '{"version": "'$(jq -r .version composer.json)'"}' > package.json
-          fi
+          # Get current version from composer.json
+          CURRENT_VERSION=$(jq -r '.version' composer.json)
+          echo "📦 Current version: $CURRENT_VERSION"
           
-          # Run standard-version with the specified release type
-          standard-version --release-as ${{ github.event.inputs.release_as }} --skip.tag=true
+          # Parse version
+          IFS='.' read -ra VERSION_PARTS <<< "$CURRENT_VERSION"
+          MAJOR=${VERSION_PARTS[0]}
+          MINOR=${VERSION_PARTS[1]}
+          PATCH=${VERSION_PARTS[2]}
           
-          # Get new version
-          NEW_VERSION=$(jq -r .version package.json)
-          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          # Bump version based on input
+          case "${{ github.event.inputs.version_type }}" in
+            major)
+              MAJOR=$((MAJOR + 1))
+              MINOR=0
+              PATCH=0
+              ;;
+            minor)
+              MINOR=$((MINOR + 1))
+              PATCH=0
+              ;;
+            patch)
+              PATCH=$((PATCH + 1))
+              ;;
+          esac
+          
+          NEW_VERSION="${MAJOR}.${MINOR}.${PATCH}"
+          echo "🚀 New version: $NEW_VERSION"
+          
+          echo "current=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          echo "new=$NEW_VERSION" >> $GITHUB_OUTPUT
           echo "tag=v$NEW_VERSION" >> $GITHUB_OUTPUT
-          echo "✅ New version: $NEW_VERSION"
+
+      - name: Install conventional-changelog-cli
+        run: npm install -g conventional-changelog-cli
 
       - name: Update composer.json
         run: |
-          jq --arg version "${{ steps.release.outputs.version }}" '.version = $version' composer.json > composer.tmp.json
+          jq --arg version "${{ steps.version.outputs.new }}" '.version = $version' composer.json > composer.tmp.json
           mv composer.tmp.json composer.json
-          echo "✅ Updated composer.json to ${{ steps.release.outputs.version }}"
+          echo "✅ Updated composer.json"
+
+      - name: Generate changelog
+        run: |
+          # Generate changelog for all commits
+          conventional-changelog -p angular -i CHANGELOG.md -s -r 0
+          echo "✅ Generated CHANGELOG.md"
+
+      - name: Update changelog version header
+        run: |
+          # Fix the version in CHANGELOG.md header
+          sed -i "1s/.*/# [${{ steps.version.outputs.new }}](https:\/\/github.com\/${{ github.repository }}\/compare\/v${{ steps.version.outputs.current }}...v${{ steps.version.outputs.new }}) ($(date +%Y-%m-%d))/" CHANGELOG.md
+          echo "✅ Updated CHANGELOG.md header"
 
       - name: Commit changes
         run: |
-          # Remove package.json if we created it
-          if [ ! -f package.json.backup ]; then
-            git rm -f package.json 2>/dev/null || true
-          fi
-          
           git add composer.json CHANGELOG.md
-          git commit --amend --no-edit
+          git commit -m "chore(release): v${{ steps.version.outputs.new }}"
           git push origin master
-          echo "✅ Pushed changes to master"
+          echo "✅ Pushed changes"
 
       - name: Create and push tag
         run: |
-          git tag "${{ steps.release.outputs.tag }}"
-          git push origin "${{ steps.release.outputs.tag }}"
-          echo "✅ Created and pushed tag ${{ steps.release.outputs.tag }}"
+          git tag "${{ steps.version.outputs.tag }}"
+          git push origin "${{ steps.version.outputs.tag }}"
+          echo "✅ Created and pushed tag ${{ steps.version.outputs.tag }}"
 
-      - name: Extract changelog for this release
-        id: extract_changelog
+      - name: Extract release notes
+        id: notes
         run: |
-          # Extract only the latest release notes from CHANGELOG.md
-          CHANGELOG=$(awk '/^## \[/{if (++count == 2) exit} count == 1' CHANGELOG.md | tail -n +2)
-          echo "changelog<<EOF" >> $GITHUB_OUTPUT
-          echo "$CHANGELOG" >> $GITHUB_OUTPUT
+          # Extract content between first two headers
+          NOTES=$(awk '/^# \[/{if(++n==2) exit; if(n==1) next} n==1' CHANGELOG.md)
+          echo "notes<<EOF" >> $GITHUB_OUTPUT
+          echo "$NOTES" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Verify changes
@@ -103,10 +126,10 @@ jobs:
           echo "📄 composer.json version:"
           jq -r .version composer.json
           echo ""
-          echo "📄 Latest CHANGELOG entry:"
-          head -n 20 CHANGELOG.md
+          echo "📄 CHANGELOG.md (first 25 lines):"
+          head -n 25 CHANGELOG.md
           echo ""
-          echo "🏷️ Latest git tag:"
+          echo "🏷️ Latest tag:"
           git describe --tags --abbrev=0
 
       - name: Create release artifact
@@ -118,28 +141,27 @@ jobs:
             -x "vendor/*" \
             -x "tests/*" \
             -x ".env*" \
-            -x "*.log" \
-            -x "package.json" \
-            -x "package-lock.json"
-          echo "✅ Release artifact created"
+            -x "*.log"
+          echo "✅ Created release.zip"
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.release.outputs.tag }}
-          name: Release ${{ steps.release.outputs.tag }}
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: Release ${{ steps.version.outputs.tag }}
           body: |
-            ## 🚀 What's Changed
+            ## 🚀 Release ${{ steps.version.outputs.tag }}
             
-            ${{ steps.extract_changelog.outputs.changelog }}
+            ${{ steps.notes.outputs.notes }}
             
-            **Full Changelog**: https://github.com/${{ github.repository }}/compare/v${{ steps.current.outputs.version }}...${{ steps.release.outputs.tag }}
+            ---
+            **Full Changelog**: https://github.com/${{ github.repository }}/compare/v${{ steps.version.outputs.current }}...v${{ steps.version.outputs.tag }}
           files: release.zip
           draft: false
           prerelease: false
 
       - name: Release completed
         run: |
-          echo "🎉 Release ${{ steps.release.outputs.tag }} completed successfully!"
-          echo "📦 Version: ${{ steps.current.outputs.version }} → ${{ steps.release.outputs.version }}"
-          echo "🔗 Release URL: https://github.com/${{ github.repository }}/releases/tag/${{ steps.release.outputs.tag }}"
+          echo "✅ Release ${{ steps.version.outputs.tag }} completed!"
+          echo "📦 ${{ steps.version.outputs.current }} → ${{ steps.version.outputs.new }}"
+          echo "🔗 https://github.com/${{ github.repository }}/releases/tag/${{ steps.version.outputs.tag }}"
