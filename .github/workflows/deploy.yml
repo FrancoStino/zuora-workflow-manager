@@ -112,7 +112,7 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: ".env,app,bootstrap,config,database,public,resources,routes,storage,artisan,composer.json,composer.lock,vendor"
+          source: ".env,.htaccess,app,bootstrap,config,database,public,resources,routes,storage,artisan,composer.json,composer.lock,vendor"
           target: "/home/${{ secrets.SSH_USERNAME }}/domains/zuora.workflows.davideladisa.it/public_html/"
           strip_components: 0
           overwrite: true
@@ -126,6 +126,12 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd /home/${{ secrets.SSH_USERNAME }}/domains/zuora.workflows.davideladisa.it/public_html
+            
+            # Set correct permissions
+            chmod -R 755 storage bootstrap/cache
+            chmod -R 775 storage bootstrap/cache
+            find storage -type f -exec chmod 664 {} \;
+            find bootstrap/cache -type f -exec chmod 664 {} \;
             
             # Run migrations
             php artisan migrate --force
