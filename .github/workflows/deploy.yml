@@ -102,6 +102,9 @@ jobs:
           echo "VITE_APP_NAME='Zuora Workflow'" >> .env
           echo "VITE_PUSHER_APP_KEY=" >> .env
           echo "VITE_PUSHER_APP_CLUSTER=mt1" >> .env
+          
+          echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> .env
+          echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" >> .env
 
       - name: Deploy files via SCP
         uses: appleboy/scp-action@master

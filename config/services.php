@@ -44,7 +44,7 @@ return [
     'google' => [
         'client_id' => env('GOOGLE_CLIENT_ID'),
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),
-        'redirect' => fn () => url('/oauth/callback/google'),
+        'redirect' => '/oauth/callback/google',
     ],
 
 ];
