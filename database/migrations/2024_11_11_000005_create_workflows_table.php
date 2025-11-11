@@ -11,15 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('workflows', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->text('description')->nullable();
-            $table->string('state')->nullable();
-            $table->timestamp('created_on')->nullable();
-            $table->timestamp('updated_on')->nullable();
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('workflows')) {
+            Schema::create('workflows', function (Blueprint $table) {
+                $table->id();
+                $table->string('name');
+                $table->text('description')->nullable();
+                $table->string('state')->nullable();
+                $table->timestamp('created_on')->nullable();
+                $table->timestamp('updated_on')->nullable();
+                $table->timestamps();
+            });
+        }
     }
 
     /**
