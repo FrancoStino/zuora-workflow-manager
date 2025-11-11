@@ -34,55 +34,9 @@ jobs:
       - name: Get current version
         id: current_version
         run: |
-          # Leggi la versione dal composer.json
-          composer_version=$(jq -r .version composer.json 2>/dev/null || echo "0.0.0")
-          echo "Versione da composer.json: $composer_version"
-          
-          # Leggi l'ultima versione dal CHANGELOG.md se esiste
-          if [ -f CHANGELOG.md ]; then
-            # Estrai la prima versione nel formato [X.Y.Z]
-            changelog_version=$(grep -oP '(?<=# \[)[0-9]+\.[0-9]+\.[0-9]+(?=\])' CHANGELOG.md | head -n 1 || echo "0.0.0")
-            echo "Versione da CHANGELOG.md: $changelog_version"
-          else
-            changelog_version="0.0.0"
-            echo "CHANGELOG.md non trovato"
-          fi
-          
-          # Funzione per confrontare versioni
-          version_compare() {
-            if [ "$1" = "$2" ]; then
-              echo "equal"
-              return
-            fi
-            
-            local IFS=.
-            local i ver1=($1) ver2=($2)
-            
-            for ((i=0; i<${#ver1[@]}; i++)); do
-              if [[ -z ${ver2[i]} ]]; then
-                ver2[i]=0
-              fi
-              if ((10#${ver1[i]} > 10#${ver2[i]})); then
-                echo "greater"
-                return
-              fi
-              if ((10#${ver1[i]} < 10#${ver2[i]})); then
-                echo "lesser"
-                return
-              fi
-            done
-            echo "equal"
-          }
-          
-          # Usa la versione più alta tra le due
-          comparison=$(version_compare "$composer_version" "$changelog_version")
-          if [ "$comparison" = "greater" ] || [ "$comparison" = "equal" ]; then
-            current_version="$composer_version"
-            echo "Uso la versione da composer.json: $current_version"
-          else
-            current_version="$changelog_version"
-            echo "Uso la versione da CHANGELOG.md: $current_version"
-          fi
+          # Leggi la versione dal composer.json (unica fonte di verità)
+          current_version=$(jq -r .version composer.json 2>/dev/null || echo "0.0.0")
+          echo "Versione corrente da composer.json: $current_version"
           
           echo "current_version=$current_version" >> $GITHUB_OUTPUT
           echo "✓ Versione corrente: $current_version"
@@ -118,11 +72,6 @@ jobs:
           echo "next_version=$next_version" >> $GITHUB_OUTPUT
           echo "✓ Prossima versione: $next_version"
 
-      - name: Update composer.json
-        run: |
-          jq --arg version "${{ steps.next_version.outputs.next_version }}" '.version = $version' composer.json > composer.json.tmp && mv composer.json.tmp composer.json
-          echo "✓ composer.json aggiornato alla versione ${{ steps.next_version.outputs.next_version }}"
-
       - name: Generate Changelog
         id: changelog
         uses: TriPSs/conventional-changelog-action@v3
@@ -130,33 +79,54 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           tag-prefix: "v"
           output-file: "CHANGELOG.md"
+          release-count: 0
+          version: ${{ steps.next_version.outputs.next_version }}
           skip-version-file: true
           skip-commit: true
           skip-tag: true
           skip-on-empty: false
+
+      - name: Update composer.json
+        run: |
+          jq --arg version "${{ steps.next_version.outputs.next_version }}" '.version = $version' composer.json > composer.json.tmp && mv composer.json.tmp composer.json
+          echo "✓ composer.json aggiornato alla versione ${{ steps.next_version.outputs.next_version }}"
+
+      - name: Verify changes
+        run: |
+          echo "=== Verifica composer.json ==="
+          jq -r .version composer.json
+          
+          echo "=== Verifica CHANGELOG.md ==="
+          if [ -f CHANGELOG.md ]; then
+            head -n 5 CHANGELOG.md
+          else
+            echo "CHANGELOG.md non trovato!"
+            exit 1
+          fi
+          
+          echo "=== Git status ==="
+          git status
 
       - name: Commit and push changes
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           
-          # Add composer.json
+          # Add files
           git add composer.json
-          echo "✓ composer.json staged"
           
-          # Add CHANGELOG.md only if it exists
+          # Add CHANGELOG.md only if it was generated
           if [ -f CHANGELOG.md ]; then
             git add CHANGELOG.md
-            echo "✓ CHANGELOG.md staged"
-          else
-            echo "⚠ CHANGELOG.md non trovato, salto l'aggiunta"
+            echo "✓ CHANGELOG.md aggiunto"
           fi
           
           # Commit only if there are changes
           if git diff --staged --quiet; then
             echo "⚠ Nessuna modifica da committare"
+            exit 1
           else
-            git commit -m "chore: Bump version to ${{ steps.next_version.outputs.next_version }}"
+            git commit -m "chore: release v${{ steps.next_version.outputs.next_version }}"
             git push origin master
             echo "✓ Modifiche committate e pushate"
           fi
