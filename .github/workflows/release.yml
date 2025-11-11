@@ -96,7 +96,7 @@ jobs:
       - name: Update changelog version header
         run: |
           # Fix the version in CHANGELOG.md header
-          sed -i "1s/.*/# [${{ steps.version.outputs.new }}](https:\/\/github.com\/${{ github.repository }}\/compare\/v${{ steps.version.outputs.current }}...v${{ steps.version.outputs.new }}) ($(date +%Y-%m-%d))/" CHANGELOG.md
+          sed -i "1s|.*|# [${{ steps.version.outputs.new }}](https://github.com/${{ github.repository }}/compare/v${{ steps.version.outputs.current }}...v${{ steps.version.outputs.new }}) ($(date +%Y-%m-%d))|" CHANGELOG.md
           echo "✅ Updated CHANGELOG.md header"
 
       - name: Commit changes
