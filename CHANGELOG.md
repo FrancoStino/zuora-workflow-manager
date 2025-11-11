@@ -1,4 +1,13 @@
-# [0.5.0](https://github.com/FrancoStino/zuora-workflows/compare/v0.4.1...v0.5.0) (2025-11-11)
+# [0.5.0](https://github.com/FrancoStino/zuora-workflows/compare/v0.4.2...v0.5.0) (2025-11-11)
+
+
+### Features
+
+* **CHANGELOG:** Add new version information ([da1d9fa](https://github.com/FrancoStino/zuora-workflows/commit/da1d9fa108073b87d290892f897e05c7c2625080))
+
+
+
+## [0.4.2](https://github.com/FrancoStino/zuora-workflows/compare/v0.4.1...v0.4.2) (2025-11-11)
 
 
 ### Features

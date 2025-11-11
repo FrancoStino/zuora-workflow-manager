@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       version_type:
-        description: 'The type of version bump (major, minor, or patch)'
+        description: 'Version bump type'
         required: true
         default: 'patch'
         type: choice
@@ -13,153 +13,133 @@ on:
           - minor
           - major
 
+permissions:
+  contents: write
+
 jobs:
   release:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
+
     steps:
       - name: Enforce master branch
         if: github.ref != 'refs/heads/master'
         run: |
-          echo "This workflow can only be run from the master branch."
+          echo "❌ This workflow can only be run from the master branch."
           exit 1
 
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
-          ref: 'master'
           fetch-depth: 0
 
-      - name: Get current version
-        id: current_version
-        run: |
-          # Leggi la versione dal composer.json (unica fonte di verità)
-          current_version=$(jq -r .version composer.json 2>/dev/null || echo "0.0.0")
-          echo "Versione corrente da composer.json: $current_version"
-          
-          echo "current_version=$current_version" >> $GITHUB_OUTPUT
-          echo "✓ Versione corrente: $current_version"
-
-      - name: Get next version
-        id: next_version
-        run: |
-          current_version="${{ steps.current_version.outputs.current_version }}"
-          echo "Versione corrente: $current_version"
-          
-          # Increment the version based on the input
-          IFS='.' read -r -a version_parts <<< "$current_version"
-          major=${version_parts[0]}
-          minor=${version_parts[1]}
-          patch=${version_parts[2]}
-
-          case "${{ github.event.inputs.version_type }}" in
-            major)
-              major=$((major + 1))
-              minor=0
-              patch=0
-              ;;
-            minor)
-              minor=$((minor + 1))
-              patch=0
-              ;;
-            patch)
-              patch=$((patch + 1))
-              ;;
-          esac
-
-          next_version="$major.$minor.$patch"
-          echo "next_version=$next_version" >> $GITHUB_OUTPUT
-          echo "✓ Prossima versione: $next_version"
-
-      - name: Generate Changelog
-        id: changelog
-        uses: TriPSs/conventional-changelog-action@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          tag-prefix: "v"
-          output-file: "CHANGELOG.md"
-          release-count: 0
-          version: ${{ steps.next_version.outputs.next_version }}
-          skip-version-file: true
-          skip-commit: true
-          skip-tag: true
-          skip-on-empty: false
+          node-version: '20'
+
+      - name: Install semver
+        run: npm install -g semver
+
+      - name: Calculate new version
+        id: version
+        run: |
+          # Get current version from composer.json
+          CURRENT_VERSION=$(jq -r '.version' composer.json)
+          echo "Current version: $CURRENT_VERSION"
+          
+          # Calculate new version using semver
+          NEW_VERSION=$(semver -i ${{ github.event.inputs.version_type }} $CURRENT_VERSION)
+          echo "New version: $NEW_VERSION"
+          
+          echo "current=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          echo "new=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "tag=v$NEW_VERSION" >> $GITHUB_OUTPUT
 
       - name: Update composer.json
         run: |
-          jq --arg version "${{ steps.next_version.outputs.next_version }}" '.version = $version' composer.json > composer.json.tmp && mv composer.json.tmp composer.json
-          echo "✓ composer.json aggiornato alla versione ${{ steps.next_version.outputs.next_version }}"
+          jq --arg version "${{ steps.version.outputs.new }}" '.version = $version' composer.json > composer.tmp.json
+          mv composer.tmp.json composer.json
+          echo "✅ Updated composer.json to version ${{ steps.version.outputs.new }}"
 
-      - name: Verify changes
-        run: |
-          echo "=== Verifica composer.json ==="
-          jq -r .version composer.json
-          
-          echo "=== Verifica CHANGELOG.md ==="
-          if [ -f CHANGELOG.md ]; then
-            head -n 5 CHANGELOG.md
-          else
-            echo "CHANGELOG.md non trovato!"
-            exit 1
-          fi
-          
-          echo "=== Git status ==="
-          git status
+      - name: Generate changelog
+        id: changelog
+        uses: TriPSs/conventional-changelog-action@v5
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          output-file: 'CHANGELOG.md'
+          release-count: 0
+          skip-version-file: true
+          skip-commit: true
+          skip-git-pull: true
+          version: ${{ steps.version.outputs.new }}
+          tag-prefix: 'v'
+          preset: 'angular'
 
-      - name: Commit and push changes
+      - name: Setup Git
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          
-          # Add files
-          git add composer.json
-          
-          # Add CHANGELOG.md only if it was generated
-          if [ -f CHANGELOG.md ]; then
-            git add CHANGELOG.md
-            echo "✓ CHANGELOG.md aggiunto"
-          fi
-          
-          # Commit only if there are changes
-          if git diff --staged --quiet; then
-            echo "⚠ Nessuna modifica da committare"
-            exit 1
-          else
-            git commit -m "chore: release v${{ steps.next_version.outputs.next_version }}"
-            git push origin master
-            echo "✓ Modifiche committate e pushate"
-          fi
 
-      - name: Create Git Tag
+      - name: Commit changes
         run: |
-          git tag "v${{ steps.next_version.outputs.next_version }}"
-          git push origin "v${{ steps.next_version.outputs.next_version }}"
-          echo "✓ Tag v${{ steps.next_version.outputs.next_version }} creato e pushato"
+          git add composer.json CHANGELOG.md
+          git commit -m "chore(release): v${{ steps.version.outputs.new }}"
+          git push origin master
+          echo "✅ Committed and pushed version bump"
 
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        with:
-          tag_name: "v${{ steps.next_version.outputs.next_version }}"
-          release_name: "Release v${{ steps.next_version.outputs.next_version }}"
-          body: ${{ steps.changelog.outputs.changelog }}
-          draft: false
-          prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create and push tag
+        run: |
+          git tag "${{ steps.version.outputs.tag }}"
+          git push origin "${{ steps.version.outputs.tag }}"
+          echo "✅ Created and pushed tag ${{ steps.version.outputs.tag }}"
+
+      - name: Verify changes
+        run: |
+          echo "📄 composer.json version:"
+          jq -r .version composer.json
+          echo ""
+          echo "📄 CHANGELOG.md preview:"
+          head -n 10 CHANGELOG.md
+          echo ""
+          echo "🏷️ Git tags:"
+          git tag -l "v*" | tail -n 5
 
       - name: Create release artifact
         run: |
-          zip -r release.zip . -x ".git/*" ".github/*"
-          echo "✓ Artifact release.zip creato"
+          zip -r release.zip . \
+            -x ".git/*" \
+            -x ".github/*" \
+            -x "node_modules/*" \
+            -x "vendor/*" \
+            -x "tests/*" \
+            -x ".env*" \
+            -x "*.log"
+          echo "✅ Release artifact created"
 
-      - name: Upload release artifact
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          release_name: Release ${{ steps.version.outputs.tag }}
+          body: ${{ steps.changelog.outputs.clean_changelog }}
+          draft: false
+          prerelease: false
+
+      - name: Upload release asset
         uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./release.zip
           asset_name: source-code.zip
           asset_content_type: application/zip
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Release completed
+        run: |
+          echo "🎉 Release ${{ steps.version.outputs.tag }} completed successfully!"
+          echo "📦 Version: ${{ steps.version.outputs.current }} → ${{ steps.version.outputs.new }}"
+          echo "🔗 Release URL: https://github.com/${{ github.repository }}/releases/tag/${{ steps.version.outputs.tag }}"
