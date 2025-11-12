@@ -1,4 +1,18 @@
-# [1.4.5](https://github.com/FrancoStino/zuora-workflows/compare/v1.4.4...v1.4.5) (2025-11-11)
+# [1.5.0](https://github.com/FrancoStino/zuora-workflows/compare/v1.4.5...v1.5.0) (2025-11-12)
+
+
+### Features
+
+* **auth:** allow custom user creation during OAuth ([7e236ad](https://github.com/FrancoStino/zuora-workflows/commit/7e236ad11607b69fee517ca993e5f0e4a3064c09))
+* **auth:** enable social login with Google ([1f73874](https://github.com/FrancoStino/zuora-workflows/commit/1f73874f2bfe874f5b55387667248ac49fd5d7e6))
+* **database:** add avatar_url and socialite_users tables ([7880c31](https://github.com/FrancoStino/zuora-workflows/commit/7880c3131204ff835985b57e86dd51bfcf0ba1ee))
+* **database:** Add table existence checks to migrations ([9714c24](https://github.com/FrancoStino/zuora-workflows/commit/9714c242706a67129345a20398a2e18543e8ada6))
+* **deploy:** enhance deployment script with verbose logging and error handling ([93c8d13](https://github.com/FrancoStino/zuora-workflows/commit/93c8d13d8b38ba6be2f2f5d698b1f9a798988b1c))
+* **deps:** add initial Vite and Tailwind CSS dependencies ([ea34a3c](https://github.com/FrancoStino/zuora-workflows/commit/ea34a3cc932bcba17af8db216ac148b01b04e26b))
+
+
+
+## [1.4.5](https://github.com/FrancoStino/zuora-workflows/compare/v0.4.4...v1.4.5) (2025-11-11)
 
 
 ### Bug Fixes
