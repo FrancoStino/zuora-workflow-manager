@@ -2,11 +2,11 @@
 
 namespace App\Filament\Pages;
 
+use App\Exceptions\SetupException;
 use App\Models\AppSetting;
 use App\Models\User;
 use App\Rules\ValidateDomain;
 use BackedEnum;
-use Exception;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\TagsInput;
@@ -149,7 +149,7 @@ class Setup extends Page implements HasForms
      * Complete the setup process by creating user, assigning roles, and finalizing configuration.
      * Orchestrates all setup steps with transactional integrity.
      *
-     * @throws Exception
+     * @throws SetupException
      */
     public function completeSetup(): void
     {
@@ -171,7 +171,7 @@ class Setup extends Page implements HasForms
 
             $this->redirect('/');
 
-        } catch (Exception $e) {
+        } catch (SetupException $e) {
             DB::rollBack();
             $this->notifyFailure($e->getMessage());
         }
@@ -194,7 +194,7 @@ class Setup extends Page implements HasForms
     /**
      * Generate Shield roles and permissions if they don't exist.
      *
-     * @throws Exception
+     * @throws SetupException
      */
     private function generateShieldRolesIfNeeded(): void
     {
@@ -221,9 +221,9 @@ class Setup extends Page implements HasForms
             Log::info('Shield roles generated successfully.');
             app()->make(PermissionRegistrar::class)->forgetCachedPermissions();
 
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             Log::error('Failed to generate Shield roles: '.$e->getMessage());
-            throw new Exception('Could not generate Shield roles. '.$e->getMessage());
+            throw new SetupException('Could not generate Shield roles. '.$e->getMessage());
         }
     }
 

@@ -20,24 +20,30 @@ class CheckSetupCompleted
             return $next($request);
         }
 
-        try {
-            // Check if setup_completed table exists
-            if (! Schema::hasTable('setup_completed')) {
-                return $next($request);
-            }
-
-            // Check if setup is completed
-            $setupCompleted = DB::table('setup_completed')->first();
-
-            if (! $setupCompleted || ! $setupCompleted->completed) {
-                return redirect('/setup');
-            }
-        } catch (\Exception $e) {
-            // If there's any error, allow the request to continue
-            // This prevents the app from breaking during migrations or setup
-            return $next($request);
+        // Redirect to setup if table exists and setup is incomplete
+        if ($this->shouldRedirectToSetup()) {
+            return redirect('/setup');
         }
 
         return $next($request);
+    }
+
+    /**
+     * Determine if request should be redirected to setup page.
+     */
+    private function shouldRedirectToSetup(): bool
+    {
+        try {
+            if (! Schema::hasTable('setup_completed')) {
+                return false;
+            }
+
+            $setupCompleted = DB::table('setup_completed')->first();
+            return ! $setupCompleted || ! $setupCompleted->completed;
+        } catch (\Exception) {
+            // If there's any error, allow the request to continue
+            // This prevents the app from breaking during migrations or setup
+            return false;
+        }
     }
 }
