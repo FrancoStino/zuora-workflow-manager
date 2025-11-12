@@ -39,6 +39,7 @@ class CheckSetupCompleted
             }
 
             $setupCompleted = DB::table('setup_completed')->first();
+
             return ! $setupCompleted || ! $setupCompleted->completed;
         } catch (\Exception) {
             // If there's any error, allow the request to continue
