@@ -134,10 +134,10 @@ jobs:
             find storage -type f -exec chmod 664 {} \;
             find bootstrap/cache -type f -exec chmod 664 {} \;
             
-            # Run migrations with output
-            echo "Running migrations..."
-            php artisan migrate --force --verbose || {
-              echo "Migration failed! Checking migration status..."
+            # Run fresh migrations (drops all tables and re-runs all migrations)
+            echo "Running fresh migrations..."
+            php artisan migrate:fresh --force --verbose || {
+              echo "Fresh migration failed! Checking migration status..."
               php artisan migrate:status
               exit 1
             }
