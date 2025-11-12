@@ -1,3 +1,21 @@
+# [1.6.0](https://github.com/FrancoStino/zuora-workflows/compare/v1.5.0...v1.6.0) (2025-11-12)
+
+
+### Bug Fixes
+
+* **middleware:** correctly check setup completion status ([aee2421](https://github.com/FrancoStino/zuora-workflows/commit/aee2421998200e2787c535b74f9902964d8bf106)), closes [#123](https://github.com/FrancoStino/zuora-workflows/issues/123)
+
+
+### Features
+
+* **ci:** use migrate:fresh for deployments ([dabc59a](https://github.com/FrancoStino/zuora-workflows/commit/dabc59a920cf3fcb2f6bcf44ce6f2e41a05b7595))
+* **filament:** Extract role permission management to trait ([2558630](https://github.com/FrancoStino/zuora-workflows/commit/2558630a216c0daa0b8edce1725ceac9ece13afa))
+* **roles:** Implement Role Resource for Filament ([a1b52e8](https://github.com/FrancoStino/zuora-workflows/commit/a1b52e8bdff02aa896d5e00897ffd58344481cd6))
+* **setup:** Implement initial application setup wizard ([38a6f7f](https://github.com/FrancoStino/zuora-workflows/commit/38a6f7fa1668deb9ca608125288576ef6ab45d78))
+* **setup:** Implement initial application setup wizard ([62288c6](https://github.com/FrancoStino/zuora-workflows/commit/62288c66e25c6ec4a59e236b6e2daa97548880c2))
+
+
+
 # [1.5.0](https://github.com/FrancoStino/zuora-workflows/compare/v1.4.5...v1.5.0) (2025-11-12)
 
 
