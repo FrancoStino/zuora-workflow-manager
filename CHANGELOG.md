@@ -1,3 +1,20 @@
+# [0.7.0](https://github.com/FrancoStino/zuora-workflows/compare/v0.6.0...v0.7.0) (2025-11-14)
+
+
+### Bug Fixes
+
+* correct all versions from v1.x to v0.x ([461a65d](https://github.com/FrancoStino/zuora-workflows/commit/461a65d60c456539477ded51996214a8357a0245))
+
+
+### Features
+
+* **auth:** allow unauthenticated access to oauth callback ([f6f2f26](https://github.com/FrancoStino/zuora-workflows/commit/f6f2f269e307cb95c5a1b6d23c9a078d4d967975))
+* **auth:** Implement middleware for setup and authentication flow ([3db9f79](https://github.com/FrancoStino/zuora-workflows/commit/3db9f7945b4fcd086972c060e72223fb0369726a))
+* **database:** Simplify user table creation and remove redundant migrations ([7f2305e](https://github.com/FrancoStino/zuora-workflows/commit/7f2305ee3866d01105c512fdbd2f5e28e916d76d))
+* **setup:** Implement initial application setup wizard ([16834f0](https://github.com/FrancoStino/zuora-workflows/commit/16834f0aefe061399f7abf01483d5713fc2257d8))
+
+
+
 # [0.6.0](https://github.com/FrancoStino/zuora-workflows/compare/v0.5.0...v0.6.0) (2025-11-12)
 
 
@@ -16,7 +33,7 @@
 
 
 
-# [0.5.0](https://github.com/FrancoStino/zuora-workflows/compare/v0.4.5...v0.5.0) (2025-11-12)
+# [0.5.0](https://github.com/FrancoStino/zuora-workflows/compare/v1.4.5...v0.5.0) (2025-11-12)
 
 
 ### Features
@@ -30,7 +47,7 @@
 
 
 
-## [0.4.5](https://github.com/FrancoStino/zuora-workflows/compare/v0.4.4...v0.4.5) (2025-11-11)
+## [1.4.5](https://github.com/FrancoStino/zuora-workflows/compare/v0.4.5...v1.4.5) (2025-11-11)
 
 
 ### Bug Fixes
