@@ -2,72 +2,77 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Workflow;
+use App\Models\Customer;
+use App\Services\WorkflowSyncService;
 use App\Services\ZuoraService;
 use Exception;
 use Illuminate\Console\Command;
 
 class SyncWorkflows extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
-    protected $signature = 'app:sync-workflows {--page=1} {--pageSize=50}';
+    protected $signature = 'app:sync-workflows {--customer=} {--all}';
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Sync workflows from Zuora API to local database';
+    protected $description = 'Sync workflows from Zuora API to local database per customer';
 
-    /**
-     * Execute the console command.
-     */
-    public function handle()
+    public function handle(WorkflowSyncService $syncService): int
     {
-        $zuoraService = new ZuoraService;
-
-        $page = (int) $this->option('page');
-        $pageSize = (int) $this->option('pageSize');
-
-        $this->info("Fetching workflows from Zuora API (page {$page}, size {$pageSize})...");
-
         try {
-            $data = $zuoraService->listWorkflows($page, $pageSize);
-
-            $workflows = $data['workflows'] ?? [];
-            $total = $data['total'] ?? 0;
-
-            $this->info("Found {$total} workflows, processing page {$page}...");
-
-            foreach ($workflows as $wf) {
-                Workflow::updateOrCreate(
-                    ['id' => $wf['id']],
-                    [
-                        'name' => $wf['name'],
-                        'description' => $wf['description'] ?? null,
-                        'state' => $wf['state'],
-                        'created_on' => $wf['created_on'],
-                        'updated_on' => $wf['updated_on'],
-                    ]
-                );
+            if ($this->option('all')) {
+                return $this->syncAllCustomers($syncService);
             }
 
-            $this->info('Workflows synced successfully.');
-
-            if ($data['hasMore'] ?? false) {
-                $this->info('Run again with --page='.($page + 1).' to fetch more.');
+            $customerName = $this->option('customer');
+            if (!$customerName) {
+                $this->error('Specify --customer=NAME or use --all');
+                return 1;
             }
+
+            $customer = Customer::where('name', $customerName)->firstOrFail();
+            $stats = $syncService->syncCustomerWorkflows($customer);
+            $this->displayStats($stats, $customer->name);
 
         } catch (Exception $e) {
             $this->error('Error syncing workflows: '.$e->getMessage());
-
             return 1;
         }
 
         return 0;
+    }
+
+    private function syncAllCustomers(WorkflowSyncService $syncService): int
+    {
+        $customers = Customer::all();
+
+        if ($customers->isEmpty()) {
+            $this->warn('No customers found.');
+            return 0;
+        }
+
+        $this->info("Syncing {$customers->count()} customers...\n");
+
+        foreach ($customers as $customer) {
+            $this->info("Syncing: {$customer->name}");
+            $stats = $syncService->syncCustomerWorkflows($customer);
+            $this->displayStats($stats, $customer->name);
+        }
+
+        return 0;
+    }
+
+    private function displayStats(array $stats, string $customerName): void
+    {
+        $this->line("<info>Customer: {$customerName}</info>");
+        $this->line("  Created: {$stats['created']}");
+        $this->line("  Updated: {$stats['updated']}");
+        $this->line("  Deleted: {$stats['deleted']}");
+        $this->line("  Total processed: {$stats['total']}");
+
+        if (!empty($stats['errors'])) {
+            foreach ($stats['errors'] as $error) {
+                $this->error("  Error: {$error}");
+            }
+        }
+
+        $this->line('');
     }
 }
