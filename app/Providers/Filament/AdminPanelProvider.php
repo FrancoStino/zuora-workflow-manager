@@ -6,6 +6,7 @@ use App\Filament\Pages\Auth\Login;
 use App\Filament\Pages\Setup;
 use App\Filament\Pages\WorkflowDashboard;
 use App\Http\Middleware\CheckSetupCompleted;
+use App\Http\Middleware\RequireAuthAfterSetup;
 use App\Models\AppSetting;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use DutchCodingCompany\FilamentSocialite\FilamentSocialitePlugin;
@@ -67,6 +68,7 @@ class AdminPanelProvider extends PanelProvider
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
                 CheckSetupCompleted::class,
+                RequireAuthAfterSetup::class,
             ])
             ->authGuard('web')
 //			-> renderHook (

@@ -12,6 +12,8 @@ class CheckSetupCompleted
 {
     /**
      * Handle an incoming request.
+     * Redirects to setup if not yet completed.
+     * Skips check for setup routes.
      */
     public function handle(Request $request, Closure $next): Response
     {
@@ -20,7 +22,7 @@ class CheckSetupCompleted
             return $next($request);
         }
 
-        // Redirect to setup if table exists and setup is incomplete
+        // Redirect to setup if incomplete
         if ($this->shouldRedirectToSetup()) {
             return redirect('/setup');
         }
@@ -34,16 +36,14 @@ class CheckSetupCompleted
     private function shouldRedirectToSetup(): bool
     {
         try {
-            if (! Schema::hasTable('setup_completed')) {
+            if (!Schema::hasTable('setup_completed')) {
                 return false;
             }
 
             $setupCompleted = DB::table('setup_completed')->first();
 
-            return ! $setupCompleted || ! $setupCompleted->completed;
+            return !$setupCompleted || !$setupCompleted->completed;
         } catch (\Exception) {
-            // If there's any error, allow the request to continue
-            // This prevents the app from breaking during migrations or setup
             return false;
         }
     }
