@@ -159,6 +159,7 @@
       <excludeFolder url="file://$MODULE_DIR$/vendor/ueberdosis/tiptap-php" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/vlucas/phpdotenv" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/voku/portable-ascii" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/_laravel_idea" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/bezhansalleh/filament-plugin-essentials" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/bezhansalleh/filament-shield" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/spatie/laravel-permission" />
