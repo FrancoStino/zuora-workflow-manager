@@ -26,57 +26,21 @@ workflow management.
 
 ## Table of Contents
 
-- [Features](#features)
-- [Requirements](#requirements)
-- [Installation](#installation)
-- [Configuration](#configuration)
-- [Usage](#usage)
-- [Architecture](#architecture)
-- [Database Schema](#database-schema)
-- [API Integration](#api-integration)
-- [Monitoring & Troubleshooting](#monitoring--troubleshooting)
-- [Performance](#performance)
-- [Testing](#testing)
-- [Contributing](#contributing)
-- [License](#license)
+- [Features](#features) • [Requirements](#requirements) • [Installation](#installation) • [Configuration](#configuration)
+- [Usage](#usage) • [Architecture](#architecture) • [Database Schema](#database-schema)
+- [Monitoring](#monitoring--troubleshooting) • [Testing](#testing) • [Contributing](#contributing) • [License](#license)
 
 ---
 
 ## Features
 
-### 🔄 Automatic Synchronization
-
-- **Hourly Sync**: All customers are automatically synchronized with Zuora API on a scheduled interval
-- **Manual Sync**: Dedicated "Sync Workflows" button for immediate synchronization from the customer page
-- **Intelligent Pagination**: Supports up to 50 workflows per page with automatic loop-through
-- **Stale Data Management**: Automatically removes workflows no longer present in Zuora
-
-### 📊 [Filament](https://filamentphp.com/) Dashboard Integration
-
-- **Rich Workflow Visualization**: Comprehensive table with search, sorting, and filtering capabilities
-- **Advanced Filters**: Filter by workflow state (Active/Inactive)
-- **Dynamic Columns**:
-    - Zuora Workflow ID
-    - Workflow Name
-    - Status badge with color coding
-    - Creation and update timestamps
-    - Last synchronization timestamp
-- **Workflow Download**: Direct download button for exporting workflows from Zuora
-
-### ⚙️ Background Job Processing
-
-- **Queue-Based Architecture**: All synchronization operations run as background jobs without blocking the UI
-- **Automatic Retry Logic**: 3 retry attempts with 60-second backoff intervals
-- **Comprehensive Logging**: Tracks detailed statistics (created, updated, deleted workflows)
-- **[Redis](https://redis.io/) Caching**: Optional caching layer for improved performance
-
-### 🔐 Enterprise-Grade Features
-
-- **OAuth 2.0 Token Management**: Secure authentication with 1-hour token caching
-- **Error Handling**: Robust exception handling with detailed logging
-- **Data Consistency**: ACID-compliant synchronization with [MariaDB](https://mariadb.org/) foreign key constraints
-- **[Filament Shield](https://github.com/BezhansallehCMS/filament-shield) Integration**: Role-based access control (
-  RBAC) for admin operations
+- 🔄 **Automatic Synchronization**: Hourly sync + manual sync button for immediate updates
+- 📊 **Filament Dashboard**: Rich workflow visualization with search, filters, and sorting
+- ⚙️ **Background Jobs**: Queue-based processing with retry logic (3 attempts, 60s backoff)
+- 🔐 **OAuth 2.0**: Secure token management with 1-hour caching
+- 📥 **Workflow Download**: Direct export from Zuora
+- 🔒 **RBAC**: Role-based access control via Filament Shield
+- 🗄️ **Multi-tenant**: Per-customer Zuora credentials in database
 
 ---
 
@@ -90,32 +54,9 @@ workflow management.
 | [Docker](https://www.docker.com/) | 20.0+   | [docker.com](https://www.docker.com/) |
 | [Node.js](https://nodejs.org/)    | 18.0+   | [nodejs.org](https://nodejs.org/)     |
 
-### Containerized Stack (via Lando)
+**Lando Stack:** PHP 8.4, MariaDB 11.4, Nginx, Redis 7.0, Xdebug
 
-| Component                                                | Version | Link                                                         |
-|----------------------------------------------------------|---------|--------------------------------------------------------------|
-| [Nginx](https://nginx.org/)                              | Latest  | [nginx.org](https://nginx.org/)                              |
-| [MariaDB](https://mariadb.org/)                          | 11.4    | [mariadb.org](https://mariadb.org/)                          |
-| [Redis](https://redis.io/)                               | 7.0     | [redis.io](https://redis.io/)                                |
-| [PHP-FPM](https://www.php.net/manual/en/install.fpm.php) | 8.4     | [php.net/fpm](https://www.php.net/manual/en/install.fpm.php) |
-| [Xdebug](https://xdebug.org/)                            | Latest  | [xdebug.org](https://xdebug.org/)                            |
-
-### PHP Dependencies
-
-**Admin & Framework**:
-
-- [`filament/filament`](https://filamentphp.com/) (4.2+) - Modern admin dashboard
-- [`laravel/framework`](https://laravel.com) (12.0+) - Core framework
-- [`bezhansalleh/filament-shield`](https://github.com/BezhansallehCMS/filament-shield) (4.0+) - Role-based access
-  control
-- [`dutchcodingcompany/filament-socialite`](https://github.com/DutchCodingCompany/filament-socialite) (3.0+) - OAuth
-  integration
-
-**Frontend**:
-
-- [Tailwind CSS](https://tailwindcss.com/) (4.0+)
-- [Vite](https://vitejs.dev/) (7.0+)
-- [Alpine.js](https://alpinejs.dev/) (via Filament)
+**Key Dependencies:** Laravel 12, Filament 4.2, Filament Shield, Tailwind CSS 4, Vite 7
 
 ---
 
@@ -144,7 +85,7 @@ lando start
 This will automatically:
 
 - Start PHP 8.4, MariaDB 11.4, Nginx, and Redis containers
-- Run `composer install`
+- Run `lando composer install`
 - Configure the development environment
 
 **Step 3: Setup Environment**
@@ -159,16 +100,16 @@ lando artisan key:generate
 # Run migrations
 lando artisan migrate
 
-# Install frontend dependencies
-lando npm install
+# Install frontend dependencies (use yarn globally, not via lando)
+yarn install
 
 # Build frontend assets
-lando npm run build
+yarn run build
 ```
 
 **Step 4: Access the Dashboard**
 
-Navigate to `https://zuora-workflows.lndo.site/admin` and create your admin account.
+Navigate to `https://zuora-workflows.lndo.site` (via Lando's Nginx, not port 8000) and create your admin account.
 
 **Step 5: Configure Customer Zuora Credentials**
 
@@ -179,131 +120,28 @@ After login:
 3. Enter Zuora API credentials:
     - **Client ID**: Your Zuora OAuth client ID
     - **Client Secret**: Your Zuora OAuth client secret
-    - **Base URL**: `https://api.zuora.com/v1` (or your Zuora environment URL)
+    - **Base URL**: `https://rest.zuora.com` (or `https://rest.test.zuora.com` for sandbox)
 4. Save the customer
 5. Click **Sync Workflows** to sync workflows from Zuora
 
-**Available Lando Commands**
+**Quick Commands:**
 
 ```bash
-# Run artisan commands
-lando artisan migrate
-lando artisan tinker
-lando artisan queue:work
-
-# Run tests with PHPUnit
-lando test
-
-# Code style formatting with Pint
-lando pint
-
-# View logs
-lando logs -f
-
-# Database access
-lando mariadb
-
-# Service management
-lando start    # Start services
-lando stop     # Stop services
-lando restart  # Restart services
-lando destroy  # Remove containers and data
+lando artisan migrate                # Run migrations
+lando artisan queue:work             # Start queue worker (database/redis only)
+lando test                           # Run tests
+lando logs -f                        # View logs
+lando mariadb                        # Database access
 ```
 
-**Lando URL Reference**
-
-- **Web Dashboard**: `https://zuora-workflows.lndo.site`
-- **Admin Panel**: `https://zuora-workflows.lndo.site/admin`
-- **API**: Available at `https://zuora-workflows.lndo.site/api`
-- **Database**: `mariadb` (hostname for local connections)
+**URL:** `https://zuora-workflows.lndo.site`
 
 ---
 
 ### Option B: Manual Installation
 
-**Step 1: Clone the Repository**
-
-```bash
-git clone https://github.com/FrancoStino/zuora-laravel.git
-cd zuora-laravel
-```
-
-**Step 2: Install Dependencies**
-
-```bash
-# PHP dependencies
-composer install
-
-# Frontend dependencies
-npm install
-```
-
-**Step 3: Configure Environment**
-
-```bash
-# Copy example environment file
-cp .env.example .env
-
-# Generate application key
-php artisan key:generate
-```
-
-**Step 4: Configure Zuora Credentials**
-
-Edit `.env` and add your Zuora API credentials:
-
-```env
-ZUORA_API_BASE_URL=https://api.zuora.com/v1
-ZUORA_CLIENT_ID=your_client_id_here
-ZUORA_CLIENT_SECRET=your_client_secret_here
-```
-
-**Step 5: Run Database Migrations**
-
-```bash
-php artisan migrate
-```
-
-**Step 6: Build Frontend Assets**
-
-```bash
-npm run build
-```
-
-**Step 7: Start Services**
-
-**Development Mode (Recommended)**
-
-```bash
-composer run dev
-```
-
-This command concurrently starts:
-
-- Laravel development server (port 8000)
-- Queue worker (processes background jobs)
-- Log viewer (pail)
-- Vite development server
-
-**Or start services manually**
-
-```bash
-# Terminal 1: Web server
-php artisan serve
-
-# Terminal 2: Queue worker
-php artisan queue:work
-
-# Terminal 3: Scheduler
-php artisan schedule:work
-
-# Terminal 4: Vite dev server
-npm run dev
-```
-
-**Step 8: Access the Dashboard**
-
-Navigate to `http://localhost:8000/admin` and log in with your admin credentials.
+For non-Lando setup, follow standard [Laravel installation](https://laravel.com/docs/installation). The application uses
+standard Laravel conventions with MariaDB/MySQL and requires Node.js for frontend assets.
 
 ---
 
@@ -314,7 +152,7 @@ Navigate to `http://localhost:8000/admin` and log in with your admin credentials
 The application uses the database queue driver by default. The `.env.example` file specifies:
 
 ```env
-QUEUE_CONNECTION=database
+QUEUE_CONNECTION=sync
 ```
 
 To change to [Redis](https://redis.io/) or another [Laravel](https://laravel.com/docs/queues) queue driver:
@@ -327,35 +165,15 @@ See [Laravel Queue Documentation](https://laravel.com/docs/queues) for more driv
 
 ### Scheduler Configuration
 
-Modify sync frequency in `app/Console/Kernel.php`:
+Workflows sync hourly by default. Modify in `app/Console/Kernel.php`:
 
 ```php
-// Default: every hour
-$schedule->call(function () {
-    Customer::all()->each(fn (Customer $customer) => 
-        SyncCustomerWorkflows::dispatch($customer)
-    );
-})->hourly();
-
-// Every 30 minutes
-->everyThirtyMinutes();
-
-// Every 15 minutes
-->every(15)->minutes();
-
-// Custom interval (every 5 minutes)
-->everyFiveMinutes();
+->hourly();              // Default
+->everyThirtyMinutes();  // Every 30 min
+->everyFiveMinutes();    // Every 5 min
 ```
 
-Then start the scheduler:
-
-```bash
-# Using Lando
-lando artisan schedule:work
-
-# Or manually
-php artisan schedule:work
-```
+Start scheduler: `lando artisan schedule:work`
 
 ### Zuora API Configuration
 
@@ -371,8 +189,9 @@ support.
       **: [Zuora OAuth 2.0 Client ID](https://knowledgecenter.zuora.com/Zuora_Central_Platform/API/Client_Authentication)
     - **Client Secret
       **: [Zuora OAuth 2.0 Client Secret](https://knowledgecenter.zuora.com/Zuora_Central_Platform/API/Client_Authentication)
-    - **Base URL**: `https://api.zuora.com/v1` (
-      see [Zuora API Endpoints](https://knowledgecenter.zuora.com/Zuora_Central_Platform/API/Zuora_REST_API#API_Endpoints))
+    - **Base URL**: `https://rest.zuora.com` (
+      see [Zuora API Endpoints](https://knowledgecenter.zuora.com/Zuora_Central_Platform/API/Zuora_REST_API#API_Endpoints) -
+      Production, Test, or Sandbox)
 
 The application automatically handles:
 
@@ -385,171 +204,34 @@ The application automatically handles:
 
 ## Usage
 
-### Web Interface
+**Web Interface:**
 
-1. **Access Admin Dashboard**: Navigate to `https://zuora-workflows.lndo.site/admin` (Lando) or
-   `http://localhost:8000/admin` (manual)
-2. **Create a Customer**:
-    - Go to **Customers** in the sidebar
-    - Click "Create" and enter customer details with Zuora API credentials
-3. **View Workflows**: Click on a customer to see their synced workflows
-4. **Manual Sync**: Click the **Sync Workflows** button in the customer page header
-5. **Filter & Search**: Use filters and search box to find workflows by name, ID, or state
+1. Navigate to `https://zuora-workflows.lndo.site`
+2. Create customer with Zuora credentials (Client ID, Secret, Base URL)
+3. Click **Sync Workflows** button to sync from Zuora
+4. View, filter, and search workflows in the table
 
-### CLI Commands (with Lando)
-
-**Sync specific customer**:
+**CLI Commands:**
 
 ```bash
-lando artisan app:sync-workflows --customer="Customer Name"
-```
-
-**Sync all customers**:
-
-```bash
-lando artisan app:sync-workflows --all
-```
-
-**Check failed jobs**:
-
-```bash
-lando artisan queue:failed
-```
-
-**Retry failed jobs**:
-
-```bash
-lando artisan queue:retry all
-```
-
-**Clear all failed jobs**:
-
-```bash
-lando artisan queue:flush
-```
-
-**View database**:
-
-```bash
-lando mariadb
-```
-
-### Queue Management
-
-**Start queue worker** (processes background sync jobs):
-
-```bash
-lando artisan queue:work --verbose
-```
-
-**Stop queue worker**:
-
-```bash
-Ctrl+C
-```
-
-**Check queue status and failed jobs**:
-
-```bash
-lando artisan queue:failed
-```
-
-### Running the Complete Stack (Lando)
-
-To run the full development environment with web, queue, scheduler, and logs:
-
-```bash
-# Terminal 1: Keep Lando running
-lando start
-
-# Terminal 2: Process queue jobs
-lando artisan queue:work
-
-# Terminal 3: Process scheduled tasks
-lando artisan schedule:work
-
-# Terminal 4: View logs
-lando logs -f
-```
-
-Or use the concurrency helper for manual installations:
-
-```bash
-# Terminal 1 (manual setup only)
-composer run dev
+lando artisan app:sync-workflows --customer="Name"  # Sync one
+lando artisan app:sync-workflows --all              # Sync all
+lando artisan queue:work                            # Start queue worker (database/redis only)
+lando artisan queue:failed                          # Check failed jobs (database/redis only)
+lando composer run dev                              # Full dev stack
 ```
 
 ---
 
 ## Architecture
 
-### System Overview
+**Service Layer:**
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│              [FILAMENT](https://filamentphp.com/) DASHBOARD UI                │
-│              CustomerWorkflows Page                          │
-│         (View + Sync Button + Workflow Table)               │
-└─────────────┬──────────────────────────┬────────────────────┘
-              │                          │
-         Dispatch Job          Query [MariaDB](https://mariadb.org/)
-              │                          │
-              ↓                          ↓
-       ┌─────────────────────────────────────────────────────┐
-       │     [Laravel](https://laravel.com) Background Jobs (Queue)       │
-       │         SyncCustomerWorkflows Job                    │
-       │     (3 retry attempts, 60s backoff)                  │
-       └─────────────┬─────────────────────────────────────────┘
-                     │
-                     ↓
-       ┌─────────────────────────────────────────────────────┐
-       │            WorkflowSyncService                       │
-       │  • Orchestrates synchronization                      │
-       │  • Handles paginated requests                        │
-       │  • Save/Update/Delete operations                     │
-       │  • Optional [Redis](https://redis.io/) caching                      │
-       └─────────────┬─────────────────────────────────────────┘
-                     │
-                     ↓
-       ┌─────────────────────────────────────────────────────┐
-       │            ZuoraService                              │
-       │  • [OAuth 2.0](https://tools.ietf.org/html/rfc6749) token management              │
-       │  • HTTP API calls                                    │
-       │  • Response normalization                            │
-       └──────────────────────────────────────────────────────┘
-                     │
-                     ↓
-       ┌─────────────────────────────────────────────────────┐
-       │          Zuora REST API                              │
-       │   https://api.zuora.com/v1/workflows                │
-       └──────────────────────────────────────────────────────┘
-```
+- `ZuoraService`: OAuth 2.0 authentication, HTTP API calls, token caching
+- `WorkflowSyncService`: Orchestrates sync, handles pagination, CRUD operations
+- `SyncCustomerWorkflows` Job: Queue-based processing with retry logic
 
-### Service Layer Architecture
-
-**ZuoraService** (`app/Services/ZuoraService.php`):
-
-- Handles [OAuth 2.0](https://tools.ietf.org/html/rfc6749) authentication with token caching
-- Manages HTTP requests to [Zuora API](https://knowledgecenter.zuora.com/Zuora_Central_Platform/API/Zuora_REST_API)
-- Normalizes API responses into consistent format
-- Implements error handling and logging
-
-**WorkflowSyncService** (`app/Services/WorkflowSyncService.php`):
-
-- Orchestrates the synchronization process
-- Handles [pagination](https://knowledgecenter.zuora.com/Zuora_Central_Platform/API/Zuora_REST_API#Pagination) through
-  Zuora workflows
-- Creates, updates, and deletes workflow records
-- Maintains data consistency with [MariaDB](https://mariadb.org/) database
-
-### Job Architecture
-
-**SyncCustomerWorkflows** (`app/Jobs/SyncCustomerWorkflows.php`):
-
-- Implements Laravel's `ShouldQueue` interface
-- 3 retry attempts with 60-second backoff
-- Dispatches via database queue
-- Logs detailed sync statistics
+**Flow:** Filament UI → Dispatch Job → WorkflowSyncService → ZuoraService → Zuora REST API
 
 ---
 
@@ -568,8 +250,8 @@ CREATE TABLE workflows
     customer_id    BIGINT UNSIGNED NOT NULL,
     zuora_id       VARCHAR(255) NOT NULL UNIQUE,
     name           VARCHAR(255) NOT NULL,
-    description    LONGTEXT,
-    state          VARCHAR(100),
+    description    TEXT,
+    state          VARCHAR(255),
     created_on     TIMESTAMP,
     updated_on     TIMESTAMP,
     last_synced_at TIMESTAMP,
@@ -588,15 +270,15 @@ CREATE TABLE workflows
 ```sql
 CREATE TABLE customers
 (
-    id               BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-    name             VARCHAR(255) NOT NULL,
-    zuora_account_id VARCHAR(255) UNIQUE,
-    zuora_api_key    VARCHAR(255),
-    zuora_api_secret VARCHAR(255),
-    created_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    id            BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+    name          VARCHAR(255) NOT NULL,
+    client_id     VARCHAR(255) NOT NULL,
+    client_secret VARCHAR(255) NOT NULL,
+    base_url      VARCHAR(255) NOT NULL,
+    created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
-    INDEX            idx_name (name)
+    INDEX         idx_name (name)
 );
 ```
 
@@ -623,56 +305,15 @@ For [Redis](https://redis.io/) queue support, configure `QUEUE_CONNECTION=redis`
 
 ## API Integration
 
-### [Zuora REST API](https://knowledgecenter.zuora.com/Zuora_Central_Platform/API/Zuora_REST_API) Workflow Endpoints
+Uses [Zuora REST API](https://knowledgecenter.zuora.com/Zuora_Central_Platform/API/Zuora_REST_API) for workflow
+synchronization.
 
-See [Zuora API Documentation](https://knowledgecenter.zuora.com/Zuora_Central_Platform/API/Zuora_REST_API) for complete
-API reference.
+**Endpoints:**
 
-**List Workflows**
+- `GET /v1/workflows` - List workflows (paginated, default 50 per page)
+- `GET /v1/workflows/{id}/export` - Download workflow definition
 
-```http
-GET /v1/workflows
-Parameters:
-  - page (int, default: 1)
-  - page_length (int, default: 20, max: 50)
-  - name (string, optional)
-  - state (string, optional: Active/Inactive)
-  - ondemand_trigger (boolean, optional)
-  - scheduled_trigger (boolean, optional)
-  - callout_trigger (boolean, optional)
-```
-
-Reference: [Zuora Workflows API](https://knowledgecenter.zuora.com/Zuora_Central_Platform/API/Zuora_REST_API#/Workflows)
-
-**Sample Response**
-
-```json
-{
-  "data": [
-    {
-      "id": "wf_12345",
-      "name": "Subscription Renewal Workflow",
-      "state": "Active",
-      "created_on": "2025-01-01T00:00:00Z",
-      "updated_on": "2025-01-10T12:30:45Z"
-    }
-  ],
-  "pagination": {
-    "page": 1,
-    "page_length": 50,
-    "next_page": "https://rest.zuora.com/workflows?page=2&page_length=50"
-  }
-}
-```
-
-**Download Workflow**
-
-```http
-GET /v1/workflows/{workflowId}/definition
-Response: Binary YAML/JSON workflow definition
-```
-
-Reference: [Zuora Get Workflow Definition](https://knowledgecenter.zuora.com/Zuora_Central_Platform/API/Zuora_REST_API#/Workflows/get_workflows__id__definition)
+See [Zuora API Documentation](https://knowledgecenter.zuora.com/Zuora_Central_Platform/API/Zuora_REST_API) for details.
 
 ---
 
@@ -696,15 +337,15 @@ lando exec appserver tail -f storage/logs/laravel.log
 lando exec appserver grep -i "workflow" storage/logs/laravel.log
 ```
 
-### Queue Status
+### Queue Status (Database/Redis only)
 
-**Check queue health and process jobs**:
+**Check queue health and process jobs** (only when `QUEUE_CONNECTION=database` or `redis`):
 
 ```bash
 # Start queue worker
 lando artisan queue:work --verbose
 
-# In another terminal, check failed jobs
+# Check failed jobs
 lando artisan queue:failed
 
 # Retry specific failed job
@@ -713,6 +354,8 @@ lando artisan queue:retry {job-id}
 # Clear all failed jobs
 lando artisan queue:flush
 ```
+
+**Note:** With `QUEUE_CONNECTION=sync`, jobs execute immediately and queue commands are not needed.
 
 ### Database Access
 
@@ -732,113 +375,24 @@ SELECT * FROM failed_jobs;
 
 ### Common Issues
 
-#### 1. Queue Jobs Not Processing
+For troubleshooting common issues, check the logs:
 
 ```bash
-# Check if queue worker is running
-ps aux | grep "queue:work"
-
-# Start queue worker with verbose output
-lando artisan queue:work --verbose
+# View all logs
+lando logs -f
 
 # Check failed jobs
 lando artisan queue:failed
 
-# Retry all failed jobs
+# Retry failed jobs
 lando artisan queue:retry all
-
-# View logs for errors
-lando logs -f
 ```
 
-#### 2. Workflows Not Synchronizing
+**Common problems:**
 
-- **Verify Zuora credentials**:
-    - Go to **Customers** in the admin dashboard
-    - Check that Client ID, Client Secret, and Base URL are correct
-
-- **Check logs for errors**:
-  ```bash
-  lando logs -f | grep -i "error\|zuora"
-  ```
-
-- **Run manual sync with debug output**:
-  ```bash
-  lando artisan app:sync-workflows --customer="Name" -vvv
-  ```
-
-- **Verify network connectivity** to `api.zuora.com`:
-  ```bash
-  lando exec appserver curl -I https://api.zuora.com/v1
-  ```
-
-#### 3. Pagination Issues
-
-- Zuora API max `page_length` is 50 (application default)
-- Check API response for `next_page` in pagination object
-- Monitor logs for pagination cursor errors:
-  ```bash
-  lando logs -f | grep -i "pagination\|page"
-  ```
-
-#### 4. Token Expiration Issues
-
-- Application caches OAuth tokens for 1 hour
-- Automatic token refresh occurs on expiration
-- Check logs for token-related messages:
-  ```bash
-  lando logs -f | grep -i "token"
-  ```
-
-#### 5. Lando Startup Issues
-
-```bash
-# Restart Lando services
-lando restart
-
-# Rebuild containers
-lando destroy && lando start
-
-# Check Lando status
-lando info
-
-# View Docker container status
-docker ps
-```
-
-#### 6. Database Connection Issues
-
-```bash
-# Test database connection
-lando mariadb -e "SELECT 1;"
-
-# View current database
-lando mariadb -e "USE zuora_workflows; SHOW TABLES;"
-
-# Check database URL in .env
-lando exec appserver cat .env | grep DB_
-```
-
----
-
-## Performance
-
-### Benchmark Results
-
-| Operation                    | Timeout   | Notes                                     |
-|------------------------------|-----------|-------------------------------------------|
-| Query workflows (DB)         | < 100ms   | Single customer, full table scan          |
-| Sync 50 workflows (API + DB) | 300-600ms | Includes API calls and DB inserts/updates |
-| Load dashboard UI            | < 1s      | Paginated table with filters              |
-| Token generation             | 200-400ms | Cached for 1 hour after first generation  |
-
-### Optimization Tips
-
-1. **Use Queue Worker**: Always process syncs via background jobs, not synchronously
-2. **Database Indexes**: Ensure indexes on `customer_id` and `zuora_id` columns
-3. **API Rate Limiting**: Monitor Zuora API rate limits; adjust scheduler frequency if needed
-4. **Cache Tokens**: 1-hour cache reduces authentication overhead
-5. **Batch Operations**: Use `all()` with `each()` for multi-customer syncs
+- **Queue not processing**: Start queue worker with `lando artisan queue:work`
+- **Workflows not syncing**: Verify Zuora credentials in customer settings
+- **Connection issues**: Check logs with `lando logs -f | grep -i "error"`
 
 ---
 
@@ -863,28 +417,15 @@ lando artisan test --coverage
 lando artisan test --parallel
 ```
 
-### Manual Installation Tests
-
-```bash
-# Run all tests
-php artisan test
-
-# Run specific test file
-php artisan test tests/Feature/SyncWorkflowsTest.php
-
-# With coverage
-php artisan test --coverage
-```
-
 ### Test Structure
 
 ```
 tests/
 ├── Feature/
+│   ├── ExampleTest.php
 │   └── SyncWorkflowsTest.php      (Integration tests)
 ├── Unit/
-│   ├── ZuoraServiceTest.php       (Service tests)
-│   └── WorkflowSyncServiceTest.php (Service tests)
+│   └── ExampleTest.php
 └── TestCase.php                    (Base test class)
 ```
 
