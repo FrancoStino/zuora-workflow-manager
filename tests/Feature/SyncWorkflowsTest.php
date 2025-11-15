@@ -13,6 +13,8 @@ use Tests\TestCase;
 
 class SyncWorkflowsTest extends TestCase
 {
+    private const WORKFLOW_NAME_1 = 'Workflow 1';
+
     private MockInterface $zuoraServiceMock;
 
     protected function setUp(): void
@@ -40,7 +42,7 @@ class SyncWorkflowsTest extends TestCase
                 'data' => [
                     [
                         'id' => 'wf-001',
-                        'name' => 'Workflow 1',
+                        'name' => self::WORKFLOW_NAME_1,
                         'description' => 'Test workflow',
                         'state' => 'Active',
                         'createdAt' => now(),
@@ -80,7 +82,7 @@ class SyncWorkflowsTest extends TestCase
             ->with($customer->client_id, $customer->client_secret, $customer->base_url, 1, 50)
             ->andReturn([
                 'data' => [
-                    ['id' => 'wf-001', 'name' => 'Workflow 1', 'state' => 'Active', 'createdAt' => now(), 'updatedAt' => now()],
+                    ['id' => 'wf-001', 'name' => self::WORKFLOW_NAME_1, 'state' => 'Active', 'createdAt' => now(), 'updatedAt' => now()],
                 ],
                 'pagination' => ['hasMore' => true],
             ]);
@@ -156,7 +158,7 @@ class SyncWorkflowsTest extends TestCase
             ->once()
             ->andReturn([
                 'data' => [
-                    ['id' => 'wf-001', 'name' => 'Workflow 1', 'state' => 'Active', 'createdAt' => now(), 'updatedAt' => now()],
+                    ['id' => 'wf-001', 'name' => self::WORKFLOW_NAME_1, 'state' => 'Active', 'createdAt' => now(), 'updatedAt' => now()],
                 ],
                 'pagination' => ['hasMore' => false],
             ]);

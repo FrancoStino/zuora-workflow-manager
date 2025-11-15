@@ -36,13 +36,13 @@ class CheckSetupCompleted
     private function shouldRedirectToSetup(): bool
     {
         try {
-            if (!Schema::hasTable('setup_completed')) {
+            if (! Schema::hasTable('setup_completed')) {
                 return false;
             }
 
             $setupCompleted = DB::table('setup_completed')->first();
 
-            return !$setupCompleted || !$setupCompleted->completed;
+            return ! $setupCompleted || ! $setupCompleted->completed;
         } catch (\Exception) {
             return false;
         }

@@ -4,7 +4,6 @@ namespace App\Console\Commands;
 
 use App\Models\Customer;
 use App\Services\WorkflowSyncService;
-use App\Services\ZuoraService;
 use Exception;
 use Illuminate\Console\Command;
 
@@ -21,20 +20,27 @@ class SyncWorkflows extends Command
                 return $this->syncAllCustomers($syncService);
             }
 
-            $customerName = $this->option('customer');
-            if (!$customerName) {
-                $this->error('Specify --customer=NAME or use --all');
-                return 1;
-            }
-
-            $customer = Customer::where('name', $customerName)->firstOrFail();
-            $stats = $syncService->syncCustomerWorkflows($customer);
-            $this->displayStats($stats, $customer->name);
+            return $this->syncSingleCustomer($syncService);
 
         } catch (Exception $e) {
             $this->error('Error syncing workflows: '.$e->getMessage());
+
             return 1;
         }
+    }
+
+    private function syncSingleCustomer(WorkflowSyncService $syncService): int
+    {
+        $customerName = $this->option('customer');
+        if (! $customerName) {
+            $this->error('Specify --customer=NAME or use --all');
+
+            return 1;
+        }
+
+        $customer = Customer::where('name', $customerName)->firstOrFail();
+        $stats = $syncService->syncCustomerWorkflows($customer);
+        $this->displayStats($stats, $customer->name);
 
         return 0;
     }
@@ -45,6 +51,7 @@ class SyncWorkflows extends Command
 
         if ($customers->isEmpty()) {
             $this->warn('No customers found.');
+
             return 0;
         }
 
@@ -67,7 +74,7 @@ class SyncWorkflows extends Command
         $this->line("  Deleted: {$stats['deleted']}");
         $this->line("  Total processed: {$stats['total']}");
 
-        if (!empty($stats['errors'])) {
+        if (! empty($stats['errors'])) {
             foreach ($stats['errors'] as $error) {
                 $this->error("  Error: {$error}");
             }

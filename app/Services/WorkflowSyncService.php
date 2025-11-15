@@ -50,7 +50,7 @@ class WorkflowSyncService
                 // Salva/aggiorna ogni workflow e raccogli gli ID Zuora
                 foreach ($workflows as $workflowData) {
                     $zuoraId = $workflowData['id'] ?? null;
-                    if (!$zuoraId) {
+                    if (! $zuoraId) {
                         continue;
                     }
 
@@ -96,7 +96,7 @@ class WorkflowSyncService
         $zuoraId = $workflowData['id'];
 
         $workflow = Workflow::firstOrNew(['zuora_id' => $zuoraId, 'customer_id' => $customer->id]);
-        $isNew = !$workflow->exists;
+        $isNew = ! $workflow->exists;
 
         $workflow->fill([
             'customer_id' => $customer->id,
@@ -111,7 +111,7 @@ class WorkflowSyncService
 
         return [
             'created' => $isNew,
-            'updated' => !$isNew,
+            'updated' => ! $isNew,
         ];
     }
 

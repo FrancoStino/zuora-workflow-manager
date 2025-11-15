@@ -20,7 +20,7 @@ class RequireAuthAfterSetup
         }
 
         // Require authentication for all other routes
-        if (!auth()->check()) {
+        if (! auth()->check()) {
             return redirect('/login');
         }
 
