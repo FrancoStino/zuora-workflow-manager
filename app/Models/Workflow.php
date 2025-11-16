@@ -7,25 +7,25 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Workflow extends Model
 {
-	protected $fillable = [
-		'customer_id',
-		'zuora_id',
-		'name',
-		'description',
-		'state',
-		'created_on',
-		'updated_on',
-		'last_synced_at',
-	];
+    protected $fillable = [
+        'customer_id',
+        'zuora_id',
+        'name',
+        'description',
+        'state',
+        'created_on',
+        'updated_on',
+        'last_synced_at',
+    ];
 
-	protected $casts = [
-		'created_on'     => 'datetime',
-		'updated_on'     => 'datetime',
-		'last_synced_at' => 'datetime',
-	];
+    protected $casts = [
+        'created_on' => 'datetime',
+        'updated_on' => 'datetime',
+        'last_synced_at' => 'datetime',
+    ];
 
-	public function customer () : BelongsTo
-	{
-		return $this -> belongsTo ( Customer::class );
-	}
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Customer::class);
+    }
 }
