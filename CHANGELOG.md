@@ -1,3 +1,18 @@
+# [0.7.1](https://github.com/FrancoStino/zuora-workflows/compare/v0.7.0...v0.7.1) (2025-11-16)
+
+
+### Features
+
+* **ci:** configure queue worker with Supervisor ([26d844d](https://github.com/FrancoStino/zuora-workflows/commit/26d844d265af133c3a2afbd7612712b775360f29))
+* **css:** add basic styling for filament components ([4dadde9](https://github.com/FrancoStino/zuora-workflows/commit/4dadde949f9515c96a8b069dacc65e0d7747f784))
+* **customer-form:** make base URL required ([7bab04c](https://github.com/FrancoStino/zuora-workflows/commit/7bab04cd5139f6b62dddebc8cf5a62775be64434))
+* **deps:** switch from npm to yarn for package management ([2a432a8](https://github.com/FrancoStino/zuora-workflows/commit/2a432a8a05fb10a5dccc71dc35e4a26d51d3286e))
+* **readme:** update installation and usage instructions ([dd4bcc5](https://github.com/FrancoStino/zuora-workflows/commit/dd4bcc5bd7629fa207b75a2f72ac92072cda9379))
+* **sync:** Implement Zuora workflow synchronization ([7371838](https://github.com/FrancoStino/zuora-workflows/commit/7371838f72d32a760489771ebd147cc0e2dcdc66))
+* **workflow:** add new workflow creation endpoint ([c2b0f7c](https://github.com/FrancoStino/zuora-workflows/commit/c2b0f7c8c065a6f2f3027dbc3e7d6b09bc39c6d9)), closes [#123](https://github.com/FrancoStino/zuora-workflows/issues/123)
+
+
+
 # [0.7.0](https://github.com/FrancoStino/zuora-workflows/compare/v0.6.0...v0.7.0) (2025-11-14)
 
 
@@ -33,7 +48,7 @@
 
 
 
-# [0.5.0](https://github.com/FrancoStino/zuora-workflows/compare/v1.4.5...v0.5.0) (2025-11-12)
+# [0.5.0](https://github.com/FrancoStino/zuora-workflows/compare/v0.4.5...v0.5.0) (2025-11-12)
 
 
 ### Features
@@ -47,7 +62,7 @@
 
 
 
-## [1.4.5](https://github.com/FrancoStino/zuora-workflows/compare/v0.4.5...v1.4.5) (2025-11-11)
+## [0.4.5](https://github.com/FrancoStino/zuora-workflows/compare/v0.4.4...v0.4.5) (2025-11-11)
 
 
 ### Bug Fixes
