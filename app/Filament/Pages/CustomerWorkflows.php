@@ -98,6 +98,14 @@ class CustomerWorkflows extends Page implements HasTable
                     ->multiple(),
             ])
             ->recordActions([
+                Action::make('view')
+                    ->label('View Details')
+                    ->icon('heroicon-o-eye')
+                    ->color('primary')
+                    ->url(fn (Workflow $record) => ViewWorkflow::getUrl([
+                        'customer' => $this->customer,
+                        'workflow' => $record->zuora_id,
+                    ])),
                 Action::make('download')
                     ->label('Download')
                     ->icon('heroicon-o-arrow-down-tray')

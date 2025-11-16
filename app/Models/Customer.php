@@ -9,13 +9,13 @@ class Customer extends Model
 {
     protected $fillable = [
         'name',
-        'client_id',
-        'client_secret',
-        'base_url',
+        'zuora_client_id',
+        'zuora_client_secret',
+        'zuora_base_url',
     ];
 
     protected $hidden = [
-        'client_secret',
+        'zuora_client_secret',
     ];
 
     public function workflows(): HasMany
