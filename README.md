@@ -4,10 +4,11 @@
 
 <figure>
   <img src="public/images/zuora-logo-readme.png" alt="Zuora Workflows Logo" width="50%">
-
 </figure>
 
-_[![PHP Version](https://img.shields.io/badge/PHP-8.4+-777BB4?style=for-the-badge&logo=php&logoColor=white)](https://www.php.net/)
+<br>
+
+[![PHP Version](https://img.shields.io/badge/PHP-8.4+-777BB4?style=for-the-badge&logo=php&logoColor=white)](https://www.php.net/)
 [![Laravel Version](https://img.shields.io/badge/Laravel-12.0-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)](https://laravel.com)
 [![Filament](https://custom-icon-badges.demolab.com/badge/Filament-4.2-df4090?style=for-the-badge&logo=filament&logoColor=white)](https://filamentphp.com/)
 [![Lando](https://custom-icon-badges.demolab.com/badge/Lando-DEV_Environment-df4090?style=for-the-badge&logo=lando&logoColor=white)](https://lando.dev/)
@@ -16,7 +17,7 @@ _[![PHP Version](https://img.shields.io/badge/PHP-8.4+-777BB4?style=for-the-badg
 [![Nginx](https://img.shields.io/badge/Nginx-Latest-009639?style=for-the-badge&logo=nginx&logoColor=white)](https://nginx.org/)
 [![License](https://img.shields.io/badge/License-MIT-4CAF50?style=for-the-badge&logoColor=white)](LICENSE)
 [![Latest Release](https://img.shields.io/badge/v0.6.0-2196F3?style=for-the-badge&logoColor=white)](https://github.com/FrancoStino/zuora-workflows/releases)
-[![Status](https://img.shields.io/badge/Status-Active-00BCD4?style=for-the-badge&logoColor=white)](https://github.com/FrancoStino/zuora-workflows)_
+[![Status](https://img.shields.io/badge/Status-Active-00BCD4?style=for-the-badge&logoColor=white)](https://github.com/FrancoStino/zuora-workflows)
 
 </div>
 
