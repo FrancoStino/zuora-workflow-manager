@@ -1,4 +1,20 @@
-# [0.7.1](https://github.com/FrancoStino/zuora-workflows/compare/v0.7.0...v0.7.1) (2025-11-16)
+# [1.0.0](https://github.com/FrancoStino/zuora-workflows/compare/v0.7.1...v1.0.0) (2025-11-17)
+
+
+### Features
+
+* **customer, workflow:** enhance workflow viewing and add phiki dependency ([99c3deb](https://github.com/FrancoStino/zuora-workflows/commit/99c3debf864e6ddf3a976139cc075bf049c87ee8))
+* **filament:** Enhance workflow view page ([596ee43](https://github.com/FrancoStino/zuora-workflows/commit/596ee4363bf1f58acd836809078d40717955ab67))
+* **filament:** improve workflow JSON widget display ([e1a5aeb](https://github.com/FrancoStino/zuora-workflows/commit/e1a5aeb5e9fda7f0109dce8e5418f9a24af16fd9))
+* **global-search:** integrate global search modal ([230fbb2](https://github.com/FrancoStino/zuora-workflows/commit/230fbb238f0cd27b755af29ed1b9837622f94ef8))
+* **view-workflow:** enhance workflow details display ([48c383d](https://github.com/FrancoStino/zuora-workflows/commit/48c383d70417e967c74a44663123d9b6a89ea574))
+* **view-workflow:** refactor JSON display into async widget ([31e1165](https://github.com/FrancoStino/zuora-workflows/commit/31e1165445427292f1b71151d3772c4404c10f5d))
+* **workflow-json-widget:** remove max-h from overflow div ([7ae23c1](https://github.com/FrancoStino/zuora-workflows/commit/7ae23c1cb273d65bd2a8ca08965a859c31a7332d))
+* **workflow:** enhance workflow view page ([8af8e43](https://github.com/FrancoStino/zuora-workflows/commit/8af8e43b2613189bcddfa096e939a40a662ed677))
+
+
+
+## [0.7.1](https://github.com/FrancoStino/zuora-workflows/compare/v0.7.0...v0.7.1) (2025-11-16)
 
 
 ### Features
