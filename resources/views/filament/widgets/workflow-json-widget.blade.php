@@ -18,7 +18,7 @@
                     </x-filament::button>
                 </div>
 
-                <div class="overflow-auto max-h-[600px] rounded-lg border border-gray-300 dark:border-gray-700">
+                <div class="overflow-auto rounded-lg border border-gray-300 dark:border-gray-700">
                     <pre class="bg-gray-950 text-gray-100 p-4 text-xs"><code
                                 class="language-json">{{ $json }}</code></pre>
                 </div>
