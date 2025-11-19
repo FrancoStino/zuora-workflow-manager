@@ -115,10 +115,10 @@ class Setup extends Page implements HasForms
                                 ->splitKeys(['Tab', ' ', ','])
                                 ->trim()
                                 ->rules(['array', new ValidateDomain])
-                                ->required()
+                                ->required(fn (Get $get): bool => $get('allowed_domains_checkbox'))
                                 ->prefix('https://(www.)?')
                                 ->suffixIcon(Heroicon::GlobeAlt)
-                                ->visible(fn (Get $get): bool => $get('allowed_domains_checkbox') == true)
+                                ->visible(fn (Get $get): bool => $get('allowed_domains_checkbox'))
                                 ->suggestions([
                                     // TODO: Inserire il dominio attuale dinamicamente (secondo e primo livello)
 
