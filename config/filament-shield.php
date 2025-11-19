@@ -1,6 +1,5 @@
 <?php
 
-use App\Filament\Pages\CustomerWorkflows;
 use BezhanSalleh\FilamentShield\Resources\Roles\RoleResource;
 use Filament\Pages\Dashboard;
 use Filament\Widgets\AccountWidget;
@@ -198,7 +197,6 @@ return [
         'prefix' => 'view',
         'exclude' => [
             Dashboard::class,
-            CustomerWorkflows::class,
         ],
     ],
 
