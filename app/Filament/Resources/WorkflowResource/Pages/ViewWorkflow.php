@@ -1,87 +1,32 @@
 <?php
 
-namespace App\Filament\Pages;
+namespace App\Filament\Resources\WorkflowResource\Pages;
 
-use App\Filament\Resources\Actions\PreviousAction;
+use App\Filament\Resources\WorkflowResource;
 use App\Filament\Widgets\WorkflowJsonWidget;
-use App\Models\Customer;
-use App\Models\Workflow;
 use Filament\Actions\Action;
 use Filament\Infolists\Components\TextEntry;
-use Filament\Pages\Page;
+use Filament\Resources\Pages\ViewRecord;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Concerns\InteractsWithSchemas;
 use Filament\Schemas\Schema;
 use Filament\Support\Enums\FontWeight;
+use Illuminate\Contracts\Support\Htmlable;
 
-class ViewWorkflow extends Page
+class ViewWorkflow extends ViewRecord
 {
     use InteractsWithSchemas;
 
-    private const DATE_TIME_FORMAT = 'Y-m-d H:i:s';
+    protected static string $resource = WorkflowResource::class;
 
-    protected static ?string $slug = 'workflows/{customer}/{workflow}';
-
-    protected static bool $shouldRegisterNavigation = false;
-
-    public string $customer;
-
-    public string $workflow;
-
-    public ?Customer $customerModel = null;
-
-    public ?Workflow $workflowModel = null;
-
-    protected string $view = 'filament.pages.view-workflow';
-
-    public function mount(string $customer, string $workflow): void
-    {
-        $this->customer = $customer;
-        $this->workflow = $workflow;
-
-        $this->customerModel = Customer::where('name', $customer)->first();
-
-        if (! $this->customerModel) {
-            abort(404, 'Customer not found');
-        }
-
-        $this->workflowModel = Workflow::with('customer')
-            ->where('customer_id', $this->customerModel->id)
-            ->where('zuora_id', $workflow)
-            ->first();
-
-        if (! $this->workflowModel) {
-            abort(404, 'Workflow not found');
-        }
-    }
-
-    public function getTitle(): string
-    {
-        return $this->workflowModel
-            ? "Workflow - {$this->workflowModel->name}"
-            : 'Workflow';
-    }
-
-    public function getHeading(): string
-    {
-        return $this->workflowModel
-            ? $this->workflowModel->name
-            : 'Workflow';
-    }
-
-    public function getSubheading(): ?string
-    {
-        return $this->customer
-            ? "Customer: {$this->customer}"
-            : null;
-    }
+    protected string $view = 'filament.resources.workflow-resource.pages.view-workflow';
 
     public function workflowInfolist(Schema $schema): Schema
     {
         return $schema
-            ->record($this->workflowModel)
-            ->components([
+            ->record($this->record)
+            ->schema([
                 Section::make('General Information')
                     ->description('Basic details about the workflow')
                     ->icon('heroicon-o-information-circle')
@@ -178,36 +123,36 @@ class ViewWorkflow extends Page
         return (int) abs(now()->diffInDays($lastSyncedAt));
     }
 
+    public function getSubheading(): ?string
+    {
+        return "Customer: {$this->record->customer->name}";
+    }
+
+    public function getTitle(): Htmlable|string
+    {
+        return $this->record->name;
+    }
+
     protected function getHeaderActions(): array
     {
-        if (! $this->workflowModel) {
-            return [];
-        }
-
         return [
             Action::make('download')
                 ->label('Download Workflow')
                 ->icon('heroicon-o-arrow-down-tray')
                 ->color('primary')
                 ->url(route('workflow.download', [
-                    'customer' => $this->customer,
-                    'workflowId' => $this->workflowModel->zuora_id,
-                    'name' => $this->workflowModel->name,
+                    'customer' => $this->record->customer->name,
+                    'workflowId' => $this->record->zuora_id,
+                    'name' => $this->record->name,
                 ])),
-
-            PreviousAction::make(),
         ];
     }
 
     protected function getFooterWidgets(): array
     {
-        if (! $this->workflowModel) {
-            return [];
-        }
-
         return [
             WorkflowJsonWidget::make([
-                'workflow' => $this->workflowModel,
+                'workflow' => $this->record,
             ]),
         ];
     }

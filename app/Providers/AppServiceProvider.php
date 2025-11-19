@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Listeners\AssignWorkflowRoleOnSocialiteRegistration;
 use App\Listeners\UpdateUserAvatarOnSocialiteLogin;
 use DutchCodingCompany\FilamentSocialite\Events\Login;
 use DutchCodingCompany\FilamentSocialite\Events\Registered;
@@ -25,5 +26,6 @@ class AppServiceProvider extends ServiceProvider
     {
         Event::listen(Login::class, UpdateUserAvatarOnSocialiteLogin::class);
         Event::listen(Registered::class, UpdateUserAvatarOnSocialiteLogin::class);
+        Event::listen(Registered::class, AssignWorkflowRoleOnSocialiteRegistration::class);
     }
 }

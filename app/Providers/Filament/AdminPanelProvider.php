@@ -4,7 +4,6 @@ namespace App\Providers\Filament;
 
 use App\Filament\Pages\Auth\Login;
 use App\Filament\Pages\Setup;
-use App\Filament\Pages\WorkflowDashboard;
 use App\Http\Middleware\CheckSetupCompleted;
 use App\Http\Middleware\RequireAuthAfterSetup;
 use App\Models\AppSetting;
@@ -50,7 +49,6 @@ class AdminPanelProvider extends PanelProvider
             ->discoverPages(in : app_path('Filament/Pages'), for : 'App\Filament\Pages')
             ->pages([
                 Dashboard::class,
-                WorkflowDashboard::class,
                 Setup::class,
             ])
             ->discoverWidgets(in : app_path('Filament/Widgets'), for : 'App\Filament\Widgets')

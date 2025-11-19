@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Schema;
 
 class AppSetting extends Model
 {
@@ -11,10 +12,22 @@ class AppSetting extends Model
     protected $casts = ['value' => 'json'];
 
     /**
+     * Check if app_settings table exists
+     */
+    private static function tableExists(): bool
+    {
+        return Schema::hasTable('app_settings');
+    }
+
+    /**
      * Get a setting value by key
      */
     public static function get(string $key, $default = null)
     {
+        if (! self::tableExists()) {
+            return $default;
+        }
+
         return self::where('key', $key)->value('value') ?? $default;
     }
 
@@ -23,6 +36,10 @@ class AppSetting extends Model
      */
     public static function set(string $key, $value): void
     {
+        if (! self::tableExists()) {
+            return;
+        }
+
         self::updateOrCreate(['key' => $key], ['value' => $value]);
     }
 

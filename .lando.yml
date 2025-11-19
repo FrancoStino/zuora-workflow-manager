@@ -10,10 +10,19 @@ config:
   cache: redis
   xdebug: true
 
+services:
+  phpmyadmin:
+    type: phpmyadmin
+    hosts:
+      - database
+
+proxy:
+  phpmyadmin:
+    - phpmyadmin.zuora-workflows.lndo.site
+
 events:
   post-start:
     - appserver: composer install
-    - appserver: composer update
 
 tooling:
   pint:

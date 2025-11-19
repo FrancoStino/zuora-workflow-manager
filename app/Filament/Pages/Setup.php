@@ -9,6 +9,7 @@ use App\Rules\ValidateDomain;
 use BackedEnum;
 use Exception;
 use Filament\Actions\Action;
+use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\TextInput;
@@ -17,6 +18,7 @@ use Filament\Forms\Contracts\HasForms;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Wizard;
 use Filament\Schemas\Components\Wizard\Step;
 use Filament\Schemas\Schema;
@@ -102,6 +104,9 @@ class Setup extends Page implements HasForms
                         ->schema([
                             Placeholder::make('oauth_info')
                                 ->content(new HtmlString('Configure which email domains are allowed to login via Google OAuth. Leave empty to allow all domains.')),
+                            Checkbox::make('allowed_domains_checkbox')
+                                ->label('Do you want configure allowed domain?')
+                                ->live(),
                             TagsInput::make('oauth_domains')
                                 ->label('Allowed Email Domains')
                                 ->placeholder('example.com, company.com')
@@ -110,9 +115,10 @@ class Setup extends Page implements HasForms
                                 ->splitKeys(['Tab', ' ', ','])
                                 ->trim()
                                 ->rules(['array', new ValidateDomain])
-                                ->required()
+                                ->required(fn (Get $get): bool => $get('allowed_domains_checkbox'))
                                 ->prefix('https://(www.)?')
                                 ->suffixIcon(Heroicon::GlobeAlt)
+                                ->visible(fn (Get $get): bool => $get('allowed_domains_checkbox'))
                                 ->suggestions([
                                     // TODO: Inserire il dominio attuale dinamicamente (secondo e primo livello)
 
