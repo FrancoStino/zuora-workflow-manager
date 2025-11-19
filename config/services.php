@@ -21,7 +21,7 @@ return [
     // OAuth Allowed Domains (comma separated, leave empty to allow all domains)
     // Example: OAUTH_ALLOWED_DOMAINS=example.com,anotherdomain.com
     'oauth' => [
-        'allowed_domains' => ['gmail.com', 'sideagroup.com'],
+        'allowed_domains' => [],
     ],
 
     'resend' => [
