@@ -161,7 +161,10 @@ jobs:
             
             # Optimize application
             echo "Optimizing application..."
-            php artisan optimize
+            php artisan config:cache
+            php artisan route:cache
+            php artisan view:cache
+            php artisan filament:optimize
             
             # Show final status
             echo "Deployment completed successfully!"
