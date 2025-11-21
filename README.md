@@ -14,7 +14,7 @@
 [![Redis](https://img.shields.io/badge/Redis-7.0-DC382D?style=for-the-badge&logo=redis&logoColor=white)](https://redis.io/)
 [![Nginx](https://img.shields.io/badge/Nginx-Latest-009639?style=for-the-badge&logo=nginx&logoColor=white)](https://nginx.org/)
 [![License](https://img.shields.io/badge/License-MIT-4CAF50?style=for-the-badge&logoColor=white)](LICENSE)
-[![Latest Release](https://img.shields.io/badge/v0.6.0-2196F3?style=for-the-badge&logoColor=white)](https://github.com/FrancoStino/zuora-workflows/releases)
+[![Latest Release](https://img.shields.io/github/v/release/FrancoStino/zuora-workflows?style=for-the-badge&color=2196F3&logoColor=white)](https://github.com/FrancoStino/zuora-workflows/releases)
 [![Status](https://img.shields.io/badge/Status-Active-00BCD4?style=for-the-badge&logoColor=white)](https://github.com/FrancoStino/zuora-workflows)
 
 </div>
