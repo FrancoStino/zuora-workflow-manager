@@ -8,6 +8,7 @@ use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Database\Eloquent\Model;
+use UnitEnum;
 
 class WorkflowResource extends Resource
 {
@@ -16,6 +17,8 @@ class WorkflowResource extends Resource
     protected static string|null|BackedEnum $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     protected static ?string $navigationLabel = 'Workflows';
+
+    protected static string|UnitEnum|null $navigationGroup = 'Zuora Management';
 
     protected static ?int $navigationSort = 2;
 
