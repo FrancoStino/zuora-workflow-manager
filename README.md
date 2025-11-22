@@ -45,13 +45,12 @@ workflow management.
 
 ## Requirements
 
-| Requirement                       | Version | Link                                  |
-|-----------------------------------|---------|---------------------------------------|
-| [PHP](https://www.php.net/)       | 8.4+    | [php.net](https://www.php.net/)       |
-| [Laravel](https://laravel.com)    | 12.0+   | [laravel.com](https://laravel.com)    |
-| [Lando](https://lando.dev)        | Latest  | [lando.dev](https://lando.dev)        |
-| [Docker](https://www.docker.com/) | 20.0+   | [docker.com](https://www.docker.com/) |
-| [Node.js](https://nodejs.org/)    | 18.0+   | [nodejs.org](https://nodejs.org/)     |
+| Requirement                       | Version    | Link                                  |
+|-----------------------------------|------------|---------------------------------------|
+| [Lando](https://lando.dev)        | Latest     | [lando.dev](https://lando.dev)        |
+| [Docker](https://www.docker.com/) | 20.0+      | [docker.com](https://www.docker.com/) |
+| [Node.js](https://nodejs.org/)    | 20.19+     | [nodejs.org](https://nodejs.org/)     |
+| [Yarn](https://yarnpkg.com/)      | Latest     | [yarnpkg.com](https://yarnpkg.com/)   |
 
 **Lando Stack:** PHP 8.4, MariaDB 11.4, Nginx, Redis 7.0, Xdebug
 
@@ -134,13 +133,6 @@ lando mariadb                        # Database access
 ```
 
 **URL:** `https://zuora-workflows.lndo.site`
-
----
-
-### Option B: Manual Installation
-
-For non-Lando setup, follow standard [Laravel installation](https://laravel.com/docs/installation). The application uses
-standard Laravel conventions with MariaDB/MySQL and requires Node.js for frontend assets.
 
 ---
 
