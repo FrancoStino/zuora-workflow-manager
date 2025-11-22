@@ -1,3 +1,20 @@
+# [1.1.0](https://github.com/FrancoStino/zuora-workflows/compare/v1.0.0...v1.1.0) (2025-11-22)
+
+
+### Features
+
+* Add Filament cache optimization to deployment ([c791ef7](https://github.com/FrancoStino/zuora-workflows/commit/c791ef7df60c99dcac493be14f4638d49114adc8))
+* **auth:** Assign 'workflow_user' role and permissions on socialite registration ([a434320](https://github.com/FrancoStino/zuora-workflows/commit/a434320c4ba6b2c37e1e6733e3e0947b85e72aac))
+* **database:** Streamline permission table creation ([24bbcb4](https://github.com/FrancoStino/zuora-workflows/commit/24bbcb4786e4a0dc8b05aa9e3bb78974c060517e))
+* **lando:** Add phpmyadmin service and update workflow resource ([9e5a2c4](https://github.com/FrancoStino/zuora-workflows/commit/9e5a2c4bf99e16a0ae6f09fabc2d3aba8d84e2a1))
+* **listeners:** assign workflow role on socialite registration ([4fc1ec5](https://github.com/FrancoStino/zuora-workflows/commit/4fc1ec53a716c67ad9c6f36297454106d75c1958))
+* make release badge dynamic ([34d00b6](https://github.com/FrancoStino/zuora-workflows/commit/34d00b620aba98c10ecaa90428863434939bb89d))
+* **security:** Update supported versions in SECURITY.md ([16411ab](https://github.com/FrancoStino/zuora-workflows/commit/16411abdee88d5064fda501dfec119f2bf5b4620))
+* **setup:** add option to configure allowed OAuth domains ([ced5539](https://github.com/FrancoStino/zuora-workflows/commit/ced5539696d219c0ca65900d533130aa5254f65b))
+* **setup:** Conditionally require and show domain settings ([288fbe6](https://github.com/FrancoStino/zuora-workflows/commit/288fbe635c93a53c59074551fe7152a9956f0bf3))
+
+
+
 # [1.0.0](https://github.com/FrancoStino/zuora-workflows/compare/v0.7.1...v1.0.0) (2025-11-17)
 
 
