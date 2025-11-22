@@ -15,10 +15,8 @@ class UsersTable
         return $table
             ->columns([
                 TextColumn::make('name')->searchable(),
+                TextColumn::make('surname')->searchable(),
                 TextColumn::make('email')->searchable(),
-            ])
-            ->filters([
-                //
             ])
             ->recordActions([
                 EditAction::make(),
