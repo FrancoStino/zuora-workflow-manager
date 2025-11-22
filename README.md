@@ -14,7 +14,7 @@
 [![Redis](https://img.shields.io/badge/Redis-7.0-DC382D?style=for-the-badge&logo=redis&logoColor=white)](https://redis.io/)
 [![Nginx](https://img.shields.io/badge/Nginx-Latest-009639?style=for-the-badge&logo=nginx&logoColor=white)](https://nginx.org/)
 [![License](https://img.shields.io/badge/License-MIT-4CAF50?style=for-the-badge&logoColor=white)](LICENSE)
-[![Latest Release](https://img.shields.io/badge/v0.6.0-2196F3?style=for-the-badge&logoColor=white)](https://github.com/FrancoStino/zuora-workflows/releases)
+[![Latest Release](https://img.shields.io/github/v/release/FrancoStino/zuora-workflows?style=for-the-badge&color=2196F3&logoColor=white)](https://github.com/FrancoStino/zuora-workflows/releases)
 
 </div>
 
@@ -44,12 +44,12 @@ workflow management.
 
 ## Requirements
 
-| Requirement                       | Version | Link                                  |
-|-----------------------------------|---------|---------------------------------------|
-| [Lando](https://lando.dev)        | Latest  | [lando.dev](https://lando.dev)        |
-| [Docker](https://www.docker.com/) | 20.0+   | [docker.com](https://www.docker.com/) |
-| [Node.js](https://nodejs.org/)    | 20.19+  | [nodejs.org](https://nodejs.org/)     |
-| [Yarn](https://yarnpkg.com/)      | Latest  | [yarnpkg.com](https://yarnpkg.com/)   |
+| Requirement                       | Version    | Link                                  |
+|-----------------------------------|------------|---------------------------------------|
+| [Lando](https://lando.dev)        | Latest     | [lando.dev](https://lando.dev)        |
+| [Docker](https://www.docker.com/) | 20.0+      | [docker.com](https://www.docker.com/) |
+| [Node.js](https://nodejs.org/)    | 20.19+     | [nodejs.org](https://nodejs.org/)     |
+| [Yarn](https://yarnpkg.com/)      | Latest     | [yarnpkg.com](https://yarnpkg.com/)   |
 
 **Lando Stack:** PHP 8.4, MariaDB 11.4, Nginx, Redis 7.0, Xdebug
 
@@ -443,19 +443,16 @@ For security vulnerabilities, please see [SECURITY.md](SECURITY.md) for responsi
 
 ## Deployment
 
-For production deployment instructions, including queue worker setup for shared hosting environments, see
-the [Deployment Guide](docs/DEPLOYMENT.md).
+For production deployment instructions, including queue worker setup for shared hosting environments, see the [Deployment Guide](docs/DEPLOYMENT.md).
 
 ### Quick Setup Options:
 
 **Option A - Sync Queue (Simplest for Shared Hosting):**
-
 1. Deploy using GitHub Actions workflow
 2. Set `QUEUE_CONNECTION=sync` in your `.env` file
 3. Jobs execute immediately - no additional configuration needed!
 
 **Option B - Database Queue with Cron (For Background Processing):**
-
 1. Deploy using GitHub Actions workflow
 2. Set `QUEUE_CONNECTION=database` in your `.env` file
 3. Set up a cron job: `* * * * * cd /path/to/app && php artisan schedule:run >> /dev/null 2>&1`
