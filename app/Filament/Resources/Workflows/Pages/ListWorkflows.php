@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Resources\WorkflowResource\Pages;
+namespace App\Filament\Resources\Workflows\Pages;
 
-use App\Filament\Resources\WorkflowResource;
+use App\Filament\Resources\Workflows\WorkflowResource;
 use App\Jobs\SyncCustomerWorkflows;
 use App\Models\Customer;
 use App\Models\Workflow;
@@ -37,6 +37,7 @@ class ListWorkflows extends ListRecords
                 TextColumn::make('name')
                     ->label('Name')
                     ->searchable()
+                    ->wrap()
                     ->sortable(),
                 TextColumn::make('state')
                     ->label('State')
@@ -50,15 +51,18 @@ class ListWorkflows extends ListRecords
                 TextColumn::make('created_on')
                     ->label('Created')
                     ->dateTime(self::DATE_TIME_FORMAT)
+                    ->toggleable()
                     ->sortable(),
                 TextColumn::make('updated_on')
                     ->label('Updated')
                     ->dateTime(self::DATE_TIME_FORMAT)
+                    ->toggleable()
                     ->sortable(),
                 TextColumn::make('last_synced_at')
                     ->label('Last Synced')
                     ->dateTime(self::DATE_TIME_FORMAT)
                     ->sortable()
+                    ->toggleable()
                     ->placeholder('Never'),
             ])
             ->filters([
@@ -77,9 +81,11 @@ class ListWorkflows extends ListRecords
             ])
             ->recordActions([
                 ViewAction::make()
-                    ->label('View Details'),
+                    ->label('View Details')
+                    ->button(),
                 Action::make('download')
                     ->label('Download')
+                    ->button()
                     ->icon('heroicon-o-arrow-down-tray')
                     ->url(fn (Workflow $record) => route('workflow.download', [
                         'customer' => $record->customer->name,

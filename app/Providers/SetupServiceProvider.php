@@ -2,7 +2,6 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 
@@ -21,29 +20,19 @@ class SetupServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Ensure setup tables exist during application boot
+        // Automatically run migrations if setup tables don't exist
+        // This ensures a seamless installation experience for production deployments
         try {
-            if (Schema::hasTable('setup_completed')) {
-                return;
+            // Check if we need to run migrations
+            if (! Schema::hasTable('setup_completed')) {
+                // Run migrations automatically
+                \Artisan::call('migrate', ['--force' => true]);
+
+                \Log::info('Setup tables did not exist. Migrations have been run automatically.');
             }
-
-            // Create setup_completed table
-            Schema::create('setup_completed', function ($table) {
-                $table->id();
-                $table->boolean('completed')->default(false);
-                $table->timestamp('completed_at')->nullable();
-                $table->timestamps();
-            });
-
-            // Insert initial record
-            DB::table('setup_completed')->insert([
-                'completed' => false,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-
         } catch (\Exception $e) {
-            // Silently fail - tables may not exist during initial setup
+            // Silently fail - this could happen during initial Laravel boot
+            // or if database connection is not yet configured
         }
     }
 }

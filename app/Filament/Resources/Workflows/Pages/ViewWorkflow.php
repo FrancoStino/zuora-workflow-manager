@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Resources\WorkflowResource\Pages;
+namespace App\Filament\Resources\Workflows\Pages;
 
-use App\Filament\Resources\WorkflowResource;
+use App\Filament\Resources\Workflows\WorkflowResource;
 use App\Filament\Widgets\WorkflowJsonWidget;
 use Filament\Actions\Action;
 use Filament\Infolists\Components\TextEntry;

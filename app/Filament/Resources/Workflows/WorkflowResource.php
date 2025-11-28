@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Filament\Resources;
+namespace App\Filament\Resources\Workflows;
 
-use App\Filament\Resources\WorkflowResource\Pages;
 use App\Models\Workflow;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Database\Eloquent\Model;
+use UnitEnum;
 
 class WorkflowResource extends Resource
 {
@@ -16,6 +16,8 @@ class WorkflowResource extends Resource
     protected static string|null|BackedEnum $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     protected static ?string $navigationLabel = 'Workflows';
+
+    protected static string|UnitEnum|null $navigationGroup = 'Zuora Management';
 
     protected static ?int $navigationSort = 2;
 
@@ -27,11 +29,6 @@ class WorkflowResource extends Resource
     {
         return $record->name;
     }
-
-    //	public static function getGloballySearchableAttributes () : array
-    //	{
-    //		return [ 'name', 'zuora_id', 'customer.name' ];
-    //	}
 
     public static function getGlobalSearchResultDetails(Model $record): array
     {
@@ -48,5 +45,15 @@ class WorkflowResource extends Resource
             'index' => Pages\ListWorkflows::route('/'),
             'view' => Pages\ViewWorkflow::route('/{record}'),
         ];
+    }
+
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
+    }
+
+    public static function getNavigationBadgeTooltip(): ?string
+    {
+        return 'The total number of workflows';
     }
 }

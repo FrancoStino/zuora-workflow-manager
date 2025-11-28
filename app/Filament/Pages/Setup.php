@@ -28,6 +28,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\HtmlString;
 use Log;
+use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 
@@ -129,7 +130,11 @@ class Setup extends Page implements HasForms
                         ->columns(1)
                         ->schema([
                             TextInput::make('name')
-                                ->label('Full Name')
+                                ->label('First Name')
+                                ->required()
+                                ->maxLength(255),
+                            TextInput::make('surname')
+                                ->label('Surname')
                                 ->required()
                                 ->maxLength(255),
                             TextInput::make('email')
@@ -197,6 +202,7 @@ class Setup extends Page implements HasForms
     {
         return User::create([
             'name' => $data['name'],
+            'surname' => $data['surname'],
             'email' => $data['email'],
             'password' => null,
         ]);
@@ -232,12 +238,48 @@ class Setup extends Page implements HasForms
             ]);
 
             Log::info('Shield roles generated successfully.');
+
+            $this->createWorkflowUserRole();
+
             app()->make(PermissionRegistrar::class)->forgetCachedPermissions();
 
         } catch (Exception $e) {
             Log::error('Failed to generate Shield roles: '.$e->getMessage());
             throw new SetupException('Could not generate Shield roles. '.$e->getMessage());
         }
+    }
+
+    /**
+     * Create the workflow_user role with necessary permissions.
+     */
+    private function createWorkflowUserRole(): void
+    {
+        $role = Role::firstOrCreate(
+            ['name' => 'workflow_user', 'guard_name' => 'web'],
+            ['guard_name' => 'web']
+        );
+
+        // Assign workflow permissions to the role
+        $permissions = [
+            'ViewAny:Workflow',
+            'View:Workflow',
+        ];
+
+        foreach ($permissions as $permissionName) {
+            $permission = Permission::firstOrCreate(
+                ['name' => $permissionName, 'guard_name' => 'web'],
+                ['guard_name' => 'web']
+            );
+
+            if (! $role->hasPermissionTo($permission)) {
+                $role->givePermissionTo($permission);
+            }
+        }
+
+        Log::info('Workflow user role created with permissions.', [
+            'role_id' => $role->id,
+            'permissions' => $permissions,
+        ]);
     }
 
     /**
