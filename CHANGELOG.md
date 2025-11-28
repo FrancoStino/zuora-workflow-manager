@@ -1,3 +1,14 @@
+# [1.2.0](https://github.com/FrancoStino/zuora-workflows/compare/v1.1.0...v1.2.0) (2025-11-28)
+
+
+### Features
+
+* **navigation:** add Zuora Management group and sorting to resources ([9573972](https://github.com/FrancoStino/zuora-workflows/commit/957397222ef8197ee8b1052750f4d608878eafa4))
+* **ui:** add `navigation-filter` Blade component for improved navigation customization ([3c74678](https://github.com/FrancoStino/zuora-workflows/commit/3c746781b67dba411f620060f84b8d16d3334734))
+* **users:** add support for `surname` field and workflow role setup ([25b93a9](https://github.com/FrancoStino/zuora-workflows/commit/25b93a9477bad14a29e7e9128545f61fbc940506))
+
+
+
 # [1.1.0](https://github.com/FrancoStino/zuora-workflows/compare/v1.0.0...v1.1.0) (2025-11-22)
 
 
