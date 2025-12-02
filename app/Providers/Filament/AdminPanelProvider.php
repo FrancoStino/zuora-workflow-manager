@@ -71,7 +71,12 @@ class AdminPanelProvider extends PanelProvider
                 RequireAuthAfterSetup::class,
             ])
             ->authGuard('web')
-            ->renderHook(PanelsRenderHook::SIDEBAR_NAV_START, fn () => view('filament.components.navigation-filter'))
+            ->renderHook(
+                PanelsRenderHook::SIDEBAR_NAV_START,
+                fn () => view('filament.components.navigation-filter'))
+            ->renderHook(
+                PanelsRenderHook::FOOTER,
+                fn () => view('footer'))
             ->plugins([
                 GlobalSearchModalPlugin::make()
                     ->highlightQueryStyles([
