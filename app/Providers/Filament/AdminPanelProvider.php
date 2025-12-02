@@ -29,73 +29,74 @@ use Resma\FilamentAwinTheme\FilamentAwinTheme;
 
 class AdminPanelProvider extends PanelProvider
 {
-    public function panel(Panel $panel): Panel
-    {
-        return $panel
-            ->default()
-            ->id('admin')
-            ->path('')
-            ->login(Login::class)
-            ->colors([
-                'primary' => Color::Teal,
-            ])
-            ->brandName('Zuora Workflows')
-            ->brandLogo(asset('images/logo.svg'))
-            ->darkModeBrandLogo(asset('images/logo-white.svg'))
-            ->brandLogoHeight('2rem')
-            ->navigationGroups([
-                'Zuora Management',
-            ])
-            ->discoverResources(in : app_path('Filament/Resources'), for : 'App\Filament\Resources')
-            ->discoverPages(in : app_path('Filament/Pages'), for : 'App\Filament\Pages')
-            ->pages([
-                Dashboard::class,
-                Setup::class,
-            ])
-            ->discoverWidgets(in : app_path('Filament/Widgets'), for : 'App\Filament\Widgets')
-            ->widgets([
-                AccountWidget::class,
-                // FilamentInfoWidget::class,
-            ])
-            ->middleware([
-                EncryptCookies::class,
-                AddQueuedCookiesToResponse::class,
-                StartSession::class,
-                AuthenticateSession::class,
-                ShareErrorsFromSession::class,
-                VerifyCsrfToken::class,
-                SubstituteBindings::class,
-                //				DisableBladeIconComponents::class,
-                DispatchServingFilamentEvent::class,
-                CheckSetupCompleted::class,
-                RequireAuthAfterSetup::class,
-            ])
-            ->authGuard('web')
-            ->renderHook(
-                PanelsRenderHook::SIDEBAR_NAV_START,
-                fn () => view('filament.components.navigation-filter'))
-            ->renderHook(
-                PanelsRenderHook::FOOTER,
-                fn () => view('footer'))
-            ->plugins([
-                GlobalSearchModalPlugin::make()
-                    ->highlightQueryStyles([
-                        'background-color' => 'teal',
-                        'font-weight' => 'bold',
-                    ])
-                    ->showGroupSearchCounts(),   // Enable per-category count display
-                FilamentAwinTheme::make()
-                    ->primaryColor(Color::Teal),
-                FilamentShieldPlugin::make(),
-                FilamentSocialitePlugin::make()
-                    ->domainAllowList(app(OAuthService::class)->getAllowedDomains())
-                    ->registration(true)
-                    ->providers([
-                        Provider::make('google')
-                            ->label('Google')
-                            ->icon('fab-google')
-                            ->color(Color::Red),
-                    ]),
-            ]);
-    }
+	public function panel ( Panel $panel ) : Panel
+	{
+		return $panel
+			-> default ()
+			-> id ( 'admin' )
+			-> path ( '' )
+			-> login ( Login::class )
+			-> colors ( [
+				'primary' => Color::Teal,
+			] )
+			-> brandName ( 'Zuora Workflows' )
+			-> brandLogo ( asset ( 'images/logo.svg' ) )
+			-> darkModeBrandLogo ( asset ( 'images/logo-white.svg' ) )
+			-> brandLogoHeight ( '2rem' )
+			-> favicon ( asset ( 'images/favicon.ico' ) )
+			-> navigationGroups ( [
+				'Zuora Management',
+			] )
+			-> discoverResources ( in : app_path ( 'Filament/Resources' ), for : 'App\Filament\Resources' )
+			-> discoverPages ( in : app_path ( 'Filament/Pages' ), for : 'App\Filament\Pages' )
+			-> pages ( [
+				Dashboard::class,
+				Setup::class,
+			] )
+			-> discoverWidgets ( in : app_path ( 'Filament/Widgets' ), for : 'App\Filament\Widgets' )
+			-> widgets ( [
+				AccountWidget::class,
+				// FilamentInfoWidget::class,
+			] )
+			-> middleware ( [
+				EncryptCookies::class,
+				AddQueuedCookiesToResponse::class,
+				StartSession::class,
+				AuthenticateSession::class,
+				ShareErrorsFromSession::class,
+				VerifyCsrfToken::class,
+				SubstituteBindings::class,
+				//				DisableBladeIconComponents::class,
+				DispatchServingFilamentEvent::class,
+				CheckSetupCompleted::class,
+				RequireAuthAfterSetup::class,
+			] )
+			-> authGuard ( 'web' )
+			-> renderHook (
+				PanelsRenderHook::SIDEBAR_NAV_START,
+				fn () => view ( 'filament.components.navigation-filter' ) )
+			-> renderHook (
+				PanelsRenderHook::FOOTER,
+				fn () => view ( 'footer' ) )
+			-> plugins ( [
+				GlobalSearchModalPlugin ::make ()
+				                        -> highlightQueryStyles ( [
+					                        'background-color' => 'teal',
+					                        'font-weight'      => 'bold',
+				                        ] )
+				                        -> showGroupSearchCounts (),   // Enable per-category count display
+				FilamentAwinTheme ::make ()
+				                  -> primaryColor ( Color::Teal ),
+				FilamentShieldPlugin ::make (),
+				FilamentSocialitePlugin ::make ()
+				                        -> domainAllowList ( app ( OAuthService::class ) -> getAllowedDomains () )
+				                        -> registration ( true )
+				                        -> providers ( [
+					                        Provider ::make ( 'google' )
+					                                 -> label ( 'Google' )
+					                                 -> icon ( 'fab-google' )
+					                                 -> color ( Color::Red ),
+				                        ] ),
+			] );
+	}
 }
