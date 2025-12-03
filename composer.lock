@@ -525,16 +525,16 @@
         },
         {
             "name": "charrafimed/global-search-modal",
-            "version": "v4.2.2",
+            "version": "v4.2.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/CharrafiMed/global-search-modal.git",
-                "reference": "c06b34377aba54644cc6498be9b4a367fbe5bf1f"
+                "reference": "51cd19e497a1211af6ba5ed440f4e6eb9b70e150"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/CharrafiMed/global-search-modal/zipball/c06b34377aba54644cc6498be9b4a367fbe5bf1f",
-                "reference": "c06b34377aba54644cc6498be9b4a367fbe5bf1f",
+                "url": "https://api.github.com/repos/CharrafiMed/global-search-modal/zipball/51cd19e497a1211af6ba5ed440f4e6eb9b70e150",
+                "reference": "51cd19e497a1211af6ba5ed440f4e6eb9b70e150",
                 "shasum": ""
             },
             "require": {
@@ -566,9 +566,9 @@
             "description": "advanced global search modal",
             "support": {
                 "issues": "https://github.com/CharrafiMed/global-search-modal/issues",
-                "source": "https://github.com/CharrafiMed/global-search-modal/tree/v4.2.2"
+                "source": "https://github.com/CharrafiMed/global-search-modal/tree/v4.2.3"
             },
-            "time": "2025-09-01T13:19:03+00:00"
+            "time": "2025-12-02T12:45:46+00:00"
         },
         {
             "name": "chillerlan/php-qrcode",
