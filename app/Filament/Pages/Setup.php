@@ -228,7 +228,7 @@ class Setup extends Page implements HasForms
             Artisan::call('shield:generate', [
                 '--all' => true,
                 '--panel' => 'admin',
-                '--option' => 'policies_and_permission',
+                '--option' => 'policies_and_permissions',
             ]);
 
             // Generate roles and permissions for both panels
