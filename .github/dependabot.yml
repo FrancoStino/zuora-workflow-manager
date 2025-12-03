@@ -5,7 +5,7 @@ updates:
     directory: '/'
     target-branch: "develop"
     schedule:
-      interval: 'daily'
+      interval: 'weekly'
     # Always increase the version requirement
     # to match the new version.
     versioning-strategy: increase
@@ -15,7 +15,7 @@ updates:
     directory: '/'
     target-branch: "develop"
     schedule:
-      interval: 'daily'
+      interval: 'weekly'
     # Always increase the version requirement
     # to match the new version.
     versioning-strategy: increase
@@ -25,7 +25,7 @@ updates:
     directory: "/"
     target-branch: "develop"
     schedule:
-      interval: "daily"
+      interval: "weekly"
     # Always increase the version requirement
     # to match the new version.
     versioning-strategy: increase
