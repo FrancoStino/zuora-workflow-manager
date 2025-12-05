@@ -31,7 +31,7 @@ class ViewWorkflow extends ViewRecord
 
 	public function workflowInfolist ( Schema $schema ) : Schema
 	{
-		// Carica esplicitamente il JSON export solo per questa pagina
+		// Carica solo le relazioni necessarie, evitando query extra
 		$this -> record -> loadMissing ( [ 'customer' ] );
 
 		return $schema
@@ -129,6 +129,7 @@ class ViewWorkflow extends ViewRecord
 				     -> contained ( false )
 				     -> tabs ( [
 					     Tab ::make ( 'Tasks' )
+					         -> icon ( Heroicon::OutlinedRectangleStack )
 					         -> schema ( [
 						         // ...
 					         ] ),
