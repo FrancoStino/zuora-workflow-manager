@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Workflows\Pages;
 
+use App\Filament\Concerns\HasWorkflowDownloadAction;
 use App\Filament\Resources\Workflows\WorkflowResource;
 use Filament\Actions\Action;
 use Filament\Infolists\Components\CodeEntry;
@@ -20,8 +21,8 @@ use Phiki\Grammar\Grammar;
 
 class ViewWorkflow extends ViewRecord
 {
+	use HasWorkflowDownloadAction;
 	use InteractsWithSchemas;
-
 
 
 	protected static string $resource = WorkflowResource::class;
@@ -124,6 +125,7 @@ class ViewWorkflow extends ViewRecord
 					             ] ),
 				     ] ),
 				Tabs ::make ( 'Tabs' )
+				     -> lazy ()
 				     -> contained ( false )
 				     -> tabs ( [
 					     Tab ::make ( 'Tasks' )
@@ -161,20 +163,18 @@ class ViewWorkflow extends ViewRecord
 		return $this -> record -> name;
 	}
 
-
-
 	protected function getHeaderActions () : array
 	{
+		$actionConfig = $this -> createDownloadAction ( $this -> record );
+
 		return [
 			Action ::make ( 'download' )
-			       -> label ( 'Download Workflow' )
-			       -> icon ( Heroicon::ArrowDownTray )
+			       -> label ( $actionConfig[ 'label' ] )
+			       -> icon ( $actionConfig[ 'icon' ] )
 			       -> color ( 'primary' )
-			       -> url ( route ( 'workflow.download', [
-				       'customer'   => $this -> record -> customer -> name,
-				       'workflowId' => $this -> record -> zuora_id,
-				       'name'       => $this -> record -> name,
-			       ] ) ),
+			       -> action ( $actionConfig[ 'action' ] )
+			       -> disabled ( $actionConfig[ 'disabled' ] )
+			       -> tooltip ( $actionConfig[ 'tooltip' ] ),
 		];
 	}
 }
