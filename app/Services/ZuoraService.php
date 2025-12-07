@@ -96,7 +96,7 @@ class ZuoraService
         ];
     }
 
-    public function downloadWorkflow(string $clientId, string $clientSecret, string $baseUrl, string $workflowId): array
+    public function downloadWorkflow(string $clientId, string $clientSecret, string $baseUrl, string|int $workflowId): array
     {
         $token = $this->getAccessToken($clientId, $clientSecret, $baseUrl);
 

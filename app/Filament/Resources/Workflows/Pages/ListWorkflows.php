@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Workflows\Pages;
 
+use App\Filament\Concerns\HasWorkflowDownloadAction;
 use App\Filament\Resources\Workflows\WorkflowResource;
 use App\Jobs\SyncCustomerWorkflows;
 use App\Models\Customer;
@@ -17,6 +18,8 @@ use Filament\Tables\Table;
 
 class ListWorkflows extends ListRecords
 {
+    use HasWorkflowDownloadAction;
+
     private const DATE_TIME_FORMAT = 'Y-m-d H:i';
 
     protected static string $resource = WorkflowResource::class;
@@ -87,11 +90,13 @@ class ListWorkflows extends ListRecords
                     ->label('Download')
                     ->button()
                     ->icon('heroicon-o-arrow-down-tray')
-                    ->url(fn (Workflow $record) => route('workflow.download', [
-                        'customer' => $record->customer->name,
-                        'workflowId' => $record->zuora_id,
-                        'name' => $record->name,
-                    ])),
+                    ->action(function (Workflow $record) {
+                        return $this->downloadWorkflowJson($record);
+                    })
+                    ->disabled(fn (Workflow $record) => empty($record->json_export))
+                    ->tooltip(fn (Workflow $record) => empty($record->json_export)
+                        ? 'No JSON export available for this workflow'
+                        : 'Download workflow JSON from database'),
             ])
             ->defaultSort('name', 'asc')
             ->paginated([10, 25, 50, 100])

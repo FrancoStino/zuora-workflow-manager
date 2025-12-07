@@ -8,6 +8,8 @@
   <component name="LaravelIdeaMainSettings">
     <option name="codeGeneration">
       <LaravelCodeGeneration>
+        <option name="addPhpDocs" value="true" />
+        <option name="eachTraitInOwnUse" value="true" />
         <option name="generationStringSettings">
           <map>
             <entry key="createEloquentScope:namespace" value="Models\Scopes" />
@@ -17,6 +19,11 @@
       </LaravelCodeGeneration>
     </option>
     <option name="frameworkFound" value="true" />
+    <option name="translation">
+      <LaravelTranslation>
+        <option name="defaultPath" value="lang" />
+      </LaravelTranslation>
+    </option>
     <option name="userClassName" value="\App\Models\User" />
   </component>
 </project>

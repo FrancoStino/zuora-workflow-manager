@@ -2,20 +2,25 @@
 
 namespace App\Filament\Resources\Workflows\Pages;
 
+use App\Filament\Concerns\HasWorkflowDownloadAction;
 use App\Filament\Resources\Workflows\WorkflowResource;
-use App\Filament\Widgets\WorkflowJsonWidget;
 use Filament\Actions\Action;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Concerns\InteractsWithSchemas;
 use Filament\Schemas\Schema;
 use Filament\Support\Enums\FontWeight;
+use Filament\Support\Icons\Heroicon;
 use Illuminate\Contracts\Support\Htmlable;
+use Novadaemon\FilamentPrettyJson\Infolist\PrettyJsonEntry;
 
 class ViewWorkflow extends ViewRecord
 {
+    use HasWorkflowDownloadAction;
     use InteractsWithSchemas;
 
     protected static string $resource = WorkflowResource::class;
@@ -24,12 +29,15 @@ class ViewWorkflow extends ViewRecord
 
     public function workflowInfolist(Schema $schema): Schema
     {
+        // Carica solo le relazioni necessarie, evitando query extra
+        $this->record->loadMissing(['customer']);
+
         return $schema
             ->record($this->record)
             ->schema([
                 Section::make('General Information')
                     ->description('Basic details about the workflow')
-                    ->icon('heroicon-o-information-circle')
+                    ->icon(Heroicon::InformationCircle)
                     ->collapsible()
                     ->schema([
                         Grid::make([
@@ -40,20 +48,20 @@ class ViewWorkflow extends ViewRecord
                             ->schema([
                                 TextEntry::make('zuora_id')
                                     ->label('Workflow ID')
-                                    ->icon('heroicon-o-hashtag')
+                                    ->icon(Heroicon::Hashtag)
                                     ->copyable(),
 
                                 TextEntry::make('name')
                                     ->label('Workflow Name')
-                                    ->icon('heroicon-o-document-text')
+                                    ->icon(Heroicon::DocumentText)
                                     ->copyable(),
 
                                 TextEntry::make('state')
                                     ->label('Status')
-                                    ->icon(fn (string $state): string => match ($state) {
-                                        'Active' => 'heroicon-o-check-circle',
-                                        'Inactive' => 'heroicon-o-x-circle',
-                                        default => 'heroicon-o-question-mark-circle',
+                                    ->icon(fn (string $state) => match ($state) {
+                                        'Active' => Heroicon::CheckCircle,
+                                        'Inactive' => Heroicon::XCircle,
+                                        default => Heroicon::QuestionMarkCircle,
                                     })
                                     ->color(fn (string $state): string => match ($state) {
                                         'Active' => 'success',
@@ -63,17 +71,17 @@ class ViewWorkflow extends ViewRecord
                                     ->badge(),
                                 TextEntry::make('created_on')
                                     ->label('Created On')
-                                    ->icon('heroicon-o-calendar')
+                                    ->icon(Heroicon::Calendar)
                                     ->date('M d, Y'),
 
                                 TextEntry::make('updated_on')
                                     ->label('Last Updated')
-                                    ->icon('heroicon-o-clock')
+                                    ->icon(Heroicon::Clock)
                                     ->date('M d, Y'),
 
                                 TextEntry::make('last_synced_at')
                                     ->label('Last Sync')
-                                    ->icon('heroicon-o-arrow-path')
+                                    ->icon(Heroicon::ArrowPath)
                                     ->formatStateUsing(function ($state) {
                                         if (! $state) {
                                             return 'Never';
@@ -94,27 +102,47 @@ class ViewWorkflow extends ViewRecord
 
                         Section::make('Customer Information')
                             ->description('Associated customer details')
-                            ->icon('heroicon-o-user-circle')
+                            ->icon(Heroicon::UserCircle)
                             ->schema([
                                 TextEntry::make('customer.name')
                                     ->label('Customer Name')
-                                    ->icon('heroicon-o-building-office')
+                                    ->icon(Heroicon::BuildingOffice)
                                     ->weight(FontWeight::Bold)
                                     ->color('primary'),
                             ]),
 
                         Section::make('Technical Details')
                             ->description('System-level information')
-                            ->icon('heroicon-o-code-bracket')
+                            ->icon(Heroicon::CodeBracket)
                             ->schema([
                                 TextEntry::make('id')
                                     ->label('Internal ID')
-                                    ->icon('heroicon-o-key')
+                                    ->icon(Heroicon::Key)
                                     ->copyable(),
 
                             ]),
                     ]),
+                Tabs::make('Tabs')
+                    ->lazy()
+                    ->contained(false)
+                    ->tabs([
+                        Tab::make('Tasks')
+                            ->icon(Heroicon::OutlinedRectangleStack)
+                            ->schema([
+                                TextEntry::make('title')
+                                    ->label('Under Development'),
+                            ]),
+                        Tab::make('Workflow Json')
+                            ->icon(Heroicon::CodeBracket)
+                            ->schema([
+                                PrettyJsonEntry::make('json_export')
+                                    ->hiddenLabel()
+                                    ->copyable()
+                                    ->copyMessage('Your JSON is copied to the clipboard')
+                                    ->copyMessageDuration(1500),
+                            ]),
 
+                    ]),
             ]);
     }
 
@@ -135,25 +163,16 @@ class ViewWorkflow extends ViewRecord
 
     protected function getHeaderActions(): array
     {
+        $actionConfig = $this->createDownloadAction($this->record);
+
         return [
             Action::make('download')
-                ->label('Download Workflow')
-                ->icon('heroicon-o-arrow-down-tray')
+                ->label($actionConfig['label'])
+                ->icon($actionConfig['icon'])
                 ->color('primary')
-                ->url(route('workflow.download', [
-                    'customer' => $this->record->customer->name,
-                    'workflowId' => $this->record->zuora_id,
-                    'name' => $this->record->name,
-                ])),
-        ];
-    }
-
-    protected function getFooterWidgets(): array
-    {
-        return [
-            WorkflowJsonWidget::make([
-                'workflow' => $this->record,
-            ]),
+                ->action($actionConfig['action'])
+                ->disabled($actionConfig['disabled'])
+                ->tooltip($actionConfig['tooltip']),
         ];
     }
 }

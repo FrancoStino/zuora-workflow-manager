@@ -98,6 +98,9 @@ class WorkflowSyncService
         $workflow = Workflow::firstOrNew(['zuora_id' => $zuoraId, 'customer_id' => $customer->id]);
         $isNew = ! $workflow->exists;
 
+        // Scarica il JSON export del workflow usando il servizio esistente
+        $jsonExport = $this->downloadWorkflowJson($customer, $zuoraId);
+
         $workflow->fill([
             'customer_id' => $customer->id,
             'zuora_id' => $zuoraId,
@@ -107,12 +110,37 @@ class WorkflowSyncService
             'created_on' => $workflowData['created_on'] ?? $workflowData['createdAt'] ?? null,
             'updated_on' => $workflowData['updated_on'] ?? $workflowData['updatedAt'] ?? null,
             'last_synced_at' => now(),
+            'json_export' => $jsonExport,
         ])->save();
 
         return [
             'created' => $isNew,
             'updated' => ! $isNew,
         ];
+    }
+
+    /**
+     * Scarica il JSON export di un workflow specifico
+     * Riutilizza la logica esistente dal ZuoraService
+     */
+    private function downloadWorkflowJson(Customer $customer, string|int $workflowId): ?array
+    {
+        try {
+            return $this->zuoraService->downloadWorkflow(
+                $customer->zuora_client_id,
+                $customer->zuora_client_secret,
+                $customer->zuora_base_url,
+                $workflowId
+            );
+        } catch (Exception $e) {
+            Log::warning('Failed to download workflow JSON', [
+                'customer_id' => $customer->id,
+                'workflow_id' => $workflowId,
+                'error' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
     }
 
     /**
