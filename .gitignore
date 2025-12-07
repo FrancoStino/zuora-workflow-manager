@@ -16,6 +16,8 @@
 /public/build
 /public/hot
 /public/storage
+/public/css/novadaemon/
+/public/js/novadaemon/
 /storage/*.key
 /storage/pail
 /vendor
