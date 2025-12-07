@@ -12,14 +12,13 @@ use CharrafiMed\GlobalSearchModal\GlobalSearchModalPlugin;
 use DutchCodingCompany\FilamentSocialite\FilamentSocialitePlugin;
 use DutchCodingCompany\FilamentSocialite\Provider;
 use Filament\Http\Middleware\AuthenticateSession;
+use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
-use Filament\Support\Assets\Css;
 use Filament\Support\Colors\Color;
 use Filament\Support\Enums\Width;
-use Filament\Support\Facades\FilamentAsset;
 use Filament\View\PanelsRenderHook;
 use Filament\Widgets\AccountWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
@@ -32,15 +31,6 @@ use Resma\FilamentAwinTheme\FilamentAwinTheme;
 
 class AdminPanelProvider extends PanelProvider
 {
-    public function boot(): void
-    {
-
-        FilamentAsset::register([
-            Css::make('prettyjson-css', resource_path('css/components/prettyjson.css')),
-        ]);
-
-    }
-
     public function panel(Panel $panel): Panel
     {
         return $panel
@@ -79,7 +69,7 @@ class AdminPanelProvider extends PanelProvider
                 ShareErrorsFromSession::class,
                 VerifyCsrfToken::class,
                 SubstituteBindings::class,
-                //				DisableBladeIconComponents::class,
+                DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
                 CheckSetupCompleted::class,
                 RequireAuthAfterSetup::class,
