@@ -13,11 +13,11 @@
     "php": "^8.4",
     "bezhansalleh/filament-shield": "^4.0",
     "charrafimed/global-search-modal": "^4.2",
+    "codebar-ag/laravel-filament-json-field": "^13.0",
     "dutchcodingcompany/filament-socialite": "^3.0",
     "filament/filament": "^4.2",
     "laravel/framework": "^12.0",
     "laravel/tinker": "^2.10.1",
-    "novadaemon/filament-pretty-json": "^3.1",
     "owenvoke/blade-fontawesome": "^3.0",
     "resma/filament-awin-theme": "^1.0"
   },

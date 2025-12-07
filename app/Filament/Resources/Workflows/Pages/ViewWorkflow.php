@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Workflows\Pages;
 
 use App\Filament\Concerns\HasWorkflowDownloadAction;
 use App\Filament\Resources\Workflows\WorkflowResource;
+use CodebarAg\FilamentJsonField\Infolists\Components\JsonEntry;
 use Filament\Actions\Action;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Resources\Pages\ViewRecord;
@@ -16,7 +17,6 @@ use Filament\Schemas\Schema;
 use Filament\Support\Enums\FontWeight;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Contracts\Support\Htmlable;
-use Novadaemon\FilamentPrettyJson\Infolist\PrettyJsonEntry;
 
 class ViewWorkflow extends ViewRecord
 {
@@ -135,13 +135,10 @@ class ViewWorkflow extends ViewRecord
                         Tab::make('Workflow Json')
                             ->icon(Heroicon::CodeBracket)
                             ->schema([
-                                PrettyJsonEntry::make('json_export')
+                                JsonEntry::make('json_export')
                                     ->hiddenLabel()
-                                    ->copyable()
-                                    ->copyMessage('Your JSON is copied to the clipboard')
-                                    ->copyMessageDuration(1500),
+                                    ->darkTheme(),
                             ]),
-
                     ]),
             ]);
     }
