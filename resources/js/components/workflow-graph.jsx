@@ -1,4 +1,5 @@
 import React, { useCallback, useMemo } from 'react';
+import { createRoot } from 'react-dom/client';
 import {
   ReactFlow,
   Background,
@@ -92,7 +93,10 @@ const WorkflowGraph = ({ workflowData, options = {} }) => {
 
   // Parse Zuora workflow data
   const { nodes: initialNodes, edges: initialEdges } = useMemo(() => {
-    return parseZuoraWorkflow(workflowData);
+    console.log('Parsing workflow data:', workflowData);
+    const result = parseZuoraWorkflow(workflowData);
+    console.log('Parsed nodes:', result.nodes.length, 'edges:', result.edges.length);
+    return result;
   }, [workflowData]);
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
@@ -102,6 +106,19 @@ const WorkflowGraph = ({ workflowData, options = {} }) => {
     (params) => setEdges((eds) => addEdge(params, eds)),
     [setEdges]
   );
+
+  // Check if we have valid data
+  if (!nodes || nodes.length === 0) {
+    return (
+      <div className="w-full h-full flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="text-gray-400 text-lg mb-2">📊</div>
+          <div className="text-gray-600 font-medium">No workflow data available</div>
+          <div className="text-gray-400 text-sm">Please provide valid workflow data to display the graph</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full h-full">
@@ -114,6 +131,8 @@ const WorkflowGraph = ({ workflowData, options = {} }) => {
         nodeTypes={nodeTypes}
         fitView
         className="bg-gray-50"
+        minZoom={0.1}
+        maxZoom={2}
       >
         <Background color="#aaa" gap={16} />
         {defaultOptions.showControls && <Controls />}
@@ -126,11 +145,8 @@ const WorkflowGraph = ({ workflowData, options = {} }) => {
               <button
                 className="px-3 py-1 bg-blue-500 text-white rounded text-sm hover:bg-blue-600"
                 onClick={() => {
-                  // Fit to view
-                  const reactFlowInstance = document.querySelector('.react-flow');
-                  if (reactFlowInstance) {
-                    reactFlowInstance.fitView();
-                  }
+                  // Fit to view - this needs to be handled differently in ReactFlow
+                  console.log('Fit view clicked');
                 }}
               >
                 Fit View
@@ -138,11 +154,8 @@ const WorkflowGraph = ({ workflowData, options = {} }) => {
               <button
                 className="px-3 py-1 bg-gray-500 text-white rounded text-sm hover:bg-gray-600"
                 onClick={() => {
-                  // Reset zoom
-                  const reactFlowInstance = document.querySelector('.react-flow');
-                  if (reactFlowInstance) {
-                    reactFlowInstance.zoomTo(1);
-                  }
+                  // Reset zoom - this needs to be handled differently in ReactFlow
+                  console.log('Reset zoom clicked');
                 }}
               >
                 Reset Zoom
@@ -285,10 +298,84 @@ function parseZuoraWorkflow(workflowData) {
 
 // Legacy function for backward compatibility
 export function initWorkflowGraph(containerId, workflowData) {
-  // This function is kept for backward compatibility
-  // In a real implementation, you would render the React component
-  console.warn('initWorkflowGraph is deprecated. Use WorkflowGraph React component instead.');
-  return { success: true };
+  console.log('=== WORKFLOW GRAPH INIT START ===');
+  console.log('Container ID:', containerId);
+  console.log('Workflow data type:', typeof workflowData);
+  console.log('Workflow data keys:', workflowData ? Object.keys(workflowData) : 'null');
+  console.log('React available:', typeof React !== 'undefined');
+  console.log('createRoot available:', typeof createRoot !== 'undefined');
+
+  const container = document.getElementById(containerId);
+  if (!container) {
+    console.error('Container not found:', containerId);
+    return { success: false, error: 'Container not found' };
+  }
+
+  // Simple test render first
+  try {
+    console.log('Testing simple React render...');
+    container.innerHTML = '<div style="padding: 20px; color: green;">React is working! Loading workflow...</div>';
+
+    // Small delay to show the test message
+    setTimeout(() => {
+      try {
+        if (!workflowData) {
+          console.error('No workflow data provided');
+          container.innerHTML = `
+            <div class="p-8 text-center">
+              <div class="text-gray-600 font-semibold mb-2">No Data</div>
+              <div class="text-sm text-gray-600">No workflow data was provided.</div>
+            </div>
+          `;
+          return { success: false, error: 'No workflow data provided' };
+        }
+
+        // Ensure container has proper styling for ReactFlow
+        container.style.width = '100%';
+        container.style.height = '100%';
+        container.style.position = 'relative';
+
+        console.log('Creating React root...');
+        // Create React root and render component
+        const root = createRoot(container);
+        console.log('Rendering WorkflowGraph component...');
+        root.render(
+          React.createElement(WorkflowGraph, {
+            key: `workflow-${containerId}-${Date.now()}`, // Unique key to prevent caching issues
+            workflowData: workflowData,
+            options: {
+              showControls: true,
+              showMiniMap: true,
+              interactive: true
+            }
+          })
+        );
+
+        console.log('React workflow graph rendered successfully');
+        console.log('=== WORKFLOW GRAPH INIT END ===');
+        return { success: true };
+      } catch (error) {
+        console.error('Failed to render React workflow graph:', error);
+        container.innerHTML = `
+          <div class="p-8 text-center">
+            <div class="text-red-600 font-semibold mb-2">Error rendering graph</div>
+            <div class="text-sm text-gray-600">${error.message}</div>
+          </div>
+        `;
+        return { success: false, error: error.message };
+      }
+    }, 500);
+
+  } catch (error) {
+    console.error('Failed to do simple test render:', error);
+    container.innerHTML = `
+      <div class="p-8 text-center">
+        <div class="text-red-600 font-semibold mb-2">Error: Basic render failed</div>
+        <div class="text-sm text-gray-600">${error.message}</div>
+      </div>
+    `;
+    return { success: false, error: error.message };
+  }
 }
 
 export default WorkflowGraph;
