@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workflow Graph Test</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Workflow Graph Test - JointJS</h1>
+        <div id="workflow-test" style="width: 100%; height: 600px; border: 1px solid #ddd; border-radius: 4px;"></div>
+    </div>
+
+    <script type="text/babel">
+        // Sample workflow data
+        const sampleWorkflowData = {
+            tasks: [
+                {
+                    id: 1,
+                    name: "Create Customer Account",
+                    action_type: "create",
+                    description: "Create new customer account in Zuora"
+                },
+                {
+                    id: 2,
+                    name: "Validate Payment Method",
+                    action_type: "query",
+                    description: "Check payment method validity"
+                },
+                {
+                    id: 3,
+                    name: "Send Welcome Email",
+                    action_type: "email",
+                    description: "Send welcome email to customer"
+                },
+                {
+                    id: 4,
+                    name: "Update Subscription",
+                    action_type: "update",
+                    description: "Update subscription details"
+                }
+            ],
+            linkages: [
+                {
+                    source_workflow_id: 1,
+                    source_task_id: null,
+                    target_task_id: 1,
+                    linkage_type: "Start"
+                },
+                {
+                    source_task_id: 1,
+                    target_task_id: 2,
+                    linkage_type: "Success"
+                },
+                {
+                    source_task_id: 2,
+                    target_task_id: 3,
+                    linkage_type: "Valid"
+                },
+                {
+                    source_task_id: 3,
+                    target_task_id: 4,
+                    linkage_type: "Sent"
+                },
+                {
+                    source_task_id: 4,
+                    target_workflow_id: 1,
+                    linkage_type: "Complete"
+                }
+            ]
+        };
+
+        // Simple test
+        setTimeout(() => {
+            if (window.initWorkflowGraph) {
+                console.log('Testing JointJS workflow graph...');
+                window.initWorkflowGraph('workflow-test', sampleWorkflowData);
+            } else {
+                console.error('initWorkflowGraph not available');
+                document.getElementById('workflow-test').innerHTML =
+                    '<div style="padding: 20px; color: red;">Error: Workflow graph component not loaded</div>';
+            }
+        }, 1000);
+    </script>
+</body>
+</html>
