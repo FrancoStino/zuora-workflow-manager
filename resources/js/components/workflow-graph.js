@@ -782,10 +782,10 @@ function initWorkflowGraph(containerId, workflowData) {
 
     console.log('Graph cells:', currentGraph.getCells().length);
 
-    // Fit to content with proper padding
-    setTimeout(() => {
+    // Function to fit content to viewport
+    const fitToViewport = () => {
       const graphBBox = currentGraph.getBBox();
-      console.log('Graph bounding box:', graphBBox);
+      console.log('Fitting to viewport, bbox:', graphBBox);
       
       if (graphBBox.width > 0 && graphBBox.height > 0) {
         currentPaper.transformToFitContent({
@@ -798,26 +798,66 @@ function initWorkflowGraph(containerId, workflowData) {
         });
         console.log('Content fitted to viewport');
       }
-    }, 100);
+    };
 
-    // Handle window resize
+    // Wait for paper to be fully rendered using requestAnimationFrame
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        fitToViewport();
+      });
+    });
+
+    // Handle window resize with requestAnimationFrame debounce
+    let resizeRafId;
+    let resizeTimeout;
     const handleResize = () => {
-      setTimeout(() => {
-        const bbox = currentGraph.getBBox();
-        if (bbox.width > 0 && bbox.height > 0) {
-          currentPaper.transformToFitContent({
-            padding: 60,
-            minScale: 0.4,
-            maxScale: 1.5,
-            verticalAlign: 'middle',
-            horizontalAlign: 'middle',
-            useModelGeometry: true
-          });
-        }
-      }, 100);
+      // Cancel any pending animation frame
+      if (resizeRafId) {
+        cancelAnimationFrame(resizeRafId);
+      }
+      
+      // Cancel previous timeout
+      clearTimeout(resizeTimeout);
+      
+      // Wait 150ms of "silence", then use rAF for smooth animation
+      resizeTimeout = setTimeout(() => {
+        resizeRafId = requestAnimationFrame(() => {
+          fitToViewport();
+        });
+      }, 150);
     };
 
     window.addEventListener('resize', handleResize);
+
+    // Observe container visibility changes (for tab switching)
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting && entry.intersectionRatio > 0) {
+          console.log('Container became visible, refitting...');
+          // Use double rAF to ensure container is fully rendered
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              fitToViewport();
+            });
+          });
+        }
+      });
+    }, { threshold: 0.1 });
+
+    observer.observe(container);
+
+    // Cleanup on destroy
+    const cleanup = () => {
+      window.removeEventListener('resize', handleResize);
+      observer.disconnect();
+      clearTimeout(resizeTimeout);
+      if (resizeRafId) {
+        cancelAnimationFrame(resizeRafId);
+      }
+    };
+
+    // Store cleanup function for potential future use
+    container._workflowCleanup = cleanup;
 
     // Add theme switcher
     const themeSwitch = document.createElement('div');
