@@ -419,9 +419,9 @@ function parseZuoraWorkflow(workflowData) {
       throw new Error('Invalid workflow data format');
     }
 
-    // Create Start node at the beginning of the linear layout
-    const startX = 50;
-    const startY = 100; // Same Y as tasks for horizontal alignment
+    // Create Start node (position will be set by DirectedGraph layout)
+    const startX = 0;
+    const startY = 0;
 
     const startNode = createStart(startX, startY, "Start");
     startNode.taskId = 'start'; // Store identifier for linking
@@ -444,11 +444,11 @@ function parseZuoraWorkflow(workflowData) {
 
         const actionType = task.action_type || task.type || 'task';
 
-        // Create horizontal linear layout instead of using CSS positions
-        const x = 150 + (index * 250); // 250px spacing between nodes
-        const y = 100; // All tasks on the same horizontal line
+        // Initial position (will be recalculated by DirectedGraph layout)
+        const x = 0;
+        const y = 0;
 
-        console.log('Creating task', task.id, 'at linear position:', x, y);
+        console.log('Creating task', task.id, '(position will be set by layout)');
 
         // Use Decision shape for approval/wait tasks, Step for others
         let node;
@@ -467,14 +467,14 @@ function parseZuoraWorkflow(workflowData) {
       throw new Error('Workflow data must contain a tasks array');
     }
 
-    // Create End node at the end of the linear layout
+    // Create End node (position will be set by DirectedGraph layout)
     const taskCount = workflow.tasks?.length || 0;
     if (taskCount === 0) {
       throw new Error('No valid tasks found in workflow');
     }
 
-    const endX = 150 + (taskCount * 250) + 200; // After last task + spacing
-    const endY = 100; // Same Y as tasks for horizontal alignment
+    const endX = 0;
+    const endY = 0;
 
     const endNode = createEnd(endX, endY, "End");
     endNode.taskId = 'end'; // Store identifier for linking
@@ -756,10 +756,6 @@ function initWorkflowGraph(containerId, workflowData) {
     currentGraph.addCells(elements);
     console.log('Elements added to graph');
 
-    // For now, skip automatic layout and use manual positioning like the original template
-    // TODO: Implement proper layout later
-    console.log('Skipping automatic layout for now');
-
     // Now create links using the positioned elements
     const links = createWorkflowLinks(workflowData, elements);
     console.log('Created links:', links.length);
@@ -770,44 +766,39 @@ function initWorkflowGraph(containerId, workflowData) {
       console.log('Links added to graph');
     }
 
-    // Set initial zoom and position to show content properly
-    setTimeout(() => {
-      const graphBBox = currentGraph.getBBox();
-      console.log('Graph bounding box:', graphBBox);
-      console.log('Paper size:', currentPaper.getComputedSize());
-
-      if (graphBBox.width > 0 && graphBBox.height > 0) {
-        // Set a reasonable zoom level (zoom out to see more)
-        const paperSize = currentPaper.getComputedSize();
-        const scaleX = (paperSize.width * 0.8) / graphBBox.width;
-        const scaleY = (paperSize.height * 0.8) / graphBBox.height;
-        const scale = Math.min(scaleX, scaleY, 1); // Don't zoom in, only out
-
-        console.log('Calculated scale:', scale);
-
-        // Apply zoom and center
-        currentPaper.scale(scale);
-        currentPaper.translate(
-          paperSize.width / 2 - (graphBBox.x + graphBBox.width / 2) * scale,
-          paperSize.height / 2 - (graphBBox.y + graphBBox.height / 2) * scale
-        );
-
-        console.log('Content scaled and centered');
-      } else {
-        console.log('Invalid bounding box, elements may not be positioned correctly');
-      }
-    }, 100);
+    // Apply DirectedGraph layout algorithm for proper spacing
+    console.log('Applying DirectedGraph layout...');
+    DirectedGraph.layout(currentGraph, {
+      nodeSep: 80,        // Horizontal spacing between nodes
+      edgeSep: 40,        // Spacing between edges
+      rankSep: 150,       // Vertical spacing between ranks
+      rankDir: 'LR',      // Left to Right direction
+      marginX: 50,        // Margin on X axis
+      marginY: 50,        // Margin on Y axis
+      resizeCluster: true,
+      clusterPadding: { top: 10, left: 10, right: 10, bottom: 10 }
+    });
+    console.log('Layout applied');
 
     console.log('Graph cells:', currentGraph.getCells().length);
 
-    // Fit to content
-    const graphBBox = currentGraph.getBBox();
-    currentPaper.transformToFitContent({
-      padding: 50,
-      contentArea: graphBBox,
-      verticalAlign: 'middle',
-      horizontalAlign: 'middle'
-    });
+    // Fit to content with proper padding
+    setTimeout(() => {
+      const graphBBox = currentGraph.getBBox();
+      console.log('Graph bounding box:', graphBBox);
+      
+      if (graphBBox.width > 0 && graphBBox.height > 0) {
+        currentPaper.transformToFitContent({
+          padding: 60,
+          minScale: 0.4,
+          maxScale: 1.5,
+          verticalAlign: 'middle',
+          horizontalAlign: 'middle',
+          useModelGeometry: true
+        });
+        console.log('Content fitted to viewport');
+      }
+    }, 100);
 
     // Handle window resize
     const handleResize = () => {
@@ -815,10 +806,12 @@ function initWorkflowGraph(containerId, workflowData) {
         const bbox = currentGraph.getBBox();
         if (bbox.width > 0 && bbox.height > 0) {
           currentPaper.transformToFitContent({
-            padding: 50,
-            contentArea: bbox,
+            padding: 60,
+            minScale: 0.4,
+            maxScale: 1.5,
             verticalAlign: 'middle',
-            horizontalAlign: 'middle'
+            horizontalAlign: 'middle',
+            useModelGeometry: true
           });
         }
       }, 100);
