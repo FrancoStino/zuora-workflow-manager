@@ -131,14 +131,17 @@ const jointStyles = `
   .jj-flow-label-body {
     stroke: var(--flow-label-stroke-color);
     fill: var(--flow-label-fill-color);
-    stroke-width: calc(var(--flow-spacing));
+    stroke-width: 2;
+    rx: 4;
+    ry: 4;
   }
 
   .jj-flow-label-text {
     fill: var(--flow-label-text-color);
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    font-style: italic;
-    font-size: 12px;
+    font-style: normal;
+    font-size: 13px;
+    font-weight: 600;
   }
 
   .jj-flow-arrowhead {
@@ -219,6 +222,198 @@ const jointStyles = `
   .dark-icon {
     right: 6px;
   }
+
+  /* Task Details Modal */
+  .task-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    animation: fadeIn 0.2s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .task-modal {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    max-width: 800px;
+    width: 90%;
+    max-height: 85vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    animation: slideUp 0.3s ease-out;
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .task-modal-header {
+    padding: 24px;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .task-modal-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #111827;
+    margin: 0;
+  }
+
+  .task-modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #6b7280;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    transition: all 0.15s;
+  }
+
+  .task-modal-close:hover {
+    background-color: #f3f4f6;
+    color: #111827;
+  }
+
+  .task-modal-body {
+    padding: 24px;
+    overflow-y: auto;
+    flex: 1;
+  }
+
+  .task-info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .task-info-item {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .task-info-label {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #6b7280;
+    margin-bottom: 4px;
+    letter-spacing: 0.05em;
+  }
+
+  .task-info-value {
+    font-size: 14px;
+    color: #111827;
+    font-weight: 500;
+  }
+
+  .task-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 600;
+    background-color: #dbeafe;
+    color: #1e40af;
+  }
+
+  .task-section {
+    margin-top: 24px;
+  }
+
+  .task-section-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 12px;
+  }
+
+  .task-json-container {
+    background-color: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 16px;
+    overflow-x: auto;
+  }
+
+  .task-json-container pre {
+    margin: 0;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    color: #374151;
+  }
+
+  .dark-theme .task-modal {
+    background: #1f2937;
+  }
+
+  .dark-theme .task-modal-header {
+    border-bottom-color: #374151;
+  }
+
+  .dark-theme .task-modal-title {
+    color: #f9fafb;
+  }
+
+  .dark-theme .task-modal-close {
+    color: #9ca3af;
+  }
+
+  .dark-theme .task-modal-close:hover {
+    background-color: #374151;
+    color: #f9fafb;
+  }
+
+  .dark-theme .task-info-label {
+    color: #9ca3af;
+  }
+
+  .dark-theme .task-info-value {
+    color: #f9fafb;
+  }
+
+  .dark-theme .task-json-container {
+    background-color: #111827;
+    border-color: #374151;
+  }
+
+  .dark-theme .task-json-container pre {
+    color: #e5e7eb;
+  }
+
+  .dark-theme .task-section-title {
+    color: #f9fafb;
+  }
 `;
 
 // Inject JointJS styles
@@ -252,6 +447,179 @@ const fontAttributes = {
 // Global variables for graph and paper
 let currentGraph = null;
 let currentPaper = null;
+
+// Function to create and show task details modal
+function showTaskModal( taskData ) {
+	// Remove any existing modal
+	const existingModal = document.querySelector( '.task-modal-overlay' );
+	if ( existingModal ) {
+		existingModal.remove();
+	}
+
+	// Create modal overlay
+	const overlay = document.createElement( 'div' );
+	overlay.className = 'task-modal-overlay';
+
+	// Create modal content
+	const modal = document.createElement( 'div' );
+	modal.className = 'task-modal';
+
+	// Header
+	const header = document.createElement( 'div' );
+	header.className = 'task-modal-header';
+
+	const title = document.createElement( 'h2' );
+	title.className = 'task-modal-title';
+	title.textContent = taskData.name || 'Task Details';
+
+	const closeBtn = document.createElement( 'button' );
+	closeBtn.className = 'task-modal-close';
+	closeBtn.innerHTML = '&times;';
+	closeBtn.onclick = () => overlay.remove();
+
+	header.appendChild( title );
+	header.appendChild( closeBtn );
+
+	// Body
+	const body = document.createElement( 'div' );
+	body.className = 'task-modal-body';
+
+	// Info grid
+	const infoGrid = document.createElement( 'div' );
+	infoGrid.className = 'task-info-grid';
+
+	// Helper function to add info item
+	const addInfoItem = ( label, value ) => {
+		const item = document.createElement( 'div' );
+		item.className = 'task-info-item';
+
+		const labelEl = document.createElement( 'div' );
+		labelEl.className = 'task-info-label';
+		labelEl.textContent = label;
+
+		const valueEl = document.createElement( 'div' );
+		valueEl.className = 'task-info-value';
+
+		if ( typeof value === 'object' && value !== null ) {
+			valueEl.textContent = JSON.stringify( value );
+		} else {
+			valueEl.textContent = value || 'N/A';
+		}
+
+		item.appendChild( labelEl );
+		item.appendChild( valueEl );
+		infoGrid.appendChild( item );
+	};
+
+	// Add basic info
+	addInfoItem( 'Task ID', taskData.id );
+	addInfoItem( 'Action Type', taskData.action_type );
+	
+	if ( taskData.object ) {
+		addInfoItem( 'Object', taskData.object );
+	}
+	
+	if ( taskData.call_type ) {
+		addInfoItem( 'Call Type', taskData.call_type );
+	}
+	
+	if ( taskData.priority ) {
+		addInfoItem( 'Priority', taskData.priority );
+	}
+	
+	if ( taskData.concurrent_limit ) {
+		addInfoItem( 'Concurrent Limit', taskData.concurrent_limit );
+	}
+
+	body.appendChild( infoGrid );
+
+	// Parameters section
+	if ( taskData.parameters && Object.keys( taskData.parameters ).length > 0 ) {
+		const paramsSection = document.createElement( 'div' );
+		paramsSection.className = 'task-section';
+
+		const paramsTitle = document.createElement( 'h3' );
+		paramsTitle.className = 'task-section-title';
+		paramsTitle.textContent = 'Parametri';
+
+		const paramsContainer = document.createElement( 'div' );
+		paramsContainer.className = 'task-json-container';
+
+		const paramsPre = document.createElement( 'pre' );
+		paramsPre.textContent = JSON.stringify( taskData.parameters, null, 2 );
+
+		paramsContainer.appendChild( paramsPre );
+		paramsSection.appendChild( paramsTitle );
+		paramsSection.appendChild( paramsContainer );
+		body.appendChild( paramsSection );
+	}
+
+	// CSS Position section
+	if ( taskData.css ) {
+		const cssSection = document.createElement( 'div' );
+		cssSection.className = 'task-section';
+
+		const cssTitle = document.createElement( 'h3' );
+		cssTitle.className = 'task-section-title';
+		cssTitle.textContent = 'Posizione CSS';
+
+		const cssContainer = document.createElement( 'div' );
+		cssContainer.className = 'task-json-container';
+
+		const cssPre = document.createElement( 'pre' );
+		cssPre.textContent = JSON.stringify( taskData.css, null, 2 );
+
+		cssContainer.appendChild( cssPre );
+		cssSection.appendChild( cssTitle );
+		cssSection.appendChild( cssContainer );
+		body.appendChild( cssSection );
+	}
+
+	// Tags section
+	if ( taskData.tags && taskData.tags.length > 0 ) {
+		const tagsSection = document.createElement( 'div' );
+		tagsSection.className = 'task-section';
+
+		const tagsTitle = document.createElement( 'h3' );
+		tagsTitle.className = 'task-section-title';
+		tagsTitle.textContent = 'Tags';
+
+		const tagsContainer = document.createElement( 'div' );
+		tagsContainer.className = 'task-json-container';
+
+		const tagsPre = document.createElement( 'pre' );
+		tagsPre.textContent = JSON.stringify( taskData.tags, null, 2 );
+
+		tagsContainer.appendChild( tagsPre );
+		tagsSection.appendChild( tagsTitle );
+		tagsSection.appendChild( tagsContainer );
+		body.appendChild( tagsSection );
+	}
+
+	// Assemble modal
+	modal.appendChild( header );
+	modal.appendChild( body );
+	overlay.appendChild( modal );
+
+	// Add to document
+	document.body.appendChild( overlay );
+
+	// Close on overlay click
+	overlay.addEventListener( 'click', ( e ) => {
+		if ( e.target === overlay ) {
+			overlay.remove();
+		}
+	} );
+
+	// Close on Escape key
+	const escapeHandler = ( e ) => {
+		if ( e.key === 'Escape' ) {
+			overlay.remove();
+			document.removeEventListener( 'keydown', escapeHandler );
+		}
+	};
+	document.addEventListener( 'keydown', escapeHandler );
+}
 
 // Flowchart element creation functions (from template)
 function createStart( x, y, text ) {
@@ -393,11 +761,41 @@ function createFlow( source, target, sourceAnchor = "right", targetAnchor = "lef
 
 	if ( label ) {
 		link.labels( [{
+			position: {
+				distance: 0.5,  // Position at 50% of the link (center)
+				offset: 0       // No offset from the link line
+			},
 			attrs: {
+				labelBody: {
+					class: "jj-flow-label-body",
+					ref: "labelText",
+					refX: -8,
+					refY: -8,
+					refWidth: '100%',
+					refHeight: '100%',
+					refWidth2: 16,
+					refHeight2: 16,
+					rx: 4,
+					ry: 4
+				},
 				labelText: {
-					text: label
+					class: "jj-flow-label-text",
+					text: label,
+					textAnchor: "middle",
+					textVerticalAnchor: "middle",
+					...fontAttributes
 				}
-			}
+			},
+			markup: [
+				{
+					tagName: "rect",
+					selector: "labelBody"
+				},
+				{
+					tagName: "text",
+					selector: "labelText"
+				}
+			]
 		}] );
 	}
 
@@ -459,8 +857,9 @@ function parseZuoraWorkflow( workflowData ) {
 					node = createStep( x, y, task.name || 'Task ' + task.id );
 				}
 
-				// Store original task ID for linking
+				// Store original task ID and full task data for linking and modal display
 				node.taskId = task.id.toString();
+				node.taskData = task; // Store complete task data
 				elements.push( node );
 			} );
 		} else {
@@ -528,8 +927,10 @@ function createWorkflowLinks( workflowData, elements ) {
 					}
 
 					if ( fromElement && toElement ) {
-						console.log( 'Creating link from', fromElement.taskId, 'to', toElement.taskId );
-						const link = createFlow( fromElement, toElement, "right", "left", linkage.linkage_type || "" );
+						console.log( 'Creating link from', fromElement.taskId, 'to', toElement.taskId, 'with label:', linkage.linkage_type );
+						// Always show linkage_type label, default to empty string if not present
+						const labelText = linkage.linkage_type || "";
+						const link = createFlow( fromElement, toElement, "right", "left", labelText );
 						links.push( link );
 					} else {
 						console.warn( 'Could not find elements for linkage:', linkage );
@@ -900,6 +1301,21 @@ function initWorkflowGraph( containerId, workflowData ) {
 			MaskHighlighter.removeAll( currentPaper, 'frame' );
 		} );
 
+		// Add click event for nodes to show task details modal
+		currentPaper.on( 'element:pointerclick', ( cellView ) => {
+			const element = cellView.model;
+			
+			// Check if this is a task node (not Start or End)
+			if ( element.taskData ) {
+				console.log( 'Task clicked:', element.taskData );
+				showTaskModal( element.taskData );
+			} else if ( element.taskId === 'start' ) {
+				console.log( 'Start node clicked' );
+			} else if ( element.taskId === 'end' ) {
+				console.log( 'End node clicked' );
+			}
+		} );
+
 		currentPaper.on( 'link:pointerclick', ( cellView ) => {
 			currentPaper.removeTools();
 			dia.HighlighterView.removeAll( currentPaper );
@@ -997,6 +1413,52 @@ function initWorkflowGraph( containerId, workflowData ) {
 
 		// Set initial cursor style for blank area
 		container.style.cursor = 'grab';
+
+		// Mouse wheel zoom functionality
+		const MIN_SCALE = 0.2;
+		const MAX_SCALE = 3.0;
+		const ZOOM_STEP = 0.1;
+
+		container.addEventListener( 'wheel', ( evt ) => {
+			evt.preventDefault();
+
+			// Get current scale
+			const currentScale = currentPaper.scale();
+			const sx = currentScale.sx;
+
+			// Calculate new scale based on wheel direction
+			const delta = evt.deltaY > 0 ? -ZOOM_STEP : ZOOM_STEP;
+			let newScale = sx + delta;
+
+			// Clamp scale to min/max values
+			newScale = Math.max( MIN_SCALE, Math.min( MAX_SCALE, newScale ) );
+
+			// Get mouse position relative to the paper
+			const paperRect = container.getBoundingClientRect();
+			const mouseX = evt.clientX - paperRect.left;
+			const mouseY = evt.clientY - paperRect.top;
+
+			// Get current translation
+			const currentTranslate = currentPaper.translate();
+
+			// Calculate the point in the graph that's under the mouse
+			const pointBeforeZoom = {
+				x: ( mouseX - currentTranslate.tx ) / sx,
+				y: ( mouseY - currentTranslate.ty ) / sx
+			};
+
+			// Apply new scale
+			currentPaper.scale( newScale, newScale );
+
+			// Calculate new translation to keep the point under the mouse
+			const newTranslate = {
+				tx: mouseX - pointBeforeZoom.x * newScale,
+				ty: mouseY - pointBeforeZoom.y * newScale
+			};
+
+			// Apply new translation
+			currentPaper.translate( newTranslate.tx, newTranslate.ty );
+		}, {passive: false} );
 
 		console.log( 'JointJS workflow graph rendered successfully' );
 		console.log( '=== JOINTJS WORKFLOW GRAPH INIT END ===' );
