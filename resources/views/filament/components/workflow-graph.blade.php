@@ -74,8 +74,8 @@
 					// Cleanup function when component is destroyed
 					const cleanup = () => {
 						const container = document.getElementById( containerId );
-						if ( container && typeof container.cleanup === 'function' ) {
-							container.cleanup();
+						if ( container && typeof container._workflowCleanup === 'function' ) {
+							container._workflowCleanup();
 						}
 					};
 
@@ -102,7 +102,7 @@
 					} );
 
 					// Delay to ensure all scripts are loaded
-					setTimeout( initGraph, 1000 );
+					setTimeout( initGraph, 100 );
 				} );
 			} );
 		</script>
