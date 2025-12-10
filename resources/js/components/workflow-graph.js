@@ -639,8 +639,8 @@ function initWorkflowGraph( containerId, workflowData ) {
 			},
 			defaultRouter: {name: "rightAngle", args: {margin: unit * 7}},
 			defaultConnector: {
-				name: "straight",
-				args: {cornerType: "line", cornerPreserveAspectRatio: true}
+				name: "rounded",
+				args: {radius: 8}
 			},
 			// Add the default link settings
 			defaultLink: new shapes.standard.Link( {
