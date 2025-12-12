@@ -7,6 +7,7 @@ export default defineConfig( {
 		laravel( {
 			input:   [
 				'resources/css/app.css',
+				'resources/css/workflow-graph.css',
 				'resources/js/app.js',
 				'vendor/resma/filament-awin-theme/resources/css/theme.css'
 			],

@@ -4,6 +4,7 @@ namespace App\Providers\Filament;
 
 use App\Filament\Pages\Auth\Login;
 use App\Filament\Pages\Setup;
+use App\Filament\Resources\Workflows\Pages\ViewWorkflow;
 use App\Http\Middleware\CheckSetupCompleted;
 use App\Http\Middleware\RequireAuthAfterSetup;
 use App\Services\OAuthService;
@@ -47,6 +48,7 @@ class AdminPanelProvider extends PanelProvider
             ->darkModeBrandLogo(asset('images/logo-white.svg'))
             ->brandLogoHeight('2rem')
             ->favicon(asset('images/favicon.ico'))
+            ->sidebarCollapsibleOnDesktop()
             ->navigationGroups([
                 'Zuora Management',
             ])
@@ -76,8 +78,25 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authGuard('web')
             ->renderHook(
-                PanelsRenderHook::SIDEBAR_NAV_START,
-                fn () => view('filament.components.navigation-filter'))
+                PanelsRenderHook::STYLES_AFTER,
+                function () {
+                    $manifest = json_decode(file_get_contents(public_path('build/manifest.json')), true);
+                    $cssFile = $manifest['resources/css/workflow-graph.css']['file'] ?? 'assets/workflow-graph.css';
+
+                    return '<link rel="stylesheet" href="'.asset('build/'.$cssFile).'">';
+                },
+                scopes : [ViewWorkflow::class]
+            )
+            ->renderHook(
+                PanelsRenderHook::SCRIPTS_AFTER,
+                function () {
+                    $manifest = json_decode(file_get_contents(public_path('build/manifest.json')), true);
+                    $appJs = $manifest['resources/js/app.js']['file'] ?? 'assets/app.js';
+
+                    return '<script type="module" src="'.asset('build/'.$appJs).'"></script>';
+                },
+                scopes : [ViewWorkflow::class]
+            )
             ->renderHook(
                 PanelsRenderHook::FOOTER,
                 fn () => view('footer'))

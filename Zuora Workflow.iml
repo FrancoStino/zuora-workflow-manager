@@ -170,6 +170,7 @@
       <excludeFolder url="file://$MODULE_DIR$/vendor/barryvdh/laravel-debugbar" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/php-debugbar/php-debugbar" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/codebar-ag/laravel-filament-json-field" />
+      <excludeFolder url="file://$MODULE_DIR$/storage/debugbar" />
     </content>
     <orderEntry type="sourceFolder" forTests="false" />
   </component>

@@ -7,6 +7,7 @@ use App\Filament\Resources\Workflows\WorkflowResource;
 use CodebarAg\FilamentJsonField\Infolists\Components\JsonEntry;
 use Filament\Actions\Action;
 use Filament\Infolists\Components\TextEntry;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
@@ -135,9 +136,32 @@ class ViewWorkflow extends ViewRecord
                         Tab::make('Workflow Json')
                             ->icon(Heroicon::CodeBracket)
                             ->schema([
+                                Action::make('Copy Json')
+                                    ->label('Copy JSON')
+                                    ->icon(Heroicon::OutlinedClipboardDocument)
+                                    ->action(function ($livewire, $record) {
+                                        $jsonData = is_string($record->json_export) ? $record->json_export : json_encode($record->json_export);
+                                        $livewire->js('navigator.clipboard.writeText('.json_encode($jsonData).');');
+                                        Notification::make()
+                                            ->success()
+                                            ->title('Success')
+                                            ->body('JSON copied to clipboard')
+                                            ->send();
+                                    }),
+
                                 JsonEntry::make('json_export')
                                     ->hiddenLabel()
                                     ->darkTheme(),
+
+                            ]),
+                        Tab::make('Graphical View')
+                            ->icon(Heroicon::OutlinedChartBar)
+                            ->schema([
+                                \Filament\Infolists\Components\ViewEntry::make('workflow_graph')
+                                    ->hiddenLabel()
+                                    ->view('filament.components.workflow-graph', [
+                                        'workflowData' => $this->record->json_export,
+                                    ]),
                             ]),
                     ]),
             ]);
