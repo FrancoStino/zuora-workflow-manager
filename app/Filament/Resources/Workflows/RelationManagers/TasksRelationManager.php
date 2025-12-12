@@ -101,6 +101,7 @@ class TasksRelationManager extends RelationManager
                     ->modalCancelActionLabel('Close')
                     ->schema(fn(): array => $this->getTaskInfolistSchema()),
             ])
+            ->recordAction('viewDetails')
             ->defaultSort('zuora_id', 'asc');
     }
 
