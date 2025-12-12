@@ -1,4 +1,27 @@
-# [1.3.1](https://github.com/FrancoStino/zuora-workflows/compare/v1.3.0...v1.3.1) (2025-12-07)
+# [1.4.0](https://github.com/FrancoStino/zuora-workflows/compare/v1.3.1...v1.4.0) (2025-12-12)
+
+
+### Bug Fixes
+
+* improve unique ID generation and styling ([d42b665](https://github.com/FrancoStino/zuora-workflows/commit/d42b66574755d511d03401c321561c70bead743c))
+* resolve ReactFlow integration issues ([90bd0c0](https://github.com/FrancoStino/zuora-workflows/commit/90bd0c0470d7a80be2b30fce2dff1503f2062a2b))
+* update app.js and tabs.js for better responsiveness ([74d78e9](https://github.com/FrancoStino/zuora-workflows/commit/74d78e964e150b626a70cde6c948641c9aac02e4))
+* update connector to rounded with radius 8 ([7cba5df](https://github.com/FrancoStino/zuora-workflows/commit/7cba5dfc2360593a2b79d907f7a2e237ece91e16))
+* update footer layout and border styles ([db79c4b](https://github.com/FrancoStino/zuora-workflows/commit/db79c4b45b80d7da7adf4eda25ea4e59ac795e9a))
+
+
+### Features
+
+* add Graphical View tab with placeholder ([0a96ded](https://github.com/FrancoStino/zuora-workflows/commit/0a96dedb98552719d6ea8ce4c465d406d1b307af))
+* add task modal styling and zoom functionality ([e69dd0f](https://github.com/FrancoStino/zuora-workflows/commit/e69dd0f7a2c71d6c8878600b860c3457e2fb4998))
+* add workflow graph rendering with layout and controls ([a80242d](https://github.com/FrancoStino/zuora-workflows/commit/a80242d6ec30e4fb858d8b5231e22e733c819849))
+* enhance ViewWorkflow with JSON copy action ([8e606eb](https://github.com/FrancoStino/zuora-workflows/commit/8e606eb00554c92ec9a50e48706bcf7a10e09b7d))
+* improve workflow graph layout and sizing ([5e411d3](https://github.com/FrancoStino/zuora-workflows/commit/5e411d399dd654705a8328d02beb1ccf9f8e6de7))
+* improve workflow graph responsiveness and cleanup ([2ca082d](https://github.com/FrancoStino/zuora-workflows/commit/2ca082d601bacb2727c4bd7a1995004f7197ad5b))
+
+
+
+## [1.3.1](https://github.com/FrancoStino/zuora-workflows/compare/v1.3.0...v1.3.1) (2025-12-07)
 
 
 
