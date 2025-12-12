@@ -10,11 +10,11 @@ use BackedEnum;
 use Exception;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Checkbox;
-use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
+use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Section;
@@ -94,16 +94,16 @@ class Setup extends Page implements HasForms
                         ->schema([
                             Section::make()
                                 ->schema([
-                                    Placeholder::make('welcome')
-                                        ->content(new HtmlString('Welcome to Zuora Workflows! This wizard will help you set up your application. You will create the first administrator account and configure OAuth and Zuora settings.')),
+                                    TextEntry::make('welcome')
+                                        ->state(new HtmlString('Welcome to Zuora Workflows! This wizard will help you set up your application. You will create the first administrator account and configure OAuth and Zuora settings.')),
                                 ]),
                         ]),
                     Step::make('OAuth Configuration')
                         ->description('Configure OAuth allowed domains')
                         ->columns(1)
                         ->schema([
-                            Placeholder::make('oauth_info')
-                                ->content(new HtmlString('Configure which email domains are allowed to login via Google OAuth. Leave empty to allow all domains.')),
+                            TextEntry::make('oauth_info')
+                                ->state(new HtmlString('Configure which email domains are allowed to login via Google OAuth. Leave empty to allow all domains.')),
                             Checkbox::make('allowed_domains_checkbox')
                                 ->label('Do you want configure allowed domain?')
                                 ->live(),
@@ -146,8 +146,8 @@ class Setup extends Page implements HasForms
                     Step::make('Summary')
                         ->description('Review and complete the setup')
                         ->schema([
-                            Placeholder::make('summary')
-                                ->content(new HtmlString('You are about to complete the setup. Please review the information and click "Complete Setup" to finalize the process.')),
+                            TextEntry::make('summary')
+                                ->state(new HtmlString('You are about to complete the setup. Please review the information and click "Complete Setup" to finalize the process.')),
                         ]),
                 ])
                     ->submitAction(
