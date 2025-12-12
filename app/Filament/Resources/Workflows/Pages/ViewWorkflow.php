@@ -188,7 +188,9 @@ class ViewWorkflow extends ViewRecord
 
     protected function getHeaderActions(): array
     {
-        $actionConfig = $this->createDownloadAction($this->record);
+        /** @var Workflow $workflow */
+        $workflow = $this->record;
+        $actionConfig = $this->createDownloadAction($workflow);
 
         return [
             Action::make('syncTasks')
