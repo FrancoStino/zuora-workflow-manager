@@ -21,178 +21,7 @@ const fontAttributes = {
 let currentGraph = null;
 let currentPaper = null;
 
-// Function to create and show task details modal
-function showTaskModal( taskData ) {
-	// Remove any existing modal
-	const existingModal = document.querySelector( '.task-modal-overlay' );
-	if ( existingModal ) {
-		existingModal.remove();
-	}
 
-	// Create modal overlay
-	const overlay = document.createElement( 'div' );
-	overlay.className = 'task-modal-overlay';
-
-	// Create modal content
-	const modal = document.createElement( 'div' );
-	modal.className = 'task-modal';
-
-	// Header
-	const header = document.createElement( 'div' );
-	header.className = 'task-modal-header';
-
-	const title = document.createElement( 'h2' );
-	title.className = 'task-modal-title';
-	title.textContent = taskData.name || 'Task Details';
-
-	const closeBtn = document.createElement( 'button' );
-	closeBtn.className = 'task-modal-close';
-	closeBtn.innerHTML = '&times;';
-	closeBtn.onclick = () => overlay.remove();
-
-	header.appendChild( title );
-	header.appendChild( closeBtn );
-
-	// Body
-	const body = document.createElement( 'div' );
-	body.className = 'task-modal-body';
-
-	// Info grid
-	const infoGrid = document.createElement( 'div' );
-	infoGrid.className = 'task-info-grid';
-
-	// Helper function to add info item
-	const addInfoItem = ( label, value ) => {
-		const item = document.createElement( 'div' );
-		item.className = 'task-info-item';
-
-		const labelEl = document.createElement( 'div' );
-		labelEl.className = 'task-info-label';
-		labelEl.textContent = label;
-
-		const valueEl = document.createElement( 'div' );
-		valueEl.className = 'task-info-value';
-
-		if ( typeof value === 'object' && value !== null ) {
-			valueEl.textContent = JSON.stringify( value );
-		} else {
-			valueEl.textContent = value || 'N/A';
-		}
-
-		item.appendChild( labelEl );
-		item.appendChild( valueEl );
-		infoGrid.appendChild( item );
-	};
-
-	// Add basic info
-	addInfoItem( 'Task ID', taskData.id );
-	addInfoItem( 'Action Type', taskData.action_type );
-	
-	if ( taskData.object ) {
-		addInfoItem( 'Object', taskData.object );
-	}
-	
-	if ( taskData.call_type ) {
-		addInfoItem( 'Call Type', taskData.call_type );
-	}
-	
-	if ( taskData.priority ) {
-		addInfoItem( 'Priority', taskData.priority );
-	}
-	
-	if ( taskData.concurrent_limit ) {
-		addInfoItem( 'Concurrent Limit', taskData.concurrent_limit );
-	}
-
-	body.appendChild( infoGrid );
-
-	// Parameters section
-	if ( taskData.parameters && Object.keys( taskData.parameters ).length > 0 ) {
-		const paramsSection = document.createElement( 'div' );
-		paramsSection.className = 'task-section';
-
-		const paramsTitle = document.createElement( 'h3' );
-		paramsTitle.className = 'task-section-title';
-		paramsTitle.textContent = 'Parametri';
-
-		const paramsContainer = document.createElement( 'div' );
-		paramsContainer.className = 'task-json-container';
-
-		const paramsPre = document.createElement( 'pre' );
-		paramsPre.textContent = JSON.stringify( taskData.parameters, null, 2 );
-
-		paramsContainer.appendChild( paramsPre );
-		paramsSection.appendChild( paramsTitle );
-		paramsSection.appendChild( paramsContainer );
-		body.appendChild( paramsSection );
-	}
-
-	// CSS Position section
-	if ( taskData.css ) {
-		const cssSection = document.createElement( 'div' );
-		cssSection.className = 'task-section';
-
-		const cssTitle = document.createElement( 'h3' );
-		cssTitle.className = 'task-section-title';
-		cssTitle.textContent = 'Posizione CSS';
-
-		const cssContainer = document.createElement( 'div' );
-		cssContainer.className = 'task-json-container';
-
-		const cssPre = document.createElement( 'pre' );
-		cssPre.textContent = JSON.stringify( taskData.css, null, 2 );
-
-		cssContainer.appendChild( cssPre );
-		cssSection.appendChild( cssTitle );
-		cssSection.appendChild( cssContainer );
-		body.appendChild( cssSection );
-	}
-
-	// Tags section
-	if ( taskData.tags && taskData.tags.length > 0 ) {
-		const tagsSection = document.createElement( 'div' );
-		tagsSection.className = 'task-section';
-
-		const tagsTitle = document.createElement( 'h3' );
-		tagsTitle.className = 'task-section-title';
-		tagsTitle.textContent = 'Tags';
-
-		const tagsContainer = document.createElement( 'div' );
-		tagsContainer.className = 'task-json-container';
-
-		const tagsPre = document.createElement( 'pre' );
-		tagsPre.textContent = JSON.stringify( taskData.tags, null, 2 );
-
-		tagsContainer.appendChild( tagsPre );
-		tagsSection.appendChild( tagsTitle );
-		tagsSection.appendChild( tagsContainer );
-		body.appendChild( tagsSection );
-	}
-
-	// Assemble modal
-	modal.appendChild( header );
-	modal.appendChild( body );
-	overlay.appendChild( modal );
-
-	// Add to document
-	document.body.appendChild( overlay );
-
-	// Close on overlay click
-	overlay.addEventListener( 'click', ( e ) => {
-		if ( e.target === overlay ) {
-			overlay.remove();
-		}
-	} );
-
-	// Close on Escape key
-	const escapeHandler = ( e ) => {
-		if ( e.key === 'Escape' ) {
-			overlay.remove();
-			document.removeEventListener( 'keydown', escapeHandler );
-		}
-	};
-	document.addEventListener( 'keydown', escapeHandler );
-}
 
 // Flowchart element creation functions (from template)
 function createStart( x, y, text ) {
@@ -875,14 +704,66 @@ function initWorkflowGraph( containerId, workflowData ) {
 			MaskHighlighter.removeAll( currentPaper, 'frame' );
 		} );
 
-		// Add click event for nodes to show task details modal
+		// Add click event for nodes to show task details slide-over
 		currentPaper.on( 'element:pointerclick', ( cellView ) => {
 			const element = cellView.model;
-			
+
 			// Check if this is a task node (not Start or End)
 			if ( element.taskData ) {
 				console.log( 'Task clicked:', element.taskData );
-				showTaskModal( element.taskData );
+
+				// Try to find the corresponding table row and trigger the slide-over action
+				const taskId = element.taskData.id;
+				console.log( 'Looking for table row with task ID:', taskId );
+
+				// Try different selectors to find the table row
+				let tableRow = document.querySelector(`tr[data-id="${taskId}"]`);
+
+				if ( !tableRow ) {
+					// Try to find by task_id column content
+					const rows = document.querySelectorAll('table tbody tr');
+					for ( const row of rows ) {
+						const firstCell = row.querySelector('td:first-child');
+						if ( firstCell && firstCell.textContent.trim() === taskId.toString() ) {
+							tableRow = row;
+							break;
+						}
+					}
+				}
+
+				console.log( 'Found table row:', tableRow );
+
+				if ( tableRow ) {
+					// Find the button and click it
+					const buttons = tableRow.querySelectorAll('button');
+					console.log( 'Found buttons in row:', buttons );
+
+					let actionButton = null;
+					for ( const button of buttons ) {
+						const wireClick = button.getAttribute('wire:click');
+						console.log( 'Button wire:click:', wireClick );
+						if ( wireClick && wireClick.includes('viewDetails') ) {
+							actionButton = button;
+							break;
+						}
+					}
+
+					if ( actionButton ) {
+						console.log( 'Found viewDetails button, dispatching click event' );
+						// Try multiple ways to trigger the click
+						try {
+							actionButton.click();
+						} catch (e) {
+							actionButton.dispatchEvent(new Event('click', {bubbles: true, cancelable: true}));
+						}
+					} else {
+						console.log( 'viewDetails button not found, triggering click on table row' );
+						tableRow.click();
+					}
+				} else {
+					// Table row not found - could show a message or do nothing
+					console.log( 'Table row not found, cannot open slide-over' );
+				}
 			} else if ( element.taskId === 'start' ) {
 				console.log( 'Start node clicked' );
 			} else if ( element.taskId === 'end' ) {

@@ -46,7 +46,7 @@ class ViewWorkflow extends ViewRecord
                         Grid::make([
                             'sm' => 1,
                             'md' => 2,
-                            'xl' => 3,
+                            'xl' => 4,
                         ])
                             ->schema([
                                 TextEntry::make('zuora_id')
@@ -61,12 +61,12 @@ class ViewWorkflow extends ViewRecord
 
                                 TextEntry::make('state')
                                     ->label('Status')
-                                    ->icon(fn (string $state) => match ($state) {
+                                    ->icon(fn(string $state) => match ($state) {
                                         'Active' => Heroicon::CheckCircle,
                                         'Inactive' => Heroicon::XCircle,
                                         default => Heroicon::QuestionMarkCircle,
                                     })
-                                    ->color(fn (string $state): string => match ($state) {
+                                    ->color(fn(string $state): string => match ($state) {
                                         'Active' => 'success',
                                         'Inactive' => 'danger',
                                         default => 'gray',
@@ -86,7 +86,7 @@ class ViewWorkflow extends ViewRecord
                                     ->label('Last Sync')
                                     ->icon(Heroicon::ArrowPath)
                                     ->formatStateUsing(function ($state) {
-                                        if (! $state) {
+                                        if (!$state) {
                                             return 'Never';
                                         }
 
@@ -94,31 +94,12 @@ class ViewWorkflow extends ViewRecord
 
                                         return $daysSince === 0 ? 'Today' : "$daysSince days ago";
                                     }),
-                            ]),
-                    ]),
-
-                Grid::make([
-                    'sm' => 1,
-                    'md' => 2,
-                ])
-                    ->columnSpanFull()
-                    ->schema([
-
-                        Section::make('Customer Information')
-                            ->description('Associated customer details')
-                            ->icon(Heroicon::UserCircle)
-                            ->schema([
                                 TextEntry::make('customer.name')
                                     ->label('Customer Name')
                                     ->icon(Heroicon::BuildingOffice)
                                     ->weight(FontWeight::Bold)
                                     ->color('primary'),
-                            ]),
 
-                        Section::make('Technical Details')
-                            ->description('System-level information')
-                            ->icon(Heroicon::CodeBracket)
-                            ->schema([
                                 TextEntry::make('id')
                                     ->label('Internal ID')
                                     ->icon(Heroicon::Key)
@@ -126,17 +107,17 @@ class ViewWorkflow extends ViewRecord
 
                             ]),
                     ]),
+
+                RelationManager::make()
+                    ->columnSpanFull()
+                    ->manager(TasksRelationManager::class)
+                    ->lazy(),
+
+
                 Tabs::make('Tabs')
                     ->columnSpanFull()
                     ->contained(false)
                     ->tabs([
-                        Tab::make('Tasks')
-                            ->icon(Heroicon::OutlinedRectangleStack)
-                            ->schema([
-                                RelationManager::make()
-                                    ->manager(TasksRelationManager::class)
-                                    ->lazy(),
-                            ]),
                         Tab::make('Workflow Json')
                             ->icon(Heroicon::CodeBracket)
                             ->schema([
@@ -145,7 +126,7 @@ class ViewWorkflow extends ViewRecord
                                     ->icon(Heroicon::OutlinedClipboardDocument)
                                     ->action(function ($livewire, $record) {
                                         $jsonData = is_string($record->json_export) ? $record->json_export : json_encode($record->json_export);
-                                        $livewire->js('navigator.clipboard.writeText('.json_encode($jsonData).');');
+                                        $livewire->js('navigator.clipboard.writeText(' . json_encode($jsonData) . ');');
                                         Notification::make()
                                             ->success()
                                             ->title('Success')
@@ -173,7 +154,7 @@ class ViewWorkflow extends ViewRecord
 
     private function calculateDaysSinceSync($lastSyncedAt): int
     {
-        return (int) abs(now()->diffInDays($lastSyncedAt));
+        return (int)abs(now()->diffInDays($lastSyncedAt));
     }
 
     public function getSubheading(): ?string
