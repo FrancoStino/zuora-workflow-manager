@@ -11,6 +11,7 @@ use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
+use Filament\Support\Icons\Heroicon;
 use Log;
 
 class ListWorkflows extends ListRecords
@@ -24,7 +25,7 @@ class ListWorkflows extends ListRecords
         return [
             Action::make('sync_all')
                 ->label('Sync All Customers')
-                ->icon('heroicon-o-arrow-path')
+                ->icon(Heroicon::OutlinedArrowPath)
                 ->color('primary')
                 ->requiresConfirmation()
                 ->modalHeading('Sync All Workflows')
@@ -32,12 +33,12 @@ class ListWorkflows extends ListRecords
                 ->action(fn () => $this->syncAllWorkflows()),
             Action::make('sync_customer')
                 ->label('Sync Customer')
-                ->icon('heroicon-o-arrow-path')
+                ->icon(Heroicon::OutlinedArrowPath)
                 ->modalHeading('Sync Customer Workflows')
                 ->modalDescription('Select a customer to synchronize their workflows.')
                 ->modalSubmitActionLabel('Sync')
                 ->modalWidth('md')
-                ->form([
+                ->schema([
                     Select::make('customer_id')
                         ->label('Select Customer')
                         ->options(Customer::pluck('name', 'id'))

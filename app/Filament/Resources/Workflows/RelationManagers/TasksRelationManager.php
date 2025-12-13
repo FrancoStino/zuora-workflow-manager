@@ -6,6 +6,7 @@ use App\Filament\Concerns\HasTaskInfolist;
 use Filament\Actions\Action;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Support\Enums\Width;
+use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -79,7 +80,6 @@ class TasksRelationManager extends RelationManager
                     ->color(fn (?string $state): string => match ($state) {
                         'completed' => 'success',
                         'in_progress' => 'warning',
-                        'pending' => 'gray',
                         default => 'gray',
                     })
                     ->sortable()
@@ -91,7 +91,7 @@ class TasksRelationManager extends RelationManager
             ->recordActions([
                 Action::make('viewDetails')
                     ->label('Details')
-                    ->icon('heroicon-o-eye')
+                    ->icon(Heroicon::OutlinedEye)
                     ->slideOver()
                     ->modalWidth(Width::FiveExtraLarge)
                     ->modalHeading(fn ($record) => 'Task: '.$record->name)
@@ -101,6 +101,6 @@ class TasksRelationManager extends RelationManager
                     ->schema(fn (): array => $this->getTaskInfolistSchema()),
             ])
             ->recordAction('viewDetails')
-            ->defaultSort('task_id', 'asc');
+            ->defaultSort('task_id');
     }
 }

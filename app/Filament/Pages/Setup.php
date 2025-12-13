@@ -31,12 +31,13 @@ use Log;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
+use Throwable;
 
 class Setup extends Page implements HasForms
 {
     use InteractsWithForms;
 
-    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-cog-6-tooth';
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCog6Tooth;
 
     protected static bool $shouldRegisterNavigation = false;
 
@@ -164,7 +165,7 @@ class Setup extends Page implements HasForms
      * Complete the setup process by creating user, assigning roles, and finalizing configuration.
      * Orchestrates all setup steps with transactional integrity.
      *
-     * @throws SetupException
+     * @throws SetupException|Throwable
      */
     public function completeSetup(): void
     {

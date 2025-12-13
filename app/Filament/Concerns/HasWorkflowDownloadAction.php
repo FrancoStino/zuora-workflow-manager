@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Concerns;
 
 use App\Models\Workflow;
+use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Facades\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -17,7 +18,7 @@ trait HasWorkflowDownloadAction
     {
         return [
             'label' => $label,
-            'icon' => 'heroicon-o-arrow-down-tray',
+            'icon' => Heroicon::OutlinedArrowDownTray,
             'action' => function () use ($workflow) {
                 return $this->downloadWorkflowJson($workflow);
             },

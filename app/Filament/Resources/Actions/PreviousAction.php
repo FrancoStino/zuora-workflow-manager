@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Actions;
 
 use Filament\Actions\Action;
+use Filament\Support\Icons\Heroicon;
 
 class PreviousAction extends Action
 {
@@ -16,7 +17,7 @@ class PreviousAction extends Action
         parent::setUp();
 
         $this->hiddenLabel()
-            ->icon('heroicon-o-arrow-left')
+            ->icon(Heroicon::OutlinedArrowLeft)
             ->outlined()
             ->url(back()->getTargetUrl());
     }

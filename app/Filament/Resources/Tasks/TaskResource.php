@@ -6,6 +6,7 @@ use App\Filament\Resources\Tasks\Tables\TasksTable;
 use App\Models\Task;
 use BackedEnum;
 use Filament\Resources\Resource;
+use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 use UnitEnum;
@@ -16,7 +17,7 @@ class TaskResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'name';
 
-    protected static string|null|BackedEnum $navigationIcon = 'heroicon-o-queue-list';
+    protected static string|null|BackedEnum $navigationIcon = Heroicon::OutlinedQueueList;
 
     protected static string|null|UnitEnum $navigationGroup = 'Zuora Management';
 
