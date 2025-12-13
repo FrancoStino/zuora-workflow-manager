@@ -24,12 +24,12 @@ class CustomerForm
 
                 TextInput::make('zuora_client_secret')
                     ->label('Client Secret')
-                    ->required(fn($context) => $context === 'create')
+                    ->required(fn ($context) => $context === 'create')
                     ->password()
                     ->revealable()
                     ->maxLength(255)
-                    ->dehydrateStateUsing(fn($state, $record) => $state ?: ($record ? $record->zuora_client_secret : null))
-                    ->placeholder(fn($record) => $record ? '***** (già impostato)' : null),
+                    ->dehydrateStateUsing(fn ($state, $record) => $state ?: ($record ? $record->zuora_client_secret : null))
+                    ->placeholder(fn ($record) => $record ? '***** (già impostato)' : null),
 
                 Select::make('zuora_base_url')
                     ->label('Base URL')
