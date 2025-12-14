@@ -119,7 +119,9 @@ class TasksTable
                     ]),
             ])
             ->recordActions([
-                ViewAction::make(),
+                ViewAction::make()
+                    ->label('View Details')
+                    ->button(),
             ])
             ->defaultSort('created_at', 'desc');
     }
