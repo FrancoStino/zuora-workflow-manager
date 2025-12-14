@@ -8,7 +8,8 @@
         "laravel",
         "framework",
         "filament",
-        "zuora"
+        "zuora",
+        "zuora-workflows"
     ],
     "license": "MIT",
     "require": {
