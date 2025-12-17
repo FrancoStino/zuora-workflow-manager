@@ -37,7 +37,7 @@ class TasksRelationManager extends RelationManager
                 TextColumn::make('action_type')
                     ->label('Action Type')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn(string $state): string => match ($state) {
                         'Email' => 'info',
                         'Export' => 'success',
                         'Iterate' => 'warning',
@@ -50,12 +50,12 @@ class TasksRelationManager extends RelationManager
                     ->label('Object')
                     ->searchable()
                     ->limit(30)
-                    ->tooltip(fn ($record) => $record->object),
+                    ->tooltip(fn($record) => $record->object),
 
                 TextColumn::make('priority')
                     ->label('Priority')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn(string $state): string => match ($state) {
                         'High' => 'danger',
                         'Medium' => 'warning',
                         'Low' => 'success',
@@ -77,7 +77,7 @@ class TasksRelationManager extends RelationManager
                 TextColumn::make('state')
                     ->label('State')
                     ->badge()
-                    ->color(fn (?string $state): string => match ($state) {
+                    ->color(fn(?string $state): string => match ($state) {
                         'completed' => 'success',
                         'in_progress' => 'warning',
                         default => 'gray',
@@ -94,11 +94,11 @@ class TasksRelationManager extends RelationManager
                     ->icon(Heroicon::OutlinedEye)
                     ->slideOver()
                     ->modalWidth(Width::FiveExtraLarge)
-                    ->modalHeading(fn ($record) => 'Task: '.$record->name)
-                    ->modalDescription(fn ($record) => 'Task ID: '.$record->task_id)
+                    ->modalHeading(fn($record) => 'Task: ' . $record->name)
+                    ->modalDescription(fn($record) => 'Task ID: ' . $record->task_id)
                     ->modalSubmitAction(false)
                     ->modalCancelActionLabel('Close')
-                    ->schema(fn (): array => $this->getTaskInfolistSchema()),
+                    ->schema(fn(): array => $this->getTaskInfolistSchema()),
             ])
             ->recordAction('viewDetails')
             ->defaultSort('task_id');

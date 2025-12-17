@@ -9,7 +9,6 @@ use CodebarAg\FilamentJsonField\Infolists\Components\JsonEntry;
 use Filament\Actions\Action;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Components\ViewEntry;
-use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
@@ -60,12 +59,12 @@ class ViewWorkflow extends ViewRecord
 
                                 TextEntry::make('state')
                                     ->label('Status')
-                                    ->icon(fn (string $state) => match ($state) {
+                                    ->icon(fn(string $state) => match ($state) {
                                         'Active' => Heroicon::CheckCircle,
                                         'Inactive' => Heroicon::XCircle,
                                         default => Heroicon::QuestionMarkCircle,
                                     })
-                                    ->color(fn (string $state): string => match ($state) {
+                                    ->color(fn(string $state): string => match ($state) {
                                         'Active' => 'success',
                                         'Inactive' => 'danger',
                                         default => 'gray',
@@ -85,7 +84,7 @@ class ViewWorkflow extends ViewRecord
                                     ->label('Last Sync')
                                     ->icon(Heroicon::ArrowPath)
                                     ->formatStateUsing(function ($state) {
-                                        if (! $state) {
+                                        if (!$state) {
                                             return 'Never';
                                         }
 
@@ -145,7 +144,7 @@ class ViewWorkflow extends ViewRecord
 
     private function calculateDaysSinceSync($lastSyncedAt): int
     {
-        return (int) abs(now()->diffInDays($lastSyncedAt));
+        return (int)abs(now()->diffInDays($lastSyncedAt));
     }
 
     public function getSubheading(): ?string
@@ -160,18 +159,11 @@ class ViewWorkflow extends ViewRecord
 
     protected function getHeaderActions(): array
     {
-        /** @var Workflow $workflow */
-        $workflow = $this->record;
-        $actionConfig = $this->createDownloadAction($workflow);
-
         return [
             Action::make('download')
-                ->label($actionConfig['label'])
-                ->icon($actionConfig['icon'])
-                ->color('primary')
-                ->action($actionConfig['action'])
-                ->disabled($actionConfig['disabled'])
-                ->tooltip($actionConfig['tooltip']),
+                ->view('filament.components.download-workflow-button', [
+                    'workflow' => $this->record,
+                ]),
         ];
     }
 }
