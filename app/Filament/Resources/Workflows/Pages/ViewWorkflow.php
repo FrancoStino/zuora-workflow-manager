@@ -119,18 +119,11 @@ class ViewWorkflow extends ViewRecord
                         Tab::make('Workflow Json')
                             ->icon('json')
                             ->schema([
-                                Action::make('Copy Json')
-                                    ->label('Copy JSON')
-                                    ->icon(Heroicon::OutlinedClipboardDocument)
-                                    ->action(function ($livewire, $record) {
-                                        $jsonData = is_string($record->json_export) ? $record->json_export : json_encode($record->json_export);
-                                        $livewire->js('navigator.clipboard.writeText('.json_encode($jsonData).');');
-                                        Notification::make()
-                                            ->success()
-                                            ->title('Success')
-                                            ->body('JSON copied to clipboard')
-                                            ->send();
-                                    }),
+                                ViewEntry::make('copy_json_button')
+                                    ->hiddenLabel()
+                                    ->view('filament.components.copy-json-button', [
+                                        'jsonData' => $this->record->json_export,
+                                    ]),
 
                                 JsonEntry::make('json_export')
                                     ->hiddenLabel()
