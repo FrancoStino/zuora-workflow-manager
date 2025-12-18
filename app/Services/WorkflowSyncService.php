@@ -28,6 +28,23 @@ class WorkflowSyncService
             'errors' => [],
         ];
 
+        // Validate credentials before attempting sync
+        if (! $this->validateCustomerCredentials($customer)) {
+            $errorMsg = 'Customer has invalid or missing Zuora credentials';
+            $stats['errors'][] = $errorMsg;
+
+            Log::error('Workflow sync aborted: Invalid credentials', [
+                'customer_id' => $customer->id,
+                'customer_name' => $customer->name,
+                'has_client_id' => ! empty($customer->zuora_client_id),
+                'has_client_secret' => ! empty($customer->zuora_client_secret),
+                'has_base_url' => ! empty($customer->zuora_base_url),
+                'base_url_valid' => filter_var($customer->zuora_base_url, FILTER_VALIDATE_URL) !== false,
+            ]);
+
+            return $stats;
+        }
+
         try {
             $zuoraIds = [];
             $page = 1;
@@ -113,6 +130,9 @@ class WorkflowSyncService
             'json_export' => $jsonExport,
         ])->save();
 
+        // Delega la sincronizzazione dei tasks al Model (Single Responsibility Principle)
+        $workflow->syncTasksFromJson();
+
         return [
             'created' => $isNew,
             'updated' => ! $isNew,
@@ -151,5 +171,26 @@ class WorkflowSyncService
         return $customer->workflows()
             ->whereNotIn('zuora_id', $zuoraIds)
             ->delete();
+    }
+
+    /**
+     * Validate that customer has all required Zuora credentials
+     */
+    private function validateCustomerCredentials(Customer $customer): bool
+    {
+        // Check all required fields are present
+        if (empty($customer->zuora_client_id)
+            || empty($customer->zuora_client_secret)
+            || empty($customer->zuora_base_url)
+        ) {
+            return false;
+        }
+
+        // Validate base URL format
+        if (filter_var($customer->zuora_base_url, FILTER_VALIDATE_URL) === false) {
+            return false;
+        }
+
+        return true;
     }
 }

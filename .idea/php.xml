@@ -154,7 +154,6 @@
       <path value="$PROJECT_DIR$/vendor/nette/schema" />
       <path value="$PROJECT_DIR$/vendor/nette/php-generator" />
       <path value="$PROJECT_DIR$/vendor/nikic/php-parser" />
-      <path value="$PROJECT_DIR$/vendor/resma/filament-awin-theme" />
       <path value="$PROJECT_DIR$/vendor/league/uri-interfaces" />
       <path value="$PROJECT_DIR$/vendor/league/uri" />
       <path value="$PROJECT_DIR$/vendor/league/mime-type-detection" />
@@ -167,6 +166,9 @@
       <path value="$PROJECT_DIR$/vendor/barryvdh/laravel-debugbar" />
       <path value="$PROJECT_DIR$/vendor/php-debugbar/php-debugbar" />
       <path value="$PROJECT_DIR$/vendor/codebar-ag/laravel-filament-json-field" />
+      <path value="$PROJECT_DIR$/vendor/lara-zeus/torch-filament" />
+      <path value="$PROJECT_DIR$/vendor/torchlight/engine" />
+      <path value="$PROJECT_DIR$/vendor/njxqlus/filament-relation-manager-component" />
     </include_path>
   </component>
   <component name="PhpProjectSharedConfiguration" php_language_level="8.4" />

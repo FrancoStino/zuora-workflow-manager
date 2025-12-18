@@ -3,11 +3,12 @@
 namespace App\Filament\Resources\Workflows\Pages;
 
 use App\Filament\Concerns\HasWorkflowDownloadAction;
+use App\Filament\Resources\Workflows\RelationManagers\TasksRelationManager;
 use App\Filament\Resources\Workflows\WorkflowResource;
 use CodebarAg\FilamentJsonField\Infolists\Components\JsonEntry;
 use Filament\Actions\Action;
 use Filament\Infolists\Components\TextEntry;
-use Filament\Notifications\Notification;
+use Filament\Infolists\Components\ViewEntry;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
@@ -18,6 +19,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Enums\FontWeight;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Contracts\Support\Htmlable;
+use Njxqlus\Filament\Components\Infolists\RelationManager;
 
 class ViewWorkflow extends ViewRecord
 {
@@ -26,11 +28,8 @@ class ViewWorkflow extends ViewRecord
 
     protected static string $resource = WorkflowResource::class;
 
-    protected string $view = 'filament.resources.workflow-resource.pages.view-workflow';
-
-    public function workflowInfolist(Schema $schema): Schema
+    public function infolist(Schema $schema): Schema
     {
-        // Carica solo le relazioni necessarie, evitando query extra
         $this->record->loadMissing(['customer']);
 
         return $schema
@@ -40,11 +39,12 @@ class ViewWorkflow extends ViewRecord
                     ->description('Basic details about the workflow')
                     ->icon(Heroicon::InformationCircle)
                     ->collapsible()
+                    ->columnSpanFull()
                     ->schema([
                         Grid::make([
                             'sm' => 1,
                             'md' => 2,
-                            'xl' => 3,
+                            'xl' => 4,
                         ])
                             ->schema([
                                 TextEntry::make('zuora_id')
@@ -92,30 +92,12 @@ class ViewWorkflow extends ViewRecord
 
                                         return $daysSince === 0 ? 'Today' : "$daysSince days ago";
                                     }),
-                            ]),
-                    ]),
-
-                Grid::make([
-                    'sm' => 1,
-                    'md' => 2,
-                ])
-                    ->schema([
-
-                        Section::make('Customer Information')
-                            ->description('Associated customer details')
-                            ->icon(Heroicon::UserCircle)
-                            ->schema([
                                 TextEntry::make('customer.name')
                                     ->label('Customer Name')
                                     ->icon(Heroicon::BuildingOffice)
                                     ->weight(FontWeight::Bold)
                                     ->color('primary'),
-                            ]),
 
-                        Section::make('Technical Details')
-                            ->description('System-level information')
-                            ->icon(Heroicon::CodeBracket)
-                            ->schema([
                                 TextEntry::make('id')
                                     ->label('Internal ID')
                                     ->icon(Heroicon::Key)
@@ -123,31 +105,24 @@ class ViewWorkflow extends ViewRecord
 
                             ]),
                     ]),
+
+                RelationManager::make()
+                    ->columnSpanFull()
+                    ->manager(TasksRelationManager::class)
+                    ->lazy(),
+
                 Tabs::make('Tabs')
-                    ->lazy()
+                    ->columnSpanFull()
                     ->contained(false)
                     ->tabs([
-                        Tab::make('Tasks')
-                            ->icon(Heroicon::OutlinedRectangleStack)
-                            ->schema([
-                                TextEntry::make('title')
-                                    ->label('Under Development'),
-                            ]),
                         Tab::make('Workflow Json')
-                            ->icon(Heroicon::CodeBracket)
+                            ->icon('json')
                             ->schema([
-                                Action::make('Copy Json')
-                                    ->label('Copy JSON')
-                                    ->icon(Heroicon::OutlinedClipboardDocument)
-                                    ->action(function ($livewire, $record) {
-                                        $jsonData = is_string($record->json_export) ? $record->json_export : json_encode($record->json_export);
-                                        $livewire->js('navigator.clipboard.writeText('.json_encode($jsonData).');');
-                                        Notification::make()
-                                            ->success()
-                                            ->title('Success')
-                                            ->body('JSON copied to clipboard')
-                                            ->send();
-                                    }),
+                                ViewEntry::make('copy_json_button')
+                                    ->hiddenLabel()
+                                    ->view('filament.components.copy-json-button', [
+                                        'jsonData' => $this->record->json_export,
+                                    ]),
 
                                 JsonEntry::make('json_export')
                                     ->hiddenLabel()
@@ -155,9 +130,9 @@ class ViewWorkflow extends ViewRecord
 
                             ]),
                         Tab::make('Graphical View')
-                            ->icon(Heroicon::OutlinedChartBar)
+                            ->icon('workflow-square')
                             ->schema([
-                                \Filament\Infolists\Components\ViewEntry::make('workflow_graph')
+                                ViewEntry::make('workflow_graph')
                                     ->hiddenLabel()
                                     ->view('filament.components.workflow-graph', [
                                         'workflowData' => $this->record->json_export,
@@ -184,16 +159,11 @@ class ViewWorkflow extends ViewRecord
 
     protected function getHeaderActions(): array
     {
-        $actionConfig = $this->createDownloadAction($this->record);
-
         return [
             Action::make('download')
-                ->label($actionConfig['label'])
-                ->icon($actionConfig['icon'])
-                ->color('primary')
-                ->action($actionConfig['action'])
-                ->disabled($actionConfig['disabled'])
-                ->tooltip($actionConfig['tooltip']),
+                ->view('filament.components.download-workflow-button', [
+                    'workflow' => $this->record,
+                ]),
         ];
     }
 }

@@ -28,10 +28,11 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
-use Resma\FilamentAwinTheme\FilamentAwinTheme;
 
 class AdminPanelProvider extends PanelProvider
 {
+    private static ?array $manifest = null;
+
     public function panel(Panel $panel): Panel
     {
         return $panel
@@ -40,9 +41,11 @@ class AdminPanelProvider extends PanelProvider
             ->path('')
             ->login(Login::class)
             ->maxContentWidth(Width::Full)
+            ->spa(hasPrefetching: true)
             ->colors([
                 'primary' => Color::Teal,
             ])
+            ->topbar(false)
             ->brandName('Zuora Workflows')
             ->brandLogo(asset('images/logo.svg'))
             ->darkModeBrandLogo(asset('images/logo-white.svg'))
@@ -52,13 +55,13 @@ class AdminPanelProvider extends PanelProvider
             ->navigationGroups([
                 'Zuora Management',
             ])
-            ->discoverResources(in : app_path('Filament/Resources'), for : 'App\Filament\Resources')
-            ->discoverPages(in : app_path('Filament/Pages'), for : 'App\Filament\Pages')
+            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
+            ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
                 Dashboard::class,
                 Setup::class,
             ])
-            ->discoverWidgets(in : app_path('Filament/Widgets'), for : 'App\Filament\Widgets')
+            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
                 AccountWidget::class,
                 // FilamentInfoWidget::class,
@@ -80,22 +83,20 @@ class AdminPanelProvider extends PanelProvider
             ->renderHook(
                 PanelsRenderHook::STYLES_AFTER,
                 function () {
-                    $manifest = json_decode(file_get_contents(public_path('build/manifest.json')), true);
-                    $cssFile = $manifest['resources/css/workflow-graph.css']['file'] ?? 'assets/workflow-graph.css';
+                    $cssFile = self::getManifest()['resources/css/workflow-graph.css']['file'] ?? 'assets/workflow-graph.css';
 
                     return '<link rel="stylesheet" href="'.asset('build/'.$cssFile).'">';
                 },
-                scopes : [ViewWorkflow::class]
+                scopes: [ViewWorkflow::class]
             )
             ->renderHook(
                 PanelsRenderHook::SCRIPTS_AFTER,
                 function () {
-                    $manifest = json_decode(file_get_contents(public_path('build/manifest.json')), true);
-                    $appJs = $manifest['resources/js/app.js']['file'] ?? 'assets/app.js';
+                    $appJs = self::getManifest()['resources/js/app.js']['file'] ?? 'assets/app.js';
 
                     return '<script type="module" src="'.asset('build/'.$appJs).'"></script>';
                 },
-                scopes : [ViewWorkflow::class]
+                scopes: [ViewWorkflow::class]
             )
             ->renderHook(
                 PanelsRenderHook::FOOTER,
@@ -107,8 +108,6 @@ class AdminPanelProvider extends PanelProvider
                         'font-weight' => 'bold',
                     ])
                     ->showGroupSearchCounts(),   // Enable per-category count display
-                FilamentAwinTheme::make()
-                    ->primaryColor(Color::Teal),
                 FilamentShieldPlugin::make(),
                 FilamentSocialitePlugin::make()
                     ->domainAllowList(app(OAuthService::class)->getAllowedDomains())
@@ -120,5 +119,14 @@ class AdminPanelProvider extends PanelProvider
                             ->color(Color::Red),
                     ]),
             ]);
+    }
+
+    public static function getManifest(): array
+    {
+        if (self::$manifest === null) {
+            self::$manifest = json_decode(file_get_contents(public_path('build/manifest.json')), true, 512, JSON_THROW_ON_ERROR);
+        }
+
+        return self::$manifest;
     }
 }
