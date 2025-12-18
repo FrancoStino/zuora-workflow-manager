@@ -166,7 +166,7 @@
   resolved "https://registry.yarnpkg.com/@esbuild/win32-x64/-/win32-x64-0.27.1.tgz#5efe5a112938b1180e98c76685ff9185cfa4f16e"
   integrity sha512-d5X6RMYv6taIymSk8JBP+nxv8DQAMY6A51GPgusqLdK9wBz5wWIXy1KjTck6HnjE9hqJzJRdk+1p/t5soSbCtw==
 
-"@joint/core@^4.2.1", "@joint/core@~4.2.2":
+"@joint/core@^4.2.2", "@joint/core@~4.2.0":
   version "4.2.2"
   resolved "https://registry.yarnpkg.com/@joint/core/-/core-4.2.2.tgz#9c2ba7e0afa5d5c1e81274f3811e70c0d25b99ba"
   integrity sha512-e4RjAKuFWSTxCWEC9/9Wmok/mwSccq0HOESU8YpsqgyK1u+E5nKr3yh6D0TrTh0ZWfhKe+Xt2/Ig1IsHJUgsiw==
