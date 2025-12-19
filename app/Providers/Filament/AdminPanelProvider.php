@@ -28,6 +28,7 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use JsonException;
 use WatheqAlshowaiter\FilamentStickyTableHeader\StickyTableHeaderPlugin;
 
 class AdminPanelProvider extends PanelProvider
@@ -118,11 +119,14 @@ class AdminPanelProvider extends PanelProvider
                             ->label('Google')
                             ->icon('fab-google')
                             ->color(Color::Red),
-                     ]),
-                 StickyTableHeaderPlugin::make(),
-             ]);
+                    ]),
+                StickyTableHeaderPlugin::make(),
+            ]);
     }
 
+    /**
+     * @throws JsonException
+     */
     public static function getManifest(): array
     {
         if (self::$manifest === null) {
