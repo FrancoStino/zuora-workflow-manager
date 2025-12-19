@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b46685492d640815da91f38e4d8dbec5",
+    "content-hash": "3a21f0902f8f4aef946788882541811d",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -453,87 +453,6 @@
                 }
             ],
             "time": "2025-11-24T14:40:29+00:00"
-        },
-        {
-            "name": "bytexr/filament-queueable-bulk-actions",
-            "version": "4.0.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/bytexr/filament-queueable-bulk-actions.git",
-                "reference": "4d17a60f2cf835e560873f5796d6a8ceb97ac61d"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/bytexr/filament-queueable-bulk-actions/zipball/4d17a60f2cf835e560873f5796d6a8ceb97ac61d",
-                "reference": "4d17a60f2cf835e560873f5796d6a8ceb97ac61d",
-                "shasum": ""
-            },
-            "require": {
-                "filament/filament": "^4.0",
-                "filament/tables": "^4.0",
-                "php": "^8.2",
-                "spatie/laravel-package-tools": "^1.15.0"
-            },
-            "require-dev": {
-                "laravel/pint": "^1.0",
-                "nunomaduro/collision": "^8.0",
-                "nunomaduro/larastan": "^3.0",
-                "orchestra/testbench": "^10.0",
-                "pestphp/pest": "^4.1",
-                "pestphp/pest-plugin-arch": "^4.0",
-                "pestphp/pest-plugin-laravel": "^4.0",
-                "phpstan/extension-installer": "^1.0",
-                "phpstan/phpstan-deprecation-rules": "^2.0",
-                "phpstan/phpstan-phpunit": "2.0",
-                "spatie/laravel-ray": "^1.26"
-            },
-            "type": "library",
-            "extra": {
-                "laravel": {
-                    "aliases": {
-                        "QueueableBulkActions": "Bytexr\\QueueableBulkActions\\Facades\\QueueableBulkActions"
-                    },
-                    "providers": [
-                        "Bytexr\\QueueableBulkActions\\QueueableBulkActionsServiceProvider"
-                    ]
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Bytexr\\QueueableBulkActions\\": "src/",
-                    "Bytexr\\QueueableBulkActions\\Database\\Factories\\": "database/factories/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Eddie Rusinskas",
-                    "email": "info@imphus.com",
-                    "role": "Developer"
-                }
-            ],
-            "description": "This Filament plugin simplifies managing bulk operations asynchronously in a queue. It provides tracking and status updates for tasks, while supporting both action calls and job dispatches. Excellent for bulk data updates and tasks with Filament & Livewire support for real-time notifications.",
-            "homepage": "https://github.com/bytexr/queueable-bulk-actions",
-            "keywords": [
-                "bytexr",
-                "filament",
-                "laravel",
-                "queueable-bulk-actions"
-            ],
-            "support": {
-                "issues": "https://github.com/bytexr/queueable-bulk-actions/issues",
-                "source": "https://github.com/bytexr/queueable-bulk-actions"
-            },
-            "funding": [
-                {
-                    "url": "https://github.com/bytexr",
-                    "type": "github"
-                }
-            ],
-            "time": "2025-10-24T15:50:21+00:00"
         },
         {
             "name": "carbonphp/carbon-doctrine-types",

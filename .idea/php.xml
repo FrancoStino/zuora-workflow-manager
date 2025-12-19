@@ -169,6 +169,7 @@
       <path value="$PROJECT_DIR$/vendor/lara-zeus/torch-filament" />
       <path value="$PROJECT_DIR$/vendor/torchlight/engine" />
       <path value="$PROJECT_DIR$/vendor/njxqlus/filament-relation-manager-component" />
+      <path value="$PROJECT_DIR$/vendor/watheqalshowaiter/filament-sticky-table-header" />
     </include_path>
   </component>
   <component name="PhpProjectSharedConfiguration" php_language_level="8.4" />

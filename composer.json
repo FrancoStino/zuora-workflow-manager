@@ -15,7 +15,6 @@
     "require": {
         "php": "^8.4",
         "bezhansalleh/filament-shield": "^4.0",
-        "bytexr/filament-queueable-bulk-actions": "^4.0",
         "charrafimed/global-search-modal": "^4.2",
         "codebar-ag/laravel-filament-json-field": "^13.0",
         "dutchcodingcompany/filament-socialite": "^3.0",

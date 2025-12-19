@@ -87,7 +87,7 @@ class AdminPanelProvider extends PanelProvider
                 function () {
                     $cssFile = self::getManifest()['resources/css/workflow-graph.css']['file'] ?? 'assets/workflow-graph.css';
 
-                    return '<link rel="stylesheet" href="'.asset('build/'.$cssFile).'">';
+                    return '<link rel="stylesheet" href="' . asset('build/' . $cssFile) . '">';
                 },
                 scopes: [ViewWorkflow::class]
             )
@@ -96,13 +96,13 @@ class AdminPanelProvider extends PanelProvider
                 function () {
                     $appJs = self::getManifest()['resources/js/app.js']['file'] ?? 'assets/app.js';
 
-                    return '<script type="module" src="'.asset('build/'.$appJs).'"></script>';
+                    return '<script type="module" src="' . asset('build/' . $appJs) . '"></script>';
                 },
                 scopes: [ViewWorkflow::class]
             )
             ->renderHook(
                 PanelsRenderHook::FOOTER,
-                fn () => view('footer'))
+                fn() => view('footer'))
             ->plugins([
                 GlobalSearchModalPlugin::make()
                     ->highlightQueryStyles([
