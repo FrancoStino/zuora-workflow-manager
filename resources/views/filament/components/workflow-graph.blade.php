@@ -37,7 +37,7 @@
              * Simple DOMContentLoaded initialization for workflow graphs
              * wire:ignore on the container ensures the graph persists across Livewire updates
              */
-            document.addEventListener('DOMContentLoaded', function () {
+            document.addEventListener('livewire:navigated', function () {
                 const containers = document.querySelectorAll('[data-workflow-container]');
 
                 containers.forEach(function (container) {
