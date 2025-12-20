@@ -26,6 +26,5 @@ Schedule::command('app:sync-workflows --all')
     ->name('sync-customer-workflows');
 
 // Process the queue automatically every minute (for local development)
-Schedule::command('queue:work --stop-when-empty')
-    ->everySecond()
+Schedule::command('queue:work')
     ->name('process-queue');

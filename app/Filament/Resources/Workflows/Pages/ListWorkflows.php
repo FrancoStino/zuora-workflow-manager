@@ -62,7 +62,7 @@ class ListWorkflows extends ListRecords
     protected function syncAllWorkflows(): void
     {
         $customers = Customer::all();
-        
+
         $customers->each(function (Customer $customer) {
             SyncCustomerWorkflows::dispatch($customer);
         });
