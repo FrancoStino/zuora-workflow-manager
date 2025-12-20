@@ -23,7 +23,7 @@ class SyncWorkflows extends Command
             return $this->queueSingleCustomer();
 
         } catch (Exception $e) {
-            $this->error('Error queuing workflow sync: ' . $e->getMessage());
+            $this->error('Error queuing workflow sync: '.$e->getMessage());
 
             return 1;
         }
@@ -53,7 +53,7 @@ class SyncWorkflows extends Command
 
         $this->newLine();
 
-        if (!$this->option('sync')) {
+        if (! $this->option('sync')) {
             $this->info('All jobs queued successfully. Monitor with:');
             $this->line('  php artisan queue:work');
             $this->line('  php artisan queue:monitor');
@@ -65,7 +65,7 @@ class SyncWorkflows extends Command
     private function queueSingleCustomer(): int
     {
         $customerName = $this->option('customer');
-        if (!$customerName) {
+        if (! $customerName) {
             $this->error('Specify --customer=NAME or use --all');
 
             return 1;
