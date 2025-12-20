@@ -40,17 +40,24 @@ The GitHub Actions workflow performs the following steps:
 
 ## Queue Worker Setup
 
-The application uses Laravel's queue system to process background jobs asynchronously. You have three options depending on your hosting environment:
+The application uses Laravel's queue system with **database driver** to process background jobs asynchronously. The deployment workflow automatically configures `QUEUE_CONNECTION=database`.
 
-### Option 1: Cron Job (Recommended for Shared Hosting with Cron Access)
+### Recommended Setup: Laravel Scheduler with Cron (Works on All Environments)
 
-Set up a cron job to run Laravel's scheduler every minute. The scheduler will then handle dispatching queue jobs.
+**✅ This is the simplest and most reliable option for shared hosting.**
+
+Set up a single cron job to run Laravel's scheduler every minute. The scheduler automatically handles:
+- Processing queued jobs (every minute)
+- Automatic workflow synchronization (configurable: hourly, daily, etc.)
+- No need for persistent worker processes
 
 **Requirements:**
-- `QUEUE_CONNECTION=database` in `.env`
-- Cron job access in your hosting control panel
+- `QUEUE_CONNECTION=database` (automatically configured by deployment workflow)
+- Cron job access in your hosting control panel (cPanel, Plesk, DirectAdmin, etc.)
 
-#### Add this cron job via your hosting control panel (cPanel, Plesk, etc.):
+#### Setup Instructions:
+
+1. **Add this single cron job** via your hosting control panel:
 
 ```bash
 * * * * * cd /home/YOUR_USERNAME/domains/YOUR_DOMAIN/public_html && php artisan schedule:run >> /dev/null 2>&1
@@ -60,13 +67,64 @@ Replace:
 - `YOUR_USERNAME` with your SSH username
 - `YOUR_DOMAIN` with your domain name
 
-#### What this does:
+**For the deployed application:**
+```bash
+* * * * * cd /home/your-username/domains/zuora.workflows.davideladisa.it/public_html && php artisan schedule:run >> /dev/null 2>&1
+```
 
-- Runs every minute
-- Executes Laravel's scheduler which dispatches background jobs
-- The scheduler is configured to sync customer workflows every hour (see `app/Console/Kernel.php`)
+2. **That's it!** The scheduler automatically handles:
+   - ✅ Processing all queued jobs (every minute)
+   - ✅ Automatic workflow synchronization (configurable frequency in `routes/console.php`)
+   - ✅ Task extraction from workflows
+   - ✅ Job retries and failure handling
 
-### Option 2: Sync Queue (For Shared Hosting/Simplified Setup)
+#### How It Works:
+
+The scheduler (defined in `routes/console.php` for Laravel 12) runs:
+1. **Queue processor**: `queue:work --stop-when-empty` every minute
+2. **Workflow sync**: At configured intervals (default: hourly, commented out by default)
+
+**To enable automatic workflow sync**, edit `routes/console.php`:
+```php
+// Uncomment to enable automatic sync
+Schedule::command('app:sync-workflows --all')
+    ->hourly()  // or ->daily(), ->everyFiveMinutes(), etc.
+    ->name('sync-customer-workflows');
+```
+
+#### Verification:
+
+```bash
+# Check scheduled tasks
+php artisan schedule:list
+
+# Should show:
+# * * * * *  php artisan queue:work --stop-when-empty --max-jobs=50
+# [and sync-customer-workflows if enabled]
+
+# Manually trigger scheduler (for testing)
+php artisan schedule:run
+
+# View queued jobs
+php artisan queue:failed
+```
+
+#### Monitoring:
+
+Access **Moox Jobs** in the Filament admin panel (Jobs menu) to monitor:
+- Running jobs
+- Waiting jobs
+- Failed jobs (with retry option)
+- Job batches
+
+**Benefits:**
+- ✅ Works on all shared hosting environments (no sudo required)
+- ✅ Only one cron job needed
+- ✅ Automatically processes jobs without persistent workers
+- ✅ Built-in retry logic and failure handling
+- ✅ Real-time monitoring via Filament UI
+
+### Option 2: Sync Queue (Not Recommended - No Background Processing)
 
 If you prefer simplicity over background processing, you can use the `sync` queue driver which processes jobs immediately. This is a valid option for shared hosting environments where setting up cron jobs or Supervisor is not feasible.
 
@@ -90,12 +148,10 @@ QUEUE_CONNECTION=sync
 - ⚠️ The hourly scheduler will run all customer syncs sequentially
 
 **Recommended for:**
-- Shared hosting without cron job access
-- Applications with few customers and quick sync operations
-- Development and staging environments
-- Low to medium traffic production sites
+- ⚠️ Only if cron job access is absolutely not available
+- Development/testing environments
 
-**Note:** With this option, the notification messages in the UI will reflect immediate execution rather than queued jobs.
+**Note:** The deployment workflow now uses `QUEUE_CONNECTION=database` by default. Use Option 1 (Scheduler + Cron) for production.
 
 ### Option 3: Supervisor (For VPS/Dedicated Servers)
 

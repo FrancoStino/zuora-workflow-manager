@@ -32,13 +32,15 @@ workflow management.
 
 ## Features
 
-- 🔄 **Automatic Synchronization**: Hourly sync + manual sync button for immediate updates
-- 📊 **Filament Dashboard**: Rich workflow visualization with search, filters, and sorting
+- 🔄 **Automatic Synchronization**: Configurable scheduled sync (hourly by default) + manual sync buttons
+- 📊 **Filament Dashboard**: Rich workflow and task visualization with search, filters, and sorting
 - ⚙️ **Background Jobs**: Queue-based processing with retry logic (3 attempts, 60s backoff)
 - 🔐 **OAuth 2.0**: Secure token management with 1-hour caching
-- 📥 **Workflow Download**: Direct export from Zuora
+- 📥 **Workflow & Task Export**: Direct export from Zuora with automatic task extraction
 - 🔒 **RBAC**: Role-based access control via Filament Shield
 - 🗄️ **Multi-tenant**: Per-customer Zuora credentials in database
+- 📋 **Job Monitoring**: Real-time job tracking with Moox Jobs integration
+- 🎯 **Task Management**: Automatic task extraction and visualization from workflow JSON
 
 ---
 
@@ -119,13 +121,26 @@ After login:
     - **Client Secret**: Your Zuora OAuth client secret
     - **Base URL**: `https://rest.zuora.com` (or `https://rest.test.zuora.com` for sandbox)
 4. Save the customer
-5. Click **Sync Workflows** to sync workflows from Zuora
+5. Click **Sync Workflows** to queue workflow synchronization
+
+**Step 6: Start Queue Worker (Development)**
+
+For local development with queue processing:
+
+```bash
+# Start queue worker (processes jobs immediately)
+lando queue
+
+# OR start scheduler (for automatic hourly sync)
+lando schedule
+```
 
 **Quick Commands:**
 
 ```bash
 lando artisan migrate                # Run migrations
-lando artisan queue:work             # Start queue worker (database/redis only)
+lando queue                          # Start queue worker (recommended)
+lando schedule                       # Start scheduler (optional)
 lando test                           # Run tests
 lando logs -f                        # View logs
 lando mariadb                        # Database access
@@ -139,31 +154,47 @@ lando mariadb                        # Database access
 
 ### Queue Driver Setup
 
-The application uses the database queue driver by default. The `.env.example` file specifies:
+The application uses **database queue driver** for background job processing. Configure in `.env`:
 
 ```env
+# Development (default)
+QUEUE_CONNECTION=database
+
+# Production (recommended)
+QUEUE_CONNECTION=database
+
+# Alternative: Immediate processing (no background jobs)
 QUEUE_CONNECTION=sync
+
+# Alternative: Redis (requires Redis server)
+QUEUE_CONNECTION=redis
 ```
 
-To change to [Redis](https://redis.io/) or another [Laravel](https://laravel.com/docs/queues) queue driver:
+**Queue Processing:**
 
-```env
-QUEUE_CONNECTION=redis  # or sync, sqs, etc.
-```
+- **Development:** Use `lando queue` to start the queue worker
+- **Production:** Set up a cron job to run `php artisan schedule:run` every minute (see [Deployment Guide](docs/DEPLOYMENT.md))
 
 See [Laravel Queue Documentation](https://laravel.com/docs/queues) for more driver options.
 
 ### Scheduler Configuration
 
-Workflows sync hourly by default. Modify in `app/Console/Kernel.php`:
+Scheduled tasks are defined in `routes/console.php` (Laravel 12):
 
+**Automatic Workflow Synchronization:**
 ```php
-->hourly();              // Default
-->everyThirtyMinutes();  // Every 30 min
-->everyFiveMinutes();    // Every 5 min
+// Sync all customer workflows automatically
+Schedule::command('app:sync-workflows --all')
+    ->hourly()              // Default (every hour)
+    // ->everyThirtyMinutes()  // Every 30 minutes
+    // ->everyFiveMinutes()    // Every 5 minutes
+    // ->daily()               // Once per day at midnight
+    ->name('sync-customer-workflows');
 ```
 
-Start scheduler: `lando artisan schedule:work`
+**Development:** Start scheduler with `lando schedule`
+
+**Production:** Configure cron job (see [Deployment Guide](docs/DEPLOYMENT.md))
 
 ### Zuora API Configuration
 
@@ -204,10 +235,22 @@ The application automatically handles:
 **CLI Commands:**
 
 ```bash
-lando artisan app:sync-workflows --customer="Name"  # Sync one
-lando artisan app:sync-workflows --all              # Sync all
-lando artisan queue:work                            # Start queue worker (database/redis only)
-lando artisan queue:failed                          # Check failed jobs (database/redis only)
+# Workflow Synchronization
+lando artisan app:sync-workflows --customer="Name"  # Queue sync for one customer
+lando artisan app:sync-workflows --all              # Queue sync for all customers
+lando artisan app:sync-workflows --all --sync       # Sync all synchronously (no queue)
+
+# Task Synchronization (rarely needed - automatic during workflow sync)
+lando artisan workflows:sync-tasks --all            # Re-extract tasks from existing workflows
+lando artisan workflows:sync-tasks --workflow-id=123
+
+# Queue Management
+lando queue                                         # Start queue worker (recommended)
+lando schedule                                      # Start scheduler for automatic sync
+lando artisan queue:failed                          # Check failed jobs
+lando artisan queue:retry all                       # Retry all failed jobs
+
+# Development
 lando composer run dev                              # Full dev stack
 ```
 
@@ -215,13 +258,57 @@ lando composer run dev                              # Full dev stack
 
 ## Architecture
 
-**Service Layer:**
+### Service Layer
 
-- `ZuoraService`: OAuth 2.0 authentication, HTTP API calls, token caching
-- `WorkflowSyncService`: Orchestrates sync, handles pagination, CRUD operations
-- `SyncCustomerWorkflows` Job: Queue-based processing with retry logic
+- **`ZuoraService`**: OAuth 2.0 authentication, HTTP API calls, token caching (1-hour TTL)
+- **`WorkflowSyncService`**: Orchestrates sync, handles pagination, CRUD operations, task extraction
+- **`OAuthService`**: Google OAuth integration for user authentication
 
-**Flow:** Filament UI → Dispatch Job → WorkflowSyncService → ZuoraService → Zuora REST API
+### Background Jobs
+
+- **`SyncCustomerWorkflows`**: Queue-based workflow synchronization with retry logic (3 attempts, 60s backoff)
+- Automatically dispatched on customer creation and manual sync button clicks
+- Processes workflows in background without blocking the UI
+
+### Task Management
+
+- **Automatic Extraction**: Tasks are automatically extracted from workflow JSON during sync
+- **Database Storage**: Tasks stored in `tasks` table with foreign key to workflows
+- **Model Method**: `Workflow->syncTasksFromJson()` handles task extraction and synchronization
+
+### Queue Processing Flow
+
+```
+User Action (UI/CLI)
+    ↓
+SyncCustomerWorkflows::dispatch() → Job queued
+    ↓
+Queue Worker (lando queue / cron)
+    ↓
+WorkflowSyncService::syncCustomerWorkflows()
+    ├─ Fetch workflows from Zuora API (paginated)
+    ├─ Download workflow JSON export
+    ├─ Save/update workflows in database
+    └─ Extract and sync tasks from JSON
+    ↓
+Database (workflows + tasks)
+    ↓
+Filament UI (instant display)
+```
+
+### Monitoring
+
+- **Moox Jobs Integration**: Real-time job monitoring in Filament admin panel
+  - View running jobs
+  - Monitor waiting jobs
+  - Track failed jobs and retry
+  - View job batches
+
+### Scheduled Tasks (Laravel 12)
+
+Defined in `routes/console.php`:
+- Automatic workflow synchronization (configurable frequency)
+- Automatic queue processing (every minute in development)
 
 ---
 
@@ -272,6 +359,31 @@ CREATE TABLE customers
 );
 ```
 
+### Tasks Table
+
+```sql
+CREATE TABLE tasks
+(
+    id                 BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+    workflow_id        BIGINT UNSIGNED NOT NULL,
+    zuora_id           VARCHAR(255) NOT NULL,
+    name               VARCHAR(255) NOT NULL,
+    task_type          VARCHAR(255),
+    object_id          TEXT,
+    action_type        VARCHAR(255),
+    call_type          VARCHAR(255),
+    data               JSON,
+    workflow_task_json JSON,
+    created_at         TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at         TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (workflow_id) REFERENCES workflows (id) ON DELETE CASCADE,
+    INDEX          idx_workflow_id (workflow_id),
+    INDEX          idx_zuora_id (zuora_id),
+    INDEX          idx_task_type (task_type)
+);
+```
+
 ### Jobs Table ([Laravel Queue](https://laravel.com/docs/queues))
 
 ```sql
@@ -290,6 +402,15 @@ CREATE TABLE jobs
 ```
 
 For [Redis](https://redis.io/) queue support, configure `QUEUE_CONNECTION=redis` in `.env`.
+
+### Job Manager Tables (Moox Jobs)
+
+```sql
+-- Job monitoring and management
+CREATE TABLE job_manager (id, job_id, name, queue, connection, status, ...);
+CREATE TABLE failed_jobs (id, uuid, connection, queue, payload, exception, ...);
+CREATE TABLE job_batches (id, name, total_jobs, pending_jobs, failed_jobs, ...);
+```
 
 ---
 
@@ -332,7 +453,10 @@ lando exec appserver grep -i "workflow" storage/logs/laravel.log
 **Check queue health and process jobs** (only when `QUEUE_CONNECTION=database` or `redis`):
 
 ```bash
-# Start queue worker
+# Start queue worker (recommended shortcut)
+lando queue
+
+# Or use artisan directly
 lando artisan queue:work --verbose
 
 # Check failed jobs
@@ -341,9 +465,18 @@ lando artisan queue:failed
 # Retry specific failed job
 lando artisan queue:retry {job-id}
 
+# Retry all failed jobs
+lando artisan queue:retry all
+
 # Clear all failed jobs
 lando artisan queue:flush
 ```
+
+**Moox Jobs Panel:** Access via Filament admin panel → Jobs menu
+- **Jobs**: View running and completed jobs
+- **Jobs Waiting**: See queued jobs waiting for processing
+- **Failed Jobs**: View and retry failed jobs
+- **Job Batches**: Monitor batch operations
 
 **Note:** With `QUEUE_CONNECTION=sync`, jobs execute immediately and queue commands are not needed.
 
