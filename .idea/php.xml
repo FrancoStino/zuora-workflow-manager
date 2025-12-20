@@ -170,6 +170,11 @@
       <path value="$PROJECT_DIR$/vendor/torchlight/engine" />
       <path value="$PROJECT_DIR$/vendor/njxqlus/filament-relation-manager-component" />
       <path value="$PROJECT_DIR$/vendor/watheqalshowaiter/filament-sticky-table-header" />
+      <path value="$PROJECT_DIR$/vendor/moox/core" />
+      <path value="$PROJECT_DIR$/vendor/moox/jobs" />
+      <path value="$PROJECT_DIR$/vendor/moox/clipboard" />
+      <path value="$PROJECT_DIR$/vendor/moox/progress" />
+      <path value="$PROJECT_DIR$/vendor/codeat3/blade-google-material-design-icons" />
     </include_path>
   </component>
   <component name="PhpProjectSharedConfiguration" php_language_level="8.4" />
