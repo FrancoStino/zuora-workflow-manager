@@ -22,9 +22,9 @@ Artisan::command('inspire', function () {
 // Use the existing command instead of a closure
 // Advantages: testable, executable manually, better logging
 Schedule::command('app:sync-workflows --all')
-    ->everySecond()
+    ->hourly()
     ->name('sync-customer-workflows');
 
-// Process the queue automatically every minute (for local development)
+// Process the queue
 Schedule::command('queue:work')
     ->name('process-queue');
