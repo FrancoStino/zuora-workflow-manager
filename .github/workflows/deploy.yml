@@ -36,7 +36,7 @@ jobs:
           node-version: '24'
 
       - name: Install Composer dependencies
-        run: composer install --no-dev --prefer-dist --optimize-autoloader -W
+        run: composer install --no-dev --prefer-dist --optimize-autoloader -w
 
       - name: Install Yarn dependencies
         run: yarn install --frozen-lockfile
