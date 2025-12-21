@@ -53,44 +53,53 @@
 
                     console.log('Initializing workflow graph:', containerId);
 
-                    if (typeof window.initWorkflowGraph === 'undefined') {
-                        console.error('initWorkflowGraph not found on window object');
-                        container.innerHTML = `
-                            <div class="p-8 text-center">
-                                <div class="text-red-600 font-semibold mb-2">Error: JavaScript not loaded</div>
-                                <div class="text-sm text-gray-600">The workflow graph component failed to load. Please refresh the page.</div>
-                            </div>
-                        `;
-                        return;
-                    }
-
-                    try {
-                        // Mark as initialized to prevent duplicate initialization
-                        container.setAttribute('data-workflow-initialized', 'true');
-
-                        // Small delay to ensure all assets are loaded
-                        setTimeout(() => {
-                            const result = window.initWorkflowGraph(containerId, workflowData);
-
-                            if (result && !result.success) {
-                                console.error('Failed to initialize workflow graph:', result.error);
-                                container.innerHTML = `
-                                    <div class="p-8 text-center">
-                                        <div class="text-red-600 font-semibold mb-2">Error rendering graph</div>
-                                        <div class="text-sm text-gray-600">${result.error}</div>
-                                    </div>
-                                `;
+                    // Function to attempt initialization with retry logic
+                    function attemptInit(retryCount = 0) {
+                        if (typeof window.initWorkflowGraph === 'undefined') {
+                            if (retryCount < 50) { // Retry for up to 5 seconds (50 * 100ms)
+                                setTimeout(() => attemptInit(retryCount + 1), 100);
+                                return;
                             }
-                        }, 100);
-                    } catch (error) {
-                        console.error('Failed to initialize workflow graph:', error);
-                        container.innerHTML = `
-                            <div class="p-8 text-center">
-                                <div class="text-red-600 font-semibold mb-2">Error rendering graph</div>
-                                <div class="text-sm text-gray-600">${error.message}</div>
-                            </div>
-                        `;
+                            console.error('initWorkflowGraph not found on window object after retries');
+                            container.innerHTML = `
+                                <div class="p-8 text-center">
+                                    <div class="text-red-600 font-semibold mb-2">Error: JavaScript not loaded</div>
+                                    <div class="text-sm text-gray-600">The workflow graph component failed to load. Please refresh the page.</div>
+                                </div>
+                            `;
+                            return;
+                        }
+
+                        try {
+                            // Mark as initialized to prevent duplicate initialization
+                            container.setAttribute('data-workflow-initialized', 'true');
+
+                            // Small delay to ensure all assets are loaded
+                            setTimeout(() => {
+                                const result = window.initWorkflowGraph(containerId, workflowData);
+
+                                if (result && !result.success) {
+                                    console.error('Failed to initialize workflow graph:', result.error);
+                                    container.innerHTML = `
+                                        <div class="p-8 text-center">
+                                            <div class="text-red-600 font-semibold mb-2">Error rendering graph</div>
+                                            <div class="text-sm text-gray-600">${result.error}</div>
+                                        </div>
+                                    `;
+                                }
+                            }, 100);
+                        } catch (error) {
+                            console.error('Failed to initialize workflow graph:', error);
+                            container.innerHTML = `
+                                <div class="p-8 text-center">
+                                    <div class="text-red-600 font-semibold mb-2">Error rendering graph</div>
+                                    <div class="text-sm text-gray-600">${error.message}</div>
+                                </div>
+                            `;
+                        }
                     }
+
+                    attemptInit();
                 });
             }
 
