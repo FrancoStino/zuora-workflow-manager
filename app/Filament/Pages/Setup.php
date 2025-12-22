@@ -115,11 +115,12 @@ class Setup extends Page implements HasForms
                                 ->separator(',')
                                 ->splitKeys(['Tab', ' ', ','])
                                 ->trim()
-                                ->rules(['array', new ValidateDomain])
-                                ->required(fn (Get $get): bool => $get('allowed_domains_checkbox'))
+                                ->rules(['array', new ValidateDomain()])
+                                ->required(fn(Get $get): bool => $get('allowed_domains_checkbox'))
                                 ->prefix('https://(www.)?')
                                 ->suffixIcon(Heroicon::GlobeAlt)
-                                ->visible(fn (Get $get): bool => $get('allowed_domains_checkbox'))
+                                ->visible(fn(Get $get): bool => $get('allowed_domains_checkbox'))
+                                ->reorderable()
                                 ->suggestions([
                                     // TODO: Inserire il dominio attuale dinamicamente (secondo e primo livello)
 
@@ -196,7 +197,7 @@ class Setup extends Page implements HasForms
     /**
      * Create the initial admin user with provided credentials.
      *
-     * @param  array<string, mixed>  $data  Setup form data
+     * @param array<string, mixed> $data Setup form data
      */
     private function createAdminUser(array $data): User
     {
@@ -211,7 +212,7 @@ class Setup extends Page implements HasForms
     /**
      * Generate Shield roles and permissions if they don't exist.
      *
-     * @param  User  $user  The admin user to assign super-admin role
+     * @param User $user The admin user to assign super-admin role
      *
      * @throws SetupException
      */
@@ -244,8 +245,8 @@ class Setup extends Page implements HasForms
             app()->make(PermissionRegistrar::class)->forgetCachedPermissions();
 
         } catch (Exception $e) {
-            Log::error('Failed to generate Shield roles: '.$e->getMessage());
-            throw new SetupException('Could not generate Shield roles. '.$e->getMessage());
+            Log::error('Failed to generate Shield roles: ' . $e->getMessage());
+            throw new SetupException('Could not generate Shield roles. ' . $e->getMessage());
         }
     }
 
@@ -273,7 +274,7 @@ class Setup extends Page implements HasForms
                 ['guard_name' => 'web']
             );
 
-            if (! $role->hasPermissionTo($permission)) {
+            if (!$role->hasPermissionTo($permission)) {
                 $role->givePermissionTo($permission);
             }
         }
@@ -287,7 +288,7 @@ class Setup extends Page implements HasForms
     /**
      * Save OAuth domain configuration if provided.
      *
-     * @param  array<string, mixed>  $data  Setup form data
+     * @param array<string, mixed> $data Setup form data
      */
     private function saveOAuthConfiguration(array $data): void
     {
@@ -337,7 +338,7 @@ class Setup extends Page implements HasForms
     /**
      * Send error notification with failure message.
      *
-     * @param  string  $message  Error message
+     * @param string $message Error message
      */
     private function notifyFailure(string $message): void
     {
