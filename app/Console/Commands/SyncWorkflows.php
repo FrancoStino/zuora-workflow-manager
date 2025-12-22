@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Jobs\SyncCustomerWorkflows;
+use App\Jobs\SyncCustomersJob;
 use App\Models\Customer;
 use Exception;
 use Illuminate\Console\Command;
@@ -43,10 +43,10 @@ class SyncWorkflows extends Command
 
         foreach ($customers as $customer) {
             if ($this->option('sync')) {
-                SyncCustomerWorkflows::dispatchSync($customer);
+                SyncCustomersJob::dispatchSync($customer);
                 $this->info("✓ Sync completed for: {$customer->name}");
             } else {
-                SyncCustomerWorkflows::dispatch($customer);
+                SyncCustomersJob::dispatch($customer);
                 $this->info("✓ Sync job queued for: {$customer->name}");
             }
         }
@@ -74,10 +74,10 @@ class SyncWorkflows extends Command
         $customer = Customer::where('name', $customerName)->firstOrFail();
 
         if ($this->option('sync')) {
-            SyncCustomerWorkflows::dispatchSync($customer);
+            SyncCustomersJob::dispatchSync($customer);
             $this->info("✓ Sync completed for: {$customer->name}");
         } else {
-            SyncCustomerWorkflows::dispatch($customer);
+            SyncCustomersJob::dispatch($customer);
             $this->info("✓ Sync job queued for: {$customer->name}");
         }
 

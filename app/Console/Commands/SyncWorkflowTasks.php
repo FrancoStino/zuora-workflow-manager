@@ -12,7 +12,7 @@ class SyncWorkflowTasks extends Command
      *
      * @var string
      */
-    protected $signature = 'workflows:sync-tasks 
+    protected $signature = 'workflows:sync-tasks
                             {--workflow-id= : ID specifico del workflow da sincronizzare}
                             {--all : Sincronizza tutti i workflow}';
 
@@ -87,9 +87,9 @@ class SyncWorkflowTasks extends Command
             return Workflow::whereNotNull('json_export')->get();
         }
 
-        // Modalità interattiva
-        if (! $this->confirm('Vuoi sincronizzare tutti i workflow?', true)) {
-            $workflowId = $this->ask('Inserisci l\'ID del workflow da sincronizzare');
+        // Interactive mode
+        if (! $this->confirm('Do you want to sync all workflows?', true)) {
+            $workflowId = $this->ask('Enter the ID of the workflow to sync');
 
             return Workflow::where('id', $workflowId)
                 ->whereNotNull('json_export')

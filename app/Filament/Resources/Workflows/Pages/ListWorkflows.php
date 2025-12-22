@@ -4,7 +4,7 @@ namespace App\Filament\Resources\Workflows\Pages;
 
 use App\Filament\Concerns\HasWorkflowDownloadAction;
 use App\Filament\Resources\Workflows\WorkflowResource;
-use App\Jobs\SyncCustomerWorkflows;
+use App\Jobs\SyncCustomersJob;
 use App\Models\Customer;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
@@ -47,7 +47,7 @@ class ListWorkflows extends ListRecords
                 ->action(function (array $data): void {
                     $customer = Customer::find($data['customer_id']);
                     if ($customer) {
-                        SyncCustomerWorkflows::dispatch($customer);
+                        SyncCustomersJob::dispatch($customer);
 
                         Notification::make()
                             ->title('Sync Job Queued')
@@ -64,7 +64,7 @@ class ListWorkflows extends ListRecords
         $customers = Customer::all();
 
         $customers->each(function (Customer $customer) {
-            SyncCustomerWorkflows::dispatch($customer);
+            SyncCustomersJob::dispatch($customer);
         });
 
         Notification::make()

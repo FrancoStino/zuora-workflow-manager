@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Jobs\SyncCustomerWorkflows;
+use App\Jobs\SyncCustomersJob;
 use App\Models\Customer;
 use App\Models\Workflow;
 use App\Services\WorkflowSyncService;
@@ -16,12 +16,6 @@ class SyncWorkflowsTest extends TestCase
     private const WORKFLOW_NAME_1 = 'Workflow 1';
 
     private MockInterface $zuoraServiceMock;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->zuoraServiceMock = $this->mock(ZuoraService::class);
-    }
 
     public function test_sync_customer_workflows_creates_new_workflows(): void
     {
@@ -142,9 +136,9 @@ class SyncWorkflowsTest extends TestCase
         Queue::fake();
 
         $customer = Customer::factory()->create();
-        SyncCustomerWorkflows::dispatch($customer);
+        SyncCustomersJob::dispatch($customer);
 
-        Queue::assertPushed(SyncCustomerWorkflows::class, function ($job) use ($customer) {
+        Queue::assertPushed(SyncCustomersJob::class, function ($job) use ($customer) {
             return $job->customer->id === $customer->id;
         });
     }
@@ -168,5 +162,11 @@ class SyncWorkflowsTest extends TestCase
 
         $workflow = Workflow::where('zuora_id', 'wf-001')->first();
         expect($workflow->last_synced_at)->not->toBeNull();
+    }
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->zuoraServiceMock = $this->mock(ZuoraService::class);
     }
 }

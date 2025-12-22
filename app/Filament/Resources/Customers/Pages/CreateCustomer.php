@@ -4,7 +4,7 @@ namespace App\Filament\Resources\Customers\Pages;
 
 use App\Filament\Resources\Actions\PreviousAction;
 use App\Filament\Resources\Customers\CustomerResource;
-use App\Jobs\SyncCustomerWorkflows;
+use App\Jobs\SyncCustomersJob;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreateCustomer extends CreateRecord
@@ -14,7 +14,7 @@ class CreateCustomer extends CreateRecord
     protected function afterCreate(): void
     {
         // Avvia il sync dei workflow dopo il salvataggio del customer
-        SyncCustomerWorkflows::dispatch($this->record);
+        SyncCustomersJob::dispatch($this->record);
     }
 
     protected function getHeaderActions(): array
