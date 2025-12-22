@@ -13,7 +13,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 use Moox\Jobs\Traits\JobProgress;
 
-class SyncCustomerWorkflows implements ShouldQueue
+class SyncCustomersJob implements ShouldQueue
 {
     use Dispatchable;
     use InteractsWithQueue;
@@ -31,7 +31,9 @@ class SyncCustomerWorkflows implements ShouldQueue
      */
     public int $backoff = 60;
 
-    public function __construct(public Customer $customer) {}
+    public function __construct(public Customer $customer)
+    {
+    }
 
     public function handle(WorkflowSyncService $syncService): void
     {
@@ -55,7 +57,7 @@ class SyncCustomerWorkflows implements ShouldQueue
         $this->setProgress(40);
 
         // Validate customer has required Zuora credentials
-        if (! $this->hasValidCredentials($customer)) {
+        if (!$this->hasValidCredentials($customer)) {
             Log::error('Cannot sync workflows: Invalid or missing Zuora credentials', [
                 'customer_id' => $customer->id,
                 'customer_name' => $customer->name,
@@ -80,9 +82,9 @@ class SyncCustomerWorkflows implements ShouldQueue
      */
     private function hasValidCredentials(Customer $customer): bool
     {
-        return ! empty($customer->zuora_client_id)
-            && ! empty($customer->zuora_client_secret)
-            && ! empty($customer->zuora_base_url)
+        return !empty($customer->zuora_client_id)
+            && !empty($customer->zuora_client_secret)
+            && !empty($customer->zuora_base_url)
             && filter_var($customer->zuora_base_url, FILTER_VALIDATE_URL);
     }
 }
