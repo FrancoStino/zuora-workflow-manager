@@ -8,6 +8,7 @@ use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Support\Enums\Width;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
 class TasksRelationManager extends RelationManager
@@ -86,7 +87,31 @@ class TasksRelationManager extends RelationManager
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                SelectFilter::make('action_type')
+                    ->options([
+                        'Email' => 'Email',
+                        'Export' => 'Export',
+                        'Import' => 'Import',
+                        'SOAP' => 'SOAP',
+                        'Query' => 'Query',
+                        'Iterate' => 'Iterate',
+                        'Cancel' => 'Cancel',
+                        'WriteOff' => 'WriteOff',
+                    ]),
+
+                SelectFilter::make('priority')
+                    ->options([
+                        'High' => 'High',
+                        'Medium' => 'Medium',
+                        'Low' => 'Low',
+                    ]),
+
+                SelectFilter::make('state')
+                    ->options([
+                        'pending' => 'Pending',
+                        'in_progress' => 'In Progress',
+                        'completed' => 'Completed',
+                    ]),
             ])
             ->recordActions([
                 Action::make('viewDetails')
