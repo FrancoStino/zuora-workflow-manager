@@ -17,16 +17,10 @@ class OAuthService
             $settings = app(GeneralSettings::class);
             $domains = $settings->oauth_allowed_domains ?? [];
 
-            // Ensure we return array even if domains is null
-            if (! is_array($domains)) {
-                $domains = [];
-            }
-
             if (! empty($domains)) {
                 return $domains;
             }
         } catch (Exception $e) {
-            // Silently fail and use fallback
         }
 
         return config('services.oauth.allowed_domains', []);
@@ -41,9 +35,9 @@ class OAuthService
             $settings = app(GeneralSettings::class);
 
             return [
-                'client_id' => !empty($settings->oauth_google_client_id) ? $settings->oauth_google_client_id : config('services.google.client_id'),
-                'client_secret' => !empty($settings->oauth_google_client_secret) ? $settings->oauth_google_client_secret : config('services.google.client_secret'),
-                'redirect' => !empty($settings->oauth_google_redirect_url) ? $settings->oauth_google_redirect_url : config('services.google.redirect'),
+                'client_id' => ! empty($settings->oauth_google_client_id) ? $settings->oauth_google_client_id : config('services.google.client_id'),
+                'client_secret' => ! empty($settings->oauth_google_client_secret) ? $settings->oauth_google_client_secret : config('services.google.client_secret'),
+                'redirect' => url('/oauth/callback/google'), // Always dynamic based on current domain
                 'enabled' => $settings->oauth_enabled ?? config('services.google.enabled', false),
                 'allowed_domains' => $settings->oauth_allowed_domains ?? config('services.oauth.allowed_domains', []),
             ];

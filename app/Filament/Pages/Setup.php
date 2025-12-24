@@ -3,25 +3,24 @@
 namespace App\Filament\Pages;
 
 use App\Exceptions\SetupException;
+use App\Filament\Concerns\HasGeneralSettingsSchema;
 use App\Models\User;
-use App\Rules\ValidateDomain;
+use App\Settings\GeneralSettings;
 use BackedEnum;
 use Exception;
 use Filament\Actions\Action;
-use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Toggle;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Section;
-use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Wizard;
 use Filament\Schemas\Components\Wizard\Step;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -34,6 +33,7 @@ use Throwable;
 
 class Setup extends Page implements HasForms
 {
+    use HasGeneralSettingsSchema;
     use InteractsWithForms;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCog6Tooth;
@@ -56,7 +56,7 @@ class Setup extends Page implements HasForms
 
     public function mount(): void
     {
-        if ($this->isSetupCompleted() && !request()->has('reset')) {
+        if ($this->isSetupCompleted() && ! request()->has('reset')) {
             $this->redirectBasedOnAuthStatus();
 
             return;
@@ -101,51 +101,7 @@ class Setup extends Page implements HasForms
                     Step::make('OAuth Configuration')
                         ->description('Configure Google OAuth settings')
                         ->columns(1)
-                        ->schema([
-                            TextEntry::make('oauth_info')
-                                ->state(new HtmlString('Configure Google OAuth to allow users to login with their Google account. You need to create a Google OAuth application in the <a href="https://console.cloud.google.com/apis/credentials" target="_blank" class="text-primary-600 underline">Google Cloud Console</a>.')),
-                            Toggle::make('oauth_enabled')
-                                ->label('Enable Google OAuth')
-                                ->default(false)
-                                ->live(),
-                            TextInput::make('oauth_google_client_id')
-                                ->label('Google Client ID')
-                                ->required(fn(Get $get): bool => $get('oauth_enabled'))
-                                ->visible(fn(Get $get): bool => $get('oauth_enabled'))
-                                ->maxLength(255)
-                                ->placeholder('xxxxx.apps.googleusercontent.com'),
-                            TextInput::make('oauth_google_client_secret')
-                                ->label('Google Client Secret')
-                                ->required(fn(Get $get): bool => $get('oauth_enabled'))
-                                ->visible(fn(Get $get): bool => $get('oauth_enabled'))
-                                ->password()
-                                ->revealable()
-                                ->maxLength(255),
-                            TextInput::make('oauth_google_redirect_url')
-                                ->label('Google Redirect URL')
-                                ->required(fn(Get $get): bool => $get('oauth_enabled'))
-                                ->visible(fn(Get $get): bool => $get('oauth_enabled'))
-                                ->url()
-                                ->maxLength(255)
-                                ->placeholder(url('/oauth/callback/google'))
-                                ->helperText('Use this URL in your Google OAuth application configuration'),
-                            Toggle::make('allowed_domains_checkbox')
-                                ->label('Restrict access to specific domains?')
-                                ->visible(fn(Get $get): bool => $get('oauth_enabled'))
-                                ->live(),
-                            TagsInput::make('oauth_domains')
-                                ->label('Allowed Email Domains')
-                                ->placeholder('example.com')
-                                ->helperText('Enter domains (e.g., example.com, company.com). Press Enter or comma to add. Leave empty to allow all domains.')
-                                ->prefix('https://(www.)?')
-                                ->splitKeys(['Tab', ','])
-                                ->trim()
-                                ->rules(['array', new ValidateDomain()])
-                                ->required(fn(Get $get): bool => $get('allowed_domains_checkbox'))
-                                ->suffixIcon(Heroicon::GlobeAlt)
-                                ->visible(fn(Get $get): bool => $get('oauth_enabled') && $get('allowed_domains_checkbox'))
-                                ->reorderable(),
-                        ]),
+                        ->schema($this->getOAuthFields()), // Reuse OAuth schema components
                     Step::make('Admin Account')
                         ->description('Create your administrator account')
                         ->columns(1)
@@ -168,8 +124,9 @@ class Setup extends Page implements HasForms
                                 ->label('Admin Password')
                                 ->password()
                                 ->revealable()
+                                ->requiredIf('oauth_enabled', false)
                                 ->minLength(8)
-                                ->helperText('Optional: Set a password for admin account (leave empty if using OAuth)'),
+                                ->helperText('Optional: Set a password for admin account (leave empty if using OAuth) else required if OAuth is disabled'),
                         ]),
                     Step::make('Summary')
                         ->description('Review and complete the setup')
@@ -194,7 +151,7 @@ class Setup extends Page implements HasForms
      *
      * @throws SetupException|Throwable
      */
-    public function completeSetup(): void
+    public function completeSetup(GeneralSettings $settings): void
     {
         $data = $this->form->getState();
 
@@ -203,7 +160,7 @@ class Setup extends Page implements HasForms
 
             $user = $this->createAdminUser($data);
             $this->generateShieldRolesIfNeeded($user);
-            $this->saveOAuthConfiguration($data);
+            $this->saveOAuthConfiguration($data, $settings);
             $this->markSetupAsCompleted();
 
             DB::commit();
@@ -223,7 +180,7 @@ class Setup extends Page implements HasForms
     /**
      * Create the initial admin user with provided credentials.
      *
-     * @param array<string, mixed> $data Setup form data
+     * @param  array<string, mixed>  $data  Setup form data
      */
     private function createAdminUser(array $data): User
     {
@@ -235,7 +192,7 @@ class Setup extends Page implements HasForms
                 'surname' => $data['surname'],
             ]);
 
-            if (!empty($data['admin_password'])) {
+            if (! empty($data['admin_password'])) {
                 $user->update(['password' => bcrypt($data['admin_password'])]);
             }
 
@@ -246,16 +203,16 @@ class Setup extends Page implements HasForms
             'name' => $data['name'],
             'surname' => $data['surname'],
             'email' => $data['admin_default_email'],
-            'password' => !empty($data['admin_password']) ? bcrypt($data['admin_password']) : null,
+            'password' => ! empty($data['admin_password']) ? bcrypt($data['admin_password']) : null,
         ]);
     }
 
     /**
      * Generate Shield roles and permissions if they don't exist.
      *
-     * @param User $user The admin user to assign super-admin role
+     * @param  User  $user  The admin user to assign super-admin role
      *
-     * @throws SetupException
+     * @throws SetupException|BindingResolutionException
      */
     private function generateShieldRolesIfNeeded(User $user): void
     {
@@ -286,8 +243,8 @@ class Setup extends Page implements HasForms
             app()->make(PermissionRegistrar::class)->forgetCachedPermissions();
 
         } catch (Exception $e) {
-            Log::error('Failed to generate Shield roles: ' . $e->getMessage());
-            throw new SetupException('Could not generate Shield roles. ' . $e->getMessage());
+            Log::error('Failed to generate Shield roles: '.$e->getMessage());
+            throw new SetupException('Could not generate Shield roles. '.$e->getMessage());
         }
     }
 
@@ -315,7 +272,7 @@ class Setup extends Page implements HasForms
                 ['guard_name' => 'web']
             );
 
-            if (!$role->hasPermissionTo($permission)) {
+            if (! $role->hasPermissionTo($permission)) {
                 $role->givePermissionTo($permission);
             }
         }
@@ -329,68 +286,21 @@ class Setup extends Page implements HasForms
     /**
      * Save OAuth configuration to settings.
      *
-     * @param array<string, mixed> $data Setup form data
+     * @param  array<string, mixed>  $data  Setup form data
      */
-    private function saveOAuthConfiguration(array $data): void
+    private function saveOAuthConfiguration(array $data, GeneralSettings $settings): void
     {
-        $now = now();
+        $settings->oauth_enabled = $data['oauth_enabled'] ?? false;
 
-        // Update OAuth enabled status
-        DB::table('settings')
-            ->where('group', 'general')
-            ->where('name', 'oauth_enabled')
-            ->update([
-                'payload' => json_encode($data['oauth_enabled'] ?? false),
-                'updated_at' => $now,
-            ]);
-
-        // Only save OAuth credentials if OAuth is enabled
-        if (!empty($data['oauth_enabled'])) {
-            // Update Google Client ID
-            DB::table('settings')
-                ->where('group', 'general')
-                ->where('name', 'oauth_google_client_id')
-                ->update([
-                    'payload' => json_encode($data['oauth_google_client_id'] ?? ''),
-                    'updated_at' => $now,
-                ]);
-
-            // Update Google Client Secret
-            DB::table('settings')
-                ->where('group', 'general')
-                ->where('name', 'oauth_google_client_secret')
-                ->update([
-                    'payload' => json_encode($data['oauth_google_client_secret'] ?? ''),
-                    'updated_at' => $now,
-                ]);
-
-            // Update Google Redirect URL
-            DB::table('settings')
-                ->where('group', 'general')
-                ->where('name', 'oauth_google_redirect_url')
-                ->update([
-                    'payload' => json_encode($data['oauth_google_redirect_url'] ?? ''),
-                    'updated_at' => $now,
-                ]);
-
-            // Update allowed domains (TagsInput always returns an array)
-            DB::table('settings')
-                ->where('group', 'general')
-                ->where('name', 'oauth_allowed_domains')
-                ->update([
-                    'payload' => json_encode($data['oauth_domains'] ?? []),
-                    'updated_at' => $now,
-                ]);
-
-        // Update admin default email in settings
-        DB::table('settings')
-            ->where('group', 'general')
-            ->where('name', 'admin_default_email')
-            ->update([
-                'payload' => json_encode($data['admin_default_email']),
-                'updated_at' => $now,
-            ]);
+        if ($settings->oauth_enabled) {
+            $settings->oauth_google_client_id = $data['oauth_google_client_id'] ?? '';
+            $settings->oauth_google_client_secret = $data['oauth_google_client_secret'] ?? '';
+            $settings->oauth_allowed_domains = $data['oauth_allowed_domains'] ?? [];
         }
+
+        $settings->admin_default_email = $data['admin_default_email'];
+
+        $settings->save();
     }
 
     /**
@@ -432,7 +342,7 @@ class Setup extends Page implements HasForms
     /**
      * Send error notification with failure message.
      *
-     * @param string $message Error message
+     * @param  string  $message  Error message
      */
     private function notifyFailure(string $message): void
     {

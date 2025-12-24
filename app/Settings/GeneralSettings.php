@@ -7,26 +7,24 @@ use Spatie\LaravelSettings\Settings;
 class GeneralSettings extends Settings
 {
     // Site Information
-    public string $site_name;
+    public string $site_name = 'Zuora Workflow';
 
-    public string $site_description;
+    public string $site_description = 'Workflow management for Zuora integration';
 
     // Maintenance
-    public bool $maintenance_mode;
+    public bool $maintenance_mode = false;
 
-    // OAuth Configuration
-    public array $oauth_allowed_domains;
+    // OAuth Configuration preset if empty
+    public array $oauth_allowed_domains = [];
 
-    public bool $oauth_enabled;
+    public bool $oauth_enabled = false;
 
-    public string $oauth_google_client_id;
+    public string $oauth_google_client_id = '';
 
-    public string $oauth_google_client_secret;
-
-    public string $oauth_google_redirect_url = '';
+    public string $oauth_google_client_secret = '';
 
     // Admin Configuration
-    public string $admin_default_email;
+    public string $admin_default_email = 'admin@example.com';
 
     public static function group(): string
     {

@@ -25,83 +25,102 @@ return new class extends Migration
             $table->unique(['group', 'name']);
         });
 
-        // Insert default general settings
-        $settings = [
+        DB::table('settings')->insert([
             [
                 'group' => 'general',
                 'name' => 'site_name',
-                'payload' => json_encode('Zuora Workflow'),
                 'locked' => false,
+                'payload' => json_encode('Zuora Workflow'),
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
                 'group' => 'general',
                 'name' => 'site_description',
-                'payload' => json_encode('Workflow management for Zuora integration'),
                 'locked' => false,
+                'payload' => json_encode('Workflow management for Zuora integration'),
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
                 'group' => 'general',
                 'name' => 'maintenance_mode',
-                'payload' => json_encode(false),
                 'locked' => false,
+                'payload' => json_encode(false),
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
                 'group' => 'general',
                 'name' => 'oauth_allowed_domains',
-                'payload' => json_encode(['example.com']),
                 'locked' => false,
+                'payload' => json_encode([]),
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
                 'group' => 'general',
                 'name' => 'oauth_enabled',
-                'payload' => json_encode(true),
                 'locked' => false,
+                'payload' => json_encode(false),
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
                 'group' => 'general',
                 'name' => 'oauth_google_client_id',
-                'payload' => json_encode(''),
                 'locked' => false,
+                'payload' => json_encode(''),
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
                 'group' => 'general',
                 'name' => 'oauth_google_client_secret',
+                'locked' => false,
                 'payload' => json_encode(''),
-                'locked' => false,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'group' => 'general',
-                'name' => 'oauth_google_redirect_url',
-                'payload' => json_encode(url('/oauth/callback/google')),
-                'locked' => false,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
                 'group' => 'general',
                 'name' => 'admin_default_email',
-                'payload' => json_encode('admin@example.com'),
                 'locked' => false,
+                'payload' => json_encode('admin@example.com'),
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
-        ];
+        ]);
 
-        DB::table('settings')->insert($settings);
+        // Fix oauth_allowed_domains format if it exists and is corrupted
+        $setting = DB::table('settings')
+            ->where('group', 'general')
+            ->where('name', 'oauth_allowed_domains')
+            ->first();
+
+        if ($setting) {
+            $payload = json_decode($setting->payload, true);
+
+            // If payload is a string, convert it to an array
+            if (is_string($payload)) {
+                // Try to decode it again in case it's double-encoded
+                $decoded = json_decode($payload, true);
+                if (is_array($decoded)) {
+                    $newPayload = $decoded;
+                } else {
+                    // Single domain string, convert to array
+                    $newPayload = empty($payload) ? [] : [$payload];
+                }
+
+                DB::table('settings')
+                    ->where('group', 'general')
+                    ->where('name', 'oauth_allowed_domains')
+                    ->update([
+                        'payload' => json_encode($newPayload),
+                        'updated_at' => now(),
+                    ]);
+            }
+        }
     }
 
     /**

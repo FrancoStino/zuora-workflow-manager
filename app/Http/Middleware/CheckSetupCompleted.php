@@ -17,7 +17,7 @@ class CheckSetupCompleted
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if ($this->shouldRedirectToSetup() && !$request->is('setup') && !$request->is('setup/*')) {
+        if ($this->shouldRedirectToSetup() && ! $request->is('setup') && ! $request->is('setup/*')) {
             return redirect('/setup');
         }
 
