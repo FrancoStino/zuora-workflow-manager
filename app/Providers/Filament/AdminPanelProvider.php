@@ -2,11 +2,9 @@
 
 namespace App\Providers\Filament;
 
-use App\Filament\Pages\Auth\Login;
 use App\Filament\Pages\Setup;
 use App\Filament\Resources\Workflows\Pages\ViewWorkflow;
 use App\Http\Middleware\CheckSetupCompleted;
-use App\Http\Middleware\RequireAuthAfterSetup;
 use App\Services\OAuthService;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use CharrafiMed\GlobalSearchModal\GlobalSearchModalPlugin;
@@ -27,7 +25,6 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
-use JsonException;
 use Moox\Jobs\JobsBatchesPlugin;
 use Moox\Jobs\JobsFailedPlugin;
 use Moox\Jobs\JobsPlugin;
@@ -44,7 +41,7 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('')
-            ->login(Login::class)
+            ->login()
             ->maxContentWidth(Width::Full)
             ->spa(hasPrefetching: true)
             ->colors([
@@ -82,7 +79,6 @@ class AdminPanelProvider extends PanelProvider
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
                 CheckSetupCompleted::class,
-                RequireAuthAfterSetup::class,
             ])
             ->authGuard('web')
             ->renderHook(
@@ -90,7 +86,7 @@ class AdminPanelProvider extends PanelProvider
                 function () {
                     $cssFile = self::getManifest()['resources/css/workflow-graph.css']['file'] ?? 'assets/workflow-graph.css';
 
-                    return '<link rel="stylesheet" href="'.asset('build/'.$cssFile).'">';
+                    return '<link rel="stylesheet" href="' . asset('build/' . $cssFile) . '">';
                 },
                 scopes: [ViewWorkflow::class]
             )
@@ -99,30 +95,22 @@ class AdminPanelProvider extends PanelProvider
                 function () {
                     $appJs = self::getManifest()['resources/js/app.js']['file'] ?? 'assets/app.js';
 
-                    return '<script type="module" src="'.asset('build/'.$appJs).'"></script>';
+                    return '<script type="module" src="' . asset('build/' . $appJs) . '"></script>';
                 },
                 scopes: [ViewWorkflow::class]
             )
             ->renderHook(
                 PanelsRenderHook::FOOTER,
-                fn () => view('footer'))
+                fn() => view('footer'))
             ->plugins([
                 GlobalSearchModalPlugin::make()
                     ->highlightQueryStyles([
                         'background-color' => 'teal',
                         'font-weight' => 'bold',
                     ])
-                    ->showGroupSearchCounts(),   // Enable per-category count display
+                    ->showGroupSearchCounts(),
                 FilamentShieldPlugin::make(),
-                FilamentSocialitePlugin::make()
-                    ->domainAllowList(app(OAuthService::class)->getAllowedDomains())
-                    ->registration(true)
-                    ->providers([
-                        Provider::make('google')
-                            ->label('Google')
-                            ->icon('fab-google')
-                            ->color(Color::Red),
-                    ]),
+                $this->configureSocialitePlugin(),
                 StickyTableHeaderPlugin::make(),
                 JobsPlugin::make(),
                 JobsWaitingPlugin::make(),
@@ -132,9 +120,6 @@ class AdminPanelProvider extends PanelProvider
             ]);
     }
 
-    /**
-     * @throws JsonException
-     */
     public static function getManifest(): array
     {
         if (self::$manifest === null) {
@@ -142,5 +127,26 @@ class AdminPanelProvider extends PanelProvider
         }
 
         return self::$manifest;
+    }
+
+    private function configureSocialitePlugin(): FilamentSocialitePlugin
+    {
+        $config = OAuthService::getGoogleOAuthConfig();
+
+        config([
+            'services.google.client_id' => $config['client_id'] ?? config('services.google.client_id'),
+            'services.google.client_secret' => $config['client_secret'] ?? config('services.google.client_secret'),
+            'services.google.redirect' => $config['redirect'] ?? config('services.google.redirect'),
+        ]);
+
+        return FilamentSocialitePlugin::make()
+            ->domainAllowList(app(OAuthService::class)->getAllowedDomains())
+            ->registration(true)
+            ->providers([
+                Provider::make('google')
+                    ->label('Google')
+                    ->icon('fab-google')
+                    ->color(Color::Red),
+            ]);
     }
 }

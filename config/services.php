@@ -18,12 +18,6 @@ return [
         'key' => env('POSTMARK_API_KEY'),
     ],
 
-    // OAuth Allowed Domains (comma separated, leave empty to allow all domains)
-    // Example: OAUTH_ALLOWED_DOMAINS=example.com,anotherdomain.com
-    'oauth' => [
-        'allowed_domains' => [],
-    ],
-
     'resend' => [
         'key' => env('RESEND_API_KEY'),
     ],
@@ -44,7 +38,7 @@ return [
     'google' => [
         'client_id' => env('GOOGLE_CLIENT_ID'),
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),
-        'redirect' => '/oauth/callback/google',
+        'redirect' => env('GOOGLE_REDIRECT_URI', '/oauth/callback/google'),
     ],
 
 ];

@@ -17,13 +17,7 @@ class CheckSetupCompleted
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // Skip check for setup route itself
-        if ($request->is('setup') || $request->is('setup/*')) {
-            return $next($request);
-        }
-
-        // Redirect to setup if incomplete
-        if ($this->shouldRedirectToSetup()) {
+        if ($this->shouldRedirectToSetup() && !$request->is('setup') && !$request->is('setup/*')) {
             return redirect('/setup');
         }
 
