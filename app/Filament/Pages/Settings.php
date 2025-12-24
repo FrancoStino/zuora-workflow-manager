@@ -28,7 +28,7 @@ class Settings extends SettingsPage
 
     public static function canAccess(): bool
     {
-        return auth()->user()->hasRole('super_admin');
+        return auth()->check() && auth()->user()->hasRole('super_admin');
     }
 
     public function form(Schema $schema): Schema
