@@ -35,12 +35,18 @@ workflow management.
 - 🔄 **Automatic Synchronization**: Configurable scheduled sync (hourly by default) + manual sync buttons
 - 📊 **Filament Dashboard**: Rich workflow and task visualization with search, filters, and sorting
 - ⚙️ **Background Jobs**: Queue-based processing with retry logic (3 attempts, 60s backoff)
-- 🔐 **OAuth 2.0**: Secure token management with 1-hour caching
+- 🔐 **OAuth 2.0**: Secure token management with 1-hour caching + Google OAuth login integration
 - 📥 **Workflow & Task Export**: Direct export from Zuora with automatic task extraction
 - 🔒 **RBAC**: Role-based access control via Filament Shield
 - 🗄️ **Multi-tenant**: Per-customer Zuora credentials in database
 - 📋 **Job Monitoring**: Real-time job tracking with Moox Jobs integration
 - 🎯 **Task Management**: Automatic task extraction and visualization from workflow JSON
+- 📈 **Workflow Graph Visualization**: Interactive graphical representation of workflows with @joint/layout-directed-graph
+- ⚙️ **Settings Management**: Comprehensive app settings via Spatie Laravel Settings with encrypted storage
+- 🔒 **Secure Settings**: Encrypted storage for sensitive data (OAuth secrets) using custom EncryptedCast
+- 📋 **Tasks Filters**: Advanced filtering by action_type, priority, and state
+- 📥 **JSON Operations**: Copy and download workflow JSON directly from UI
+- 🖼️ **Tasks Relation Manager**: View workflow tasks in dedicated tab with sortable columns
 
 ---
 
@@ -50,12 +56,12 @@ workflow management.
 |-----------------------------------|---------|---------------------------------------|
 | [Lando](https://lando.dev)        | Latest  | [lando.dev](https://lando.dev)        |
 | [Docker](https://www.docker.com/) | 20.0+   | [docker.com](https://www.docker.com/) |
-| [Node.js](https://nodejs.org/)    | 20.19+  | [nodejs.org](https://nodejs.org/)     |
+| [Node.js](https://nodejs.org/)    | 24.0+   | [nodejs.org](https://nodejs.org/)     |
 | [Yarn](https://yarnpkg.com/)      | Latest  | [yarnpkg.com](https://yarnpkg.com/)   |
 
 **Lando Stack:** PHP 8.4, MariaDB 11.4, Nginx, Redis 7.0, Xdebug
 
-**Key Dependencies:** Laravel 12, Filament 4.2, Filament Shield, Tailwind CSS 4, Vite 7
+**Key Dependencies:** Laravel 12, Filament 4.2, Filament Shield, Spatie Laravel Settings, @joint/layout-directed-graph, Tailwind CSS 4, Vite 7
 
 ---
 
@@ -221,6 +227,25 @@ The application automatically handles:
   items per page)
 - Error handling and retry logic for failed syncs
 
+### Settings Configuration
+
+Application settings are managed via **Spatie Laravel Settings** and stored in the database:
+
+**Settings Access:**
+- Navigate to **Settings** → **General Settings** (Super Admin only)
+- Configure site info, OAuth settings, application config, and maintenance mode
+- Settings are persisted in database and loaded automatically
+
+**Security:**
+- Sensitive fields (OAuth client secret) are encrypted using custom `EncryptedCast`
+- Encryption uses Laravel's Crypt facade (APP_KEY from .env)
+- Settings access restricted to super_admin role via Filament policy
+
+**OAuth Login:**
+- Configure Google OAuth in Settings or via environment variables
+- Set allowed email domains for registration
+- Enable/disable OAuth authentication from Settings UI
+
 ---
 
 ## Usage
@@ -231,6 +256,22 @@ The application automatically handles:
 2. Create customer with Zuora credentials (Client ID, Secret, Base URL)
 3. Click **Sync Workflows** button to sync from Zuora
 4. View, filter, and search workflows in the table
+5. Click on any workflow to:
+   - View workflow details with **Tasks Relation Manager** tab
+   - Visualize workflow structure in **Graphical View** tab (using @joint/layout-directed-graph)
+   - View raw JSON in **Workflow Json** tab
+   - **Download workflow JSON** or **copy to clipboard**
+   - Filter tasks by action type, priority, and state
+   - View task details in slide-over modal
+
+**Settings Management:**
+
+1. Navigate to **Settings** → **General Settings** (Super Admin only)
+2. Configure:
+   - Site information (name, description)
+   - OAuth settings (enable/disable, allowed domains, Google credentials)
+   - Application configuration (admin email)
+   - Maintenance mode toggle
 
 **CLI Commands:**
 
@@ -263,6 +304,7 @@ lando composer run dev                              # Full dev stack
 - **`ZuoraService`**: OAuth 2.0 authentication, HTTP API calls, token caching (1-hour TTL)
 - **`WorkflowSyncService`**: Orchestrates sync, handles pagination, CRUD operations, task extraction
 - **`OAuthService`**: Google OAuth integration for user authentication
+- **`GeneralSettings`**: Spatie Laravel Settings for application configuration with encrypted cast for sensitive data
 
 ### Background Jobs
 
@@ -275,6 +317,22 @@ lando composer run dev                              # Full dev stack
 - **Automatic Extraction**: Tasks are automatically extracted from workflow JSON during sync
 - **Database Storage**: Tasks stored in `tasks` table with foreign key to workflows
 - **Model Method**: `Workflow->syncTasksFromJson()` handles task extraction and synchronization
+- **Tasks Relation Manager**: Dedicated tab in workflow view with sortable columns and filters
+- **Task Filters**: Filter by action_type (Email, Export, SOAP, etc.), priority (High, Medium, Low), and state
+- **Task Details**: View complete task information in slide-over modal
+
+### Workflow Visualization
+
+- **Graphical View**: Interactive graph visualization using @joint/layout-directed-graph library
+- **JSON Export**: Copy or download workflow JSON directly from UI
+- **View Workflow Page**: Comprehensive workflow details with tabs for different views
+
+### Settings Management
+
+- **Spatie Laravel Settings**: Centralized application configuration
+- **Encrypted Storage**: Custom `EncryptedCast` for securing sensitive data (OAuth secrets)
+- **Multi-section Schema**: Site info, OAuth config, application settings, maintenance
+- **Role-based Access**: Settings page restricted to super_admin role only
 
 ### Queue Processing Flow
 
@@ -358,6 +416,32 @@ CREATE TABLE customers
     INDEX         idx_name (name)
 );
 ```
+
+### Settings Table
+
+```sql
+CREATE TABLE settings
+(
+    id        BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+    group     VARCHAR(255) NOT NULL,
+    name      VARCHAR(255) NOT NULL,
+    locked    BOOLEAN      NOT NULL DEFAULT 0,
+    payload   JSON        NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    UNIQUE KEY unique_group_name (group, name),
+    INDEX    idx_group (group)
+);
+```
+
+**Settings Sections:**
+- **Site Information**: Site name and description
+- **OAuth Configuration**: Google OAuth settings with encrypted client secret
+- **Application Configuration**: Admin default email
+- **Maintenance**: Maintenance mode toggle
+
+**Security Note:** Sensitive fields (e.g., `oauth_google_client_secret`) are encrypted using Laravel's Crypt via custom `EncryptedCast`.
 
 ### Tasks Table
 
