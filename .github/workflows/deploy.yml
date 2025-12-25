@@ -162,12 +162,7 @@ jobs:
             php artisan cache:clear
             php artisan view:clear
             php artisan route:clear
-
-            # Cache configurations
-            echo "Caching configurations..."
-            php artisan config:cache
-            php artisan route:cache
-            php artisan view:cache
+            php artisan filament:optimize-clear
 
             # Link storage (if not already linked)
             echo "Linking storage..."
@@ -178,6 +173,7 @@ jobs:
             php artisan config:cache
             php artisan route:cache
             php artisan view:cache
+            php artisan icons:cache
             php artisan filament:optimize
 
             # Show final status
