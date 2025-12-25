@@ -75,16 +75,16 @@ trait HasGeneralSettingsSchema
                 ->separator(',')
                 ->reorderable()
                 // Ensure it's always an array
-                ->dehydrateStateUsing(fn($state) => is_array($state) ? $state : [])
-                ->visible(fn(Get $get) => $get('oauth_enabled')),
+                ->dehydrateStateUsing(fn ($state) => is_array($state) ? $state : [])
+                ->visible(fn (Get $get) => $get('oauth_enabled')),
 
             TextInput::make('oauth_google_client_id')
                 ->label('Google Client ID')
                 ->placeholder('Enter Google OAuth Client ID or set GOOGLE_CLIENT_ID in .env')
                 ->helperText('Get this from Google Cloud Console. Leave empty to use .env GOOGLE_CLIENT_ID')
                 // Convert null to empty string on save
-                ->dehydrateStateUsing(fn($state) => $state ?? '')
-                ->visible(fn(Get $get) => $get('oauth_enabled')),
+                ->dehydrateStateUsing(fn ($state) => $state ?? '')
+                ->visible(fn (Get $get) => $get('oauth_enabled')),
 
             TextInput::make('oauth_google_client_secret')
                 ->label('Google Client Secret')
@@ -92,8 +92,8 @@ trait HasGeneralSettingsSchema
                 ->placeholder('Enter Google OAuth Client Secret or set GOOGLE_CLIENT_SECRET in .env')
                 ->helperText('Get this from Google Cloud Console. Leave empty to use .env GOOGLE_CLIENT_SECRET')
                 // Convert null to empty string on save
-                ->dehydrateStateUsing(fn($state) => $state ?? '')
-                ->visible(fn(Get $get) => $get('oauth_enabled')),
+                ->dehydrateStateUsing(fn ($state) => $state ?? '')
+                ->visible(fn (Get $get) => $get('oauth_enabled')),
         ];
     }
 

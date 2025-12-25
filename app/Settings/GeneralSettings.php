@@ -2,6 +2,7 @@
 
 namespace App\Settings;
 
+use App\Settings\Casts\EncryptedCast;
 use Spatie\LaravelSettings\Settings;
 
 class GeneralSettings extends Settings
@@ -29,5 +30,12 @@ class GeneralSettings extends Settings
     public static function group(): string
     {
         return 'general';
+    }
+
+    public static function casts(): array
+    {
+        return [
+            'oauth_google_client_secret' => EncryptedCast::class,
+        ];
     }
 }
