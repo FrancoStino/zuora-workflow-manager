@@ -38,21 +38,27 @@ class WorkflowsTable
                         default => 'gray',
                     })
                     ->sortable(),
+                TextColumn::make('tasks_count')
+                    ->counts('tasks')
+                    ->label('Tasks')
+                    ->badge()
+                    ->color('info')
+                    ->sortable(),
                 TextColumn::make('created_on')
                     ->label('Created')
                     ->dateTime(WorkflowsTable::DATE_TIME_FORMAT)
-                    ->toggleable()
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->sortable(),
                 TextColumn::make('updated_on')
                     ->label('Updated')
                     ->dateTime(WorkflowsTable::DATE_TIME_FORMAT)
-                    ->toggleable()
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->sortable(),
                 TextColumn::make('last_synced_at')
                     ->label('Last Synced')
                     ->dateTime(WorkflowsTable::DATE_TIME_FORMAT)
                     ->sortable()
-                    ->toggleable()
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->placeholder('Never'),
             ])
             ->filters([
