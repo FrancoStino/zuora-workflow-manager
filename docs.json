@@ -1,16 +1,54 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "Documentation",
+  "name": "Zuora Workflow Manager",
+  "logo": {
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg"
+  },
+  "favicon": "/favicon.png",
   "colors": {
-    "primary": "#0D9373"
+    "primary": "#0D9373",
+    "light": "#07C983",
+    "dark": "#0D9373"
+  },
+  "topbarLinks": [
+    {
+      "name": "GitHub",
+      "url": "https://github.com/FrancoStino/zuora-workflows"
+    }
+  ],
+  "topbarCtaButton": {
+    "name": "Get Started",
+    "url": "/installation"
   },
   "navigation": {
     "groups": [
       {
-        "group": "Getting Started",
-        "pages": []
+        "group": "Getting started",
+        "pages": [
+          "introduction",
+          "installation",
+          "configuration"
+        ]
+      },
+      {
+        "group": "Guides",
+        "pages": [
+          "usage",
+          "architecture",
+          "deployment"
+        ]
+      },
+      {
+        "group": "Community",
+        "pages": [
+          "contributing"
+        ]
       }
     ]
+  },
+  "footerSocials": {
+    "github": "https://github.com/FrancoStino/zuora-workflows"
   }
 }
