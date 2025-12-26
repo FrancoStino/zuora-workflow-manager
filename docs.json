@@ -1,6 +1,6 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "mint",
+  "theme": "linden",
   "name": "Documentation",
   "colors": {
     "primary": "#0D9373"
@@ -12,5 +12,11 @@
         "pages": []
       }
     ]
+  },
+  "favicon": "/images/favicon.ico",
+  "api": {
+    "playground": {
+      "display": "interactive"
+    }
   }
 }
