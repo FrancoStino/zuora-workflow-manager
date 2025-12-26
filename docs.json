@@ -20,7 +20,7 @@
   ],
   "topbarCtaButton": {
     "name": "Get Started",
-    "url": "/docs/installation"
+    "url": "/installation"
   },
   "navigation": {
     "groups": [
