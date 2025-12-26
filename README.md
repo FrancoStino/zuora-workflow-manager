@@ -6,21 +6,14 @@
   <img src="public/images/zuora-logo-readme.png" alt="Zuora Workflows Logo" width="60%">
 </figure><br /><br />
 
-[![PHP Version](https://img.shields.io/badge/PHP-8.4+-777BB4?style=for-the-badge&logo=php&logoColor=white)](https://www.php.net/)
-[![Laravel Version](https://img.shields.io/badge/Laravel-12.0-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)](https://laravel.com)
-[![Filament](https://custom-icon-badges.demolab.com/badge/Filament-4.2-df4090?style=for-the-badge&logo=filament&logoColor=white)](https://filamentphp.com/)
-[![Lando](https://custom-icon-badges.demolab.com/badge/Lando-DEV_Environment-df4090?style=for-the-badge&logo=lando&logoColor=white)](https://lando.dev/)
-[![MariaDB](https://img.shields.io/badge/MariaDB-11.4-003545?style=for-the-badge&logo=mariadb&logoColor=white)](https://mariadb.org/)
-[![Redis](https://img.shields.io/badge/Redis-7.0-DC382D?style=for-the-badge&logo=redis&logoColor=white)](https://redis.io/)
-[![Nginx](https://img.shields.io/badge/Nginx-Latest-009639?style=for-the-badge&logo=nginx&logoColor=white)](https://nginx.org/)
 [![License](https://img.shields.io/badge/License-MIT-4CAF50?style=for-the-badge&logoColor=white)](LICENSE)
 [![Latest Release](https://img.shields.io/github/v/release/FrancoStino/zuora-workflows?style=for-the-badge&color=2196F3&logoColor=white)](https://github.com/FrancoStino/zuora-workflows/releases)
 
 </div>
 
-A powerful web application for synchronizing, viewing, and managing Zuora workflows directly from your Filament admin
-dashboard. Built with modern Laravel architecture featuring automated sync jobs, real-time dashboards, and comprehensive
-workflow management.
+A powerful web application for synchronizing, viewing, and managing Zuora workflows directly from your [Filament admin
+dashboard](https://filamentphp.com/). Built with modern Laravel architecture featuring automated sync jobs, real-time
+dashboards, and comprehensive workflow management.
 
 ## Table of Contents
 
@@ -41,7 +34,8 @@ workflow management.
 - 🗄️ **Multi-tenant**: Per-customer Zuora credentials in database
 - 📋 **Job Monitoring**: Real-time job tracking with Moox Jobs integration
 - 🎯 **Task Management**: Automatic task extraction and visualization from workflow JSON
-- 📈 **Workflow Graph Visualization**: Interactive graphical representation of workflows with @joint/layout-directed-graph
+- 📈 **Workflow Graph Visualization**: Interactive graphical representation of workflows with
+  @joint/layout-directed-graph
 - ⚙️ **Settings Management**: Comprehensive app settings via Spatie Laravel Settings with encrypted storage
 - 🔒 **Secure Settings**: Encrypted storage for sensitive data (OAuth secrets) using custom EncryptedCast
 - 📋 **Tasks Filters**: Advanced filtering by action_type, priority, and state
@@ -61,7 +55,8 @@ workflow management.
 
 **Lando Stack:** PHP 8.4, MariaDB 11.4, Nginx, Redis 7.0, Xdebug
 
-**Key Dependencies:** Laravel 12, Filament 4.2, Filament Shield, Spatie Laravel Settings, @joint/layout-directed-graph, Tailwind CSS 4, Vite 7
+**Key Dependencies:** Laravel 12, Filament 4.2, Filament Shield, Spatie Laravel Settings, @joint/layout-directed-graph,
+Tailwind CSS 4, Vite 7
 
 ---
 
@@ -179,7 +174,8 @@ QUEUE_CONNECTION=redis
 **Queue Processing:**
 
 - **Development:** Use `lando queue` to start the queue worker
-- **Production:** Set up a cron job to run `php artisan schedule:run` every minute (see [Deployment Guide](docs/DEPLOYMENT.md))
+- **Production:** Set up a cron job to run `php artisan schedule:run` every minute (
+  see [Deployment Guide](docs/DEPLOYMENT.md))
 
 See [Laravel Queue Documentation](https://laravel.com/docs/queues) for more driver options.
 
@@ -188,6 +184,7 @@ See [Laravel Queue Documentation](https://laravel.com/docs/queues) for more driv
 Scheduled tasks are defined in `routes/console.php` (Laravel 12):
 
 **Automatic Workflow Synchronization:**
+
 ```php
 // Sync all customer workflows automatically
 Schedule::command('app:sync-workflows --all')
@@ -232,16 +229,19 @@ The application automatically handles:
 Application settings are managed via **Spatie Laravel Settings** and stored in the database:
 
 **Settings Access:**
+
 - Navigate to **Settings** → **General Settings** (Super Admin only)
 - Configure site info, OAuth settings, application config, and maintenance mode
 - Settings are persisted in database and loaded automatically
 
 **Security:**
+
 - Sensitive fields (OAuth client secret) are encrypted using custom `EncryptedCast`
 - Encryption uses Laravel's Crypt facade (APP_KEY from .env)
 - Settings access restricted to super_admin role via Filament policy
 
 **OAuth Login:**
+
 - Configure Google OAuth in Settings or via environment variables
 - Set allowed email domains for registration
 - Enable/disable OAuth authentication from Settings UI
@@ -257,21 +257,21 @@ Application settings are managed via **Spatie Laravel Settings** and stored in t
 3. Click **Sync Workflows** button to sync from Zuora
 4. View, filter, and search workflows in the table
 5. Click on any workflow to:
-   - View workflow details with **Tasks Relation Manager** tab
-   - Visualize workflow structure in **Graphical View** tab (using @joint/layout-directed-graph)
-   - View raw JSON in **Workflow Json** tab
-   - **Download workflow JSON** or **copy to clipboard**
-   - Filter tasks by action type, priority, and state
-   - View task details in slide-over modal
+    - View workflow details with **Tasks Relation Manager** tab
+    - Visualize workflow structure in **Graphical View** tab (using @joint/layout-directed-graph)
+    - View raw JSON in **Workflow Json** tab
+    - **Download workflow JSON** or **copy to clipboard**
+    - Filter tasks by action type, priority, and state
+    - View task details in slide-over modal
 
 **Settings Management:**
 
 1. Navigate to **Settings** → **General Settings** (Super Admin only)
 2. Configure:
-   - Site information (name, description)
-   - OAuth settings (enable/disable, allowed domains, Google credentials)
-   - Application configuration (admin email)
-   - Maintenance mode toggle
+    - Site information (name, description)
+    - OAuth settings (enable/disable, allowed domains, Google credentials)
+    - Application configuration (admin email)
+    - Maintenance mode toggle
 
 **CLI Commands:**
 
@@ -357,14 +357,15 @@ Filament UI (instant display)
 ### Monitoring
 
 - **Moox Jobs Integration**: Real-time job monitoring in Filament admin panel
-  - View running jobs
-  - Monitor waiting jobs
-  - Track failed jobs and retry
-  - View job batches
+    - View running jobs
+    - Monitor waiting jobs
+    - Track failed jobs and retry
+    - View job batches
 
 ### Scheduled Tasks (Laravel 12)
 
 Defined in `routes/console.php`:
+
 - Automatic workflow synchronization (configurable frequency)
 - Automatic queue processing (every minute in development)
 
@@ -422,26 +423,28 @@ CREATE TABLE customers
 ```sql
 CREATE TABLE settings
 (
-    id        BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-    group     VARCHAR(255) NOT NULL,
-    name      VARCHAR(255) NOT NULL,
-    locked    BOOLEAN      NOT NULL DEFAULT 0,
-    payload   JSON        NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    id         BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+    group      VARCHAR(255) NOT NULL,
+    name       VARCHAR(255) NOT NULL,
+    locked     BOOLEAN      NOT NULL DEFAULT 0,
+    payload    JSON         NOT NULL,
+    created_at TIMESTAMP             DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP             DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
     UNIQUE KEY unique_group_name (group, name),
-    INDEX    idx_group (group)
+    INDEX      idx_group (group)
 );
 ```
 
 **Settings Sections:**
+
 - **Site Information**: Site name and description
 - **OAuth Configuration**: Google OAuth settings with encrypted client secret
 - **Application Configuration**: Admin default email
 - **Maintenance**: Maintenance mode toggle
 
-**Security Note:** Sensitive fields (e.g., `oauth_google_client_secret`) are encrypted using Laravel's Crypt via custom `EncryptedCast`.
+**Security Note:** Sensitive fields (e.g., `oauth_google_client_secret`) are encrypted using Laravel's Crypt via custom
+`EncryptedCast`.
 
 ### Tasks Table
 
@@ -462,9 +465,9 @@ CREATE TABLE tasks
     updated_at         TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
     FOREIGN KEY (workflow_id) REFERENCES workflows (id) ON DELETE CASCADE,
-    INDEX          idx_workflow_id (workflow_id),
-    INDEX          idx_zuora_id (zuora_id),
-    INDEX          idx_task_type (task_type)
+    INDEX              idx_workflow_id (workflow_id),
+    INDEX              idx_zuora_id (zuora_id),
+    INDEX              idx_task_type (task_type)
 );
 ```
 
@@ -491,9 +494,41 @@ For [Redis](https://redis.io/) queue support, configure `QUEUE_CONNECTION=redis`
 
 ```sql
 -- Job monitoring and management
-CREATE TABLE job_manager (id, job_id, name, queue, connection, status, ...);
-CREATE TABLE failed_jobs (id, uuid, connection, queue, payload, exception, ...);
-CREATE TABLE job_batches (id, name, total_jobs, pending_jobs, failed_jobs, ...);
+CREATE TABLE job_manager
+(
+    id,
+    job_id,
+    name,
+    queue,
+    connection,
+    status,
+    .
+    .
+    .
+);
+CREATE TABLE failed_jobs
+(
+    id,
+    uuid,
+    connection,
+    queue,
+    payload,
+    exception,
+    .
+    .
+    .
+);
+CREATE TABLE job_batches
+(
+    id,
+    name,
+    total_jobs,
+    pending_jobs,
+    failed_jobs,
+    .
+    .
+    .
+);
 ```
 
 ---
@@ -557,6 +592,7 @@ lando artisan queue:flush
 ```
 
 **Moox Jobs Panel:** Access via Filament admin panel → Jobs menu
+
 - **Jobs**: View running and completed jobs
 - **Jobs Waiting**: See queued jobs waiting for processing
 - **Failed Jobs**: View and retry failed jobs
