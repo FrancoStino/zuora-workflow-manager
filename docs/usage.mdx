@@ -1,0 +1,222 @@
+---
+title: Usage
+description: Learn how to sync and manage Zuora workflows
+---
+
+# Usage
+
+This guide covers the day-to-day usage of Zuora Workflow Manager, including syncing workflows, managing customers, and monitoring sync operations.
+
+## Managing customers
+
+### Create a customer
+
+1. Navigate to **Customers** in the sidebar
+2. Click **New Customer**
+3. Fill in the customer details:
+   - **Name** - Customer display name
+   - **Client ID** - Zuora OAuth 2.0 Client ID
+   - **Client Secret** - Zuora OAuth 2.0 Client Secret
+   - **Base URL** - Zuora API endpoint (e.g., `https://rest.zuora.com`)
+4. Click **Create**
+
+<Note>
+After creating a customer, workflows are automatically synced in the background.
+</Note>
+
+### Edit a customer
+
+1. Navigate to **Customers**
+2. Click on a customer row
+3. Update the customer details
+4. Click **Save**
+
+### Delete a customer
+
+1. Navigate to **Customers**
+2. Select one or more customers
+3. Click **Delete** in the bulk actions menu
+4. Confirm deletion
+
+<Warning>
+Deleting a customer will also delete all associated workflows due to the foreign key cascade.
+</Warning>
+
+## Syncing workflows
+
+### Automatic sync
+
+Workflows are automatically synced every hour for all customers. The scheduler runs in the background and dispatches sync jobs to the queue.
+
+**Schedule configuration:**
+- Default: Every hour
+- Customizable in `app/Console/Kernel.php`
+
+### Manual sync
+
+You can manually trigger a sync for a specific customer:
+
+1. Navigate to **Customers**
+2. Click on a customer row
+3. Click **Sync Workflows** button
+4. Wait for the sync to complete
+
+<Tip>
+Manual sync is useful when you need immediate updates after making changes in Zuora.
+</Tip>
+
+### CLI sync
+
+You can also sync workflows via command line:
+
+```bash
+# Sync a specific customer
+lando artisan app:sync-workflows --customer="Customer Name"
+
+# Sync all customers
+lando artisan app:sync-workflows --all
+```
+
+## Viewing workflows
+
+### Workflow list
+
+Navigate to **Workflows** in the sidebar to view all workflows across all customers.
+
+**Features:**
+- **Search** - Search by workflow name or description
+- **Filter** - Filter by customer, state, or date
+- **Sort** - Sort by any column
+- **Pagination** - Navigate through large workflow lists
+
+### Workflow details
+
+Click on a workflow row to view detailed information:
+
+- **Basic information** - Name, description, state
+- **Zuora details** - Zuora ID, created date, updated date
+- **Sync information** - Last synced timestamp
+- **Customer** - Associated customer
+- **JSON export** - Full workflow definition (if available)
+
+### Download workflow
+
+To download a workflow definition:
+
+1. Navigate to **Workflows**
+2. Click on a workflow row
+3. Click **Download** button
+4. The workflow JSON will be downloaded to your computer
+
+## Monitoring sync operations
+
+### Queue status
+
+Check the status of queued sync jobs:
+
+```bash
+# View pending jobs (database/redis queue only)
+lando artisan queue:monitor database
+
+# View failed jobs
+lando artisan queue:failed
+
+# Retry a specific failed job
+lando artisan queue:retry {job-id}
+
+# Retry all failed jobs
+lando artisan queue:retry all
+```
+
+<Note>
+Queue commands only work with `QUEUE_CONNECTION=database` or `redis`. With `sync` queue, jobs execute immediately.
+</Note>
+
+### Logs
+
+View sync logs in real-time:
+
+```bash
+# View all logs
+lando logs -f
+
+# View Laravel logs
+lando exec appserver tail -f storage/logs/laravel.log
+
+# Filter for workflow sync logs
+lando exec appserver grep -i "workflow" storage/logs/laravel.log
+```
+
+### Sync statistics
+
+After each sync, the application logs statistics:
+
+```json
+{
+  "created": 5,    // New workflows created
+  "updated": 2,    // Workflows updated
+  "deleted": 1,    // Workflows removed (no longer in Zuora)
+  "total": 8,      // Total workflows processed
+  "errors": []     // Any errors encountered
+}
+```
+
+## Role-based access control
+
+Zuora Workflow Manager includes role-based access control via Filament Shield.
+
+### Default roles
+
+- **Super Admin** - Full access to all features
+- **Admin** - Manage customers and workflows
+- **Viewer** - Read-only access to workflows
+
+### Manage roles
+
+1. Navigate to **Roles** in the sidebar
+2. Create or edit roles
+3. Assign permissions to roles
+4. Assign roles to users
+
+### Manage users
+
+1. Navigate to **Users** in the sidebar
+2. Create or edit users
+3. Assign roles to users
+
+## Troubleshooting
+
+### Workflows not syncing
+
+If workflows are not syncing:
+
+1. **Check Zuora credentials** - Verify Client ID, Secret, and Base URL are correct
+2. **Check queue worker** - Ensure queue worker is running (for database/redis queue)
+3. **Check logs** - Review logs for error messages
+4. **Retry failed jobs** - Use `lando artisan queue:retry all`
+
+### Sync taking too long
+
+If sync operations are taking too long:
+
+1. **Check queue connection** - Consider switching from `sync` to `database` queue
+2. **Check network** - Verify network connectivity to Zuora API
+3. **Check pagination** - Reduce page size in `WorkflowSyncService.php`
+
+### Permission errors
+
+If you encounter permission errors:
+
+1. **Check file permissions** - Ensure `storage` and `bootstrap/cache` are writable
+2. **Check user roles** - Verify user has appropriate permissions
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Architecture" icon="sitemap" href="/architecture">
+    Understand the application architecture
+  </Card>
+  <Card title="Deployment" icon="rocket" href="/deployment">
+    Deploy to production environments
+  </Card>
+</CardGroup>

@@ -1,0 +1,70 @@
+---
+title: Introduction
+description: A powerful Laravel admin panel for managing Zuora workflows with role-based access control
+---
+
+# Zuora Workflow Manager
+
+Zuora Workflow Manager is a powerful web application for synchronizing, viewing, and managing Zuora workflows directly from your Filament admin dashboard. Built with modern Laravel architecture featuring automated sync jobs, real-time dashboards, and comprehensive workflow management.
+
+## Key features
+
+- **Automatic synchronization** - Hourly sync with manual sync button for immediate updates
+- **Filament dashboard** - Rich workflow visualization with search, filters, and sorting
+- **Background jobs** - Queue-based processing with retry logic (3 attempts, 60s backoff)
+- **OAuth 2.0 authentication** - Secure token management with 1-hour caching
+- **Workflow download** - Direct export from Zuora
+- **Role-based access control** - RBAC via Filament Shield
+- **Multi-tenant support** - Per-customer Zuora credentials in database
+
+## Technology stack
+
+Built with modern PHP and Laravel ecosystem:
+
+- **PHP 8.4+** - Latest PHP features and performance
+- **Laravel 12** - Modern PHP framework
+- **Filament 4.2** - Beautiful admin panel
+- **MariaDB 11.4** - Reliable database with foreign keys and indexes
+- **Redis 7.0** - Fast caching and queue management
+- **Tailwind CSS 4** - Modern styling
+- **Vite 7** - Fast asset bundling
+
+## Use cases
+
+Zuora Workflow Manager is ideal for:
+
+- **Workflow monitoring** - Track and visualize all Zuora workflows in one place
+- **Multi-customer management** - Manage workflows for multiple Zuora accounts
+- **Automated synchronization** - Keep workflows up-to-date automatically
+- **Team collaboration** - Role-based access for different team members
+- **Workflow export** - Download workflow definitions for backup or analysis
+
+## Architecture overview
+
+The application follows a clean service-oriented architecture:
+
+```
+Filament UI → Dispatch Job → WorkflowSyncService → ZuoraService → Zuora REST API
+```
+
+**Service layer:**
+- `ZuoraService` - OAuth 2.0 authentication, HTTP API calls, token caching
+- `WorkflowSyncService` - Orchestrates sync, handles pagination, CRUD operations
+- `SyncCustomerWorkflows` Job - Queue-based processing with retry logic
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Installation" icon="download" href="/installation">
+    Get started with installation and setup
+  </Card>
+  <Card title="Configuration" icon="gear" href="/configuration">
+    Configure Zuora credentials and queue settings
+  </Card>
+  <Card title="Usage" icon="play" href="/usage">
+    Learn how to sync and manage workflows
+  </Card>
+  <Card title="Deployment" icon="rocket" href="/deployment">
+    Deploy to production environments
+  </Card>
+</CardGroup>

@@ -1,0 +1,228 @@
+---
+title: Configuration
+description: Configure queue drivers, scheduler, and Zuora API settings
+---
+
+# Configuration
+
+This guide covers configuring Zuora Workflow Manager for your environment, including queue drivers, scheduler settings, and Zuora API credentials.
+
+## Queue driver setup
+
+The application uses Laravel's queue system for background job processing. You can choose from several queue drivers depending on your hosting environment.
+
+### Sync queue (default)
+
+The simplest option - jobs execute immediately without background processing.
+
+```env .env
+QUEUE_CONNECTION=sync
+```
+
+**Pros:**
+- No additional configuration required
+- Jobs execute immediately with instant feedback
+- Works perfectly in shared hosting environments
+- No risk of queued jobs not being processed
+
+**Cons:**
+- Synchronization operations block the user's request
+- May cause timeouts for long-running operations
+- Not ideal for high-traffic applications
+
+**Recommended for:** Shared hosting, development, staging, or low-traffic production sites.
+
+### Database queue
+
+Uses your database to store queued jobs for background processing.
+
+```env .env
+QUEUE_CONNECTION=database
+```
+
+**Requirements:**
+- Queue worker process (via cron job or Supervisor)
+- Database migrations already include the `jobs` table
+
+**Start queue worker:**
+
+```bash
+# Development
+lando artisan queue:work
+
+# Production (via cron job)
+* * * * * cd /path/to/app && php artisan schedule:run >> /dev/null 2>&1
+```
+
+### Redis queue
+
+Uses Redis for faster queue processing.
+
+```env .env
+QUEUE_CONNECTION=redis
+```
+
+**Requirements:**
+- Redis server (included in Lando setup)
+- Queue worker process
+
+**Start queue worker:**
+
+```bash
+lando artisan queue:work redis
+```
+
+## Scheduler configuration
+
+Workflows sync automatically on a schedule. The default is hourly, but you can customize this in `app/Console/Kernel.php`.
+
+### Default schedule
+
+```php app/Console/Kernel.php
+protected function schedule(Schedule $schedule): void
+{
+    $schedule->call(function () {
+        $customers = Customer::all();
+        foreach ($customers as $customer) {
+            SyncCustomerWorkflows::dispatch($customer);
+        }
+    })->hourly();
+}
+```
+
+### Custom schedules
+
+Modify the schedule frequency:
+
+```php
+->hourly();              // Every hour (default)
+->everyThirtyMinutes();  // Every 30 minutes
+->everyFiveMinutes();    // Every 5 minutes
+->daily();               // Once per day
+->dailyAt('02:00');      // Daily at 2:00 AM
+```
+
+### Start scheduler
+
+For development:
+
+```bash
+lando artisan schedule:work
+```
+
+For production, add a cron job (see [Deployment](/deployment)).
+
+## Zuora API configuration
+
+Zuora credentials are stored per-customer in the database, enabling multi-tenant support.
+
+### Configure customer credentials
+
+1. Login to the admin dashboard
+2. Navigate to **Customers**
+3. Create or edit a customer
+4. Enter Zuora API credentials:
+
+| Field | Description | Example |
+|-------|-------------|---------|
+| **Client ID** | Zuora OAuth 2.0 Client ID | `abc123...` |
+| **Client Secret** | Zuora OAuth 2.0 Client Secret | `xyz789...` |
+| **Base URL** | Zuora API endpoint | `https://rest.zuora.com` |
+
+<Note>
+For sandbox environments, use `https://rest.test.zuora.com` as the base URL.
+</Note>
+
+### API endpoints
+
+The application uses these Zuora REST API endpoints:
+
+- `GET /v1/workflows` - List workflows (paginated, 50 per page)
+- `GET /v1/workflows/{id}/export` - Download workflow definition
+
+### Authentication
+
+The application automatically handles:
+- OAuth 2.0 token generation and caching (1-hour TTL)
+- Paginated requests (max 50 items per page)
+- Error handling and retry logic for failed syncs
+
+## Environment variables
+
+### Required variables
+
+```env .env
+APP_NAME='Zuora Workflow'
+APP_ENV=local
+APP_KEY=base64:...
+APP_DEBUG=true
+APP_URL=https://zuora-workflows.lndo.site
+
+DB_CONNECTION=mysql
+DB_HOST=database
+DB_PORT=3306
+DB_DATABASE=zuora_workflows
+DB_USERNAME=zuora_workflows
+DB_PASSWORD=zuora_workflows
+
+QUEUE_CONNECTION=sync
+```
+
+### Optional variables
+
+```env .env
+# Google OAuth (optional)
+GOOGLE_CLIENT_ID=...
+GOOGLE_CLIENT_SECRET=...
+
+# Redis (if using redis queue)
+REDIS_HOST=cache
+REDIS_PASSWORD=null
+REDIS_PORT=6379
+
+# Mail (for notifications)
+MAIL_MAILER=smtp
+MAIL_HOST=mailpit
+MAIL_PORT=1025
+```
+
+## Performance tuning
+
+### Token caching
+
+OAuth tokens are cached for 1 hour by default. Adjust in `app/Services/ZuoraService.php`:
+
+```php
+Cache::remember("zuora_token_{$customer->id}", 3600, function () {
+    // Token generation logic
+});
+```
+
+### Pagination
+
+Default page size is 50 workflows per request. Adjust in `app/Services/WorkflowSyncService.php`:
+
+```php
+private const DEFAULT_PAGE_SIZE = 50;
+```
+
+### Database indexes
+
+The application includes indexes for optimal query performance:
+
+```sql
+INDEX idx_customer_id (customer_id)
+INDEX idx_zuora_id (zuora_id)
+INDEX idx_state (state)
+```
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Usage" icon="play" href="/usage">
+    Learn how to sync and manage workflows
+  </Card>
+  <Card title="Deployment" icon="rocket" href="/deployment">
+    Deploy to production environments
+  </Card>
+</CardGroup>

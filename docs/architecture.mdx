@@ -1,0 +1,359 @@
+---
+title: Architecture
+description: Understand the application architecture and design patterns
+---
+
+# Architecture
+
+This guide provides an overview of Zuora Workflow Manager's architecture, including the service layer, database schema, and design patterns.
+
+## Architecture overview
+
+Zuora Workflow Manager follows a clean service-oriented architecture with clear separation of concerns:
+
+```
+┌─────────────┐
+│ Filament UI │
+└──────┬──────┘
+       │
+       ▼
+┌─────────────────────┐
+│ Dispatch Job        │
+│ (SyncCustomer       │
+│  Workflows)         │
+└──────┬──────────────┘
+       │
+       ▼
+┌─────────────────────┐
+│ WorkflowSyncService │
+└──────┬──────────────┘
+       │
+       ▼
+┌─────────────────────┐
+│ ZuoraService        │
+└──────┬──────────────┘
+       │
+       ▼
+┌─────────────────────┐
+│ Zuora REST API      │
+└─────────────────────┘
+```
+
+## Service layer
+
+### ZuoraService
+
+Handles all communication with the Zuora REST API.
+
+**Responsibilities:**
+- OAuth 2.0 authentication
+- HTTP API calls
+- Token caching (1-hour TTL)
+- Error handling
+
+**Key methods:**
+```php
+authenticate(Customer $customer): string
+getWorkflows(Customer $customer, int $page = 1): array
+exportWorkflow(Customer $customer, string $workflowId): array
+```
+
+**Design pattern:** Service Locator with dependency injection
+
+### WorkflowSyncService
+
+Orchestrates the workflow synchronization process.
+
+**Responsibilities:**
+- Paginated workflow fetching
+- CRUD operations on workflows
+- Sync statistics tracking
+- Stale workflow cleanup
+
+**Key methods:**
+```php
+syncCustomerWorkflows(Customer $customer): array
+syncWorkflowRecord(Customer $customer, array $workflowData): void
+deleteStaleWorkflows(Customer $customer, array $zuoraIds): int
+```
+
+**Design pattern:** Service Orchestrator
+
+### SyncCustomerWorkflows Job
+
+Asynchronous job for background processing.
+
+**Responsibilities:**
+- Queue-based execution
+- Retry logic (3 attempts, 60s backoff)
+- Decouples UI from long-running processes
+
+**Configuration:**
+```php
+public $tries = 3;
+public $backoff = 60;
+public $timeout = 300;
+```
+
+**Design pattern:** Command pattern with queue
+
+## Database schema
+
+### Entity relationship diagram
+
+```
+┌─────────────┐         ┌─────────────┐
+│  customers  │         │  workflows  │
+├─────────────┤         ├─────────────┤
+│ id          │◄────────│ customer_id │
+│ name        │         │ zuora_id    │
+│ client_id   │         │ name        │
+│ client_secret│        │ description │
+│ base_url    │         │ state       │
+│ created_at  │         │ created_on  │
+│ updated_at  │         │ updated_on  │
+└─────────────┘         │ last_synced │
+                        │ created_at  │
+                        │ updated_at  │
+                        └─────────────┘
+```
+
+### Customers table
+
+Stores Zuora API credentials for each customer.
+
+```sql
+CREATE TABLE customers (
+    id            BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+    name          VARCHAR(255) NOT NULL,
+    client_id     VARCHAR(255) NOT NULL,
+    client_secret VARCHAR(255) NOT NULL,
+    base_url      VARCHAR(255) NOT NULL,
+    created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    INDEX idx_name (name)
+);
+```
+
+### Workflows table
+
+Stores synchronized workflows from Zuora.
+
+```sql
+CREATE TABLE workflows (
+    id             BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+    customer_id    BIGINT UNSIGNED NOT NULL,
+    zuora_id       VARCHAR(255) NOT NULL UNIQUE,
+    name           VARCHAR(255) NOT NULL,
+    description    TEXT,
+    state          VARCHAR(255),
+    created_on     TIMESTAMP,
+    updated_on     TIMESTAMP,
+    last_synced_at TIMESTAMP,
+    created_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE CASCADE,
+    INDEX idx_customer_id (customer_id),
+    INDEX idx_zuora_id (zuora_id),
+    INDEX idx_state (state)
+);
+```
+
+### Jobs table
+
+Stores queued jobs for background processing (database queue only).
+
+```sql
+CREATE TABLE jobs (
+    id           BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+    queue        VARCHAR(255) NOT NULL,
+    payload      LONGTEXT NOT NULL,
+    attempts     TINYINT UNSIGNED NOT NULL DEFAULT 0,
+    reserved_at  BIGINT UNSIGNED,
+    available_at BIGINT UNSIGNED NOT NULL,
+    created_at   BIGINT NOT NULL,
+    
+    INDEX idx_queue (queue)
+);
+```
+
+## Synchronization flow
+
+### Step-by-step process
+
+1. **Trigger** - User clicks "Sync Workflows" or scheduler runs
+2. **Dispatch** - `SyncCustomerWorkflows` job is dispatched to queue
+3. **Authenticate** - `ZuoraService` obtains OAuth token (cached for 1 hour)
+4. **Fetch** - `WorkflowSyncService` fetches workflows page by page (50 per page)
+5. **Process** - Each workflow is created, updated, or marked for deletion
+6. **Cleanup** - Workflows no longer in Zuora are deleted
+7. **Statistics** - Sync statistics are logged and returned
+
+### Pagination handling
+
+Zuora API returns paginated results. The service handles this automatically:
+
+```php
+do {
+    $response = $this->zuoraService->getWorkflows($customer, $page);
+    
+    foreach ($response['data'] as $workflowData) {
+        $this->syncWorkflowRecord($customer, $workflowData);
+    }
+    
+    $page++;
+} while ($response['pagination']['hasMore']);
+```
+
+### Error handling
+
+The application includes comprehensive error handling:
+
+- **Authentication errors** - Retry with new token
+- **Network errors** - Retry with exponential backoff
+- **Validation errors** - Log and skip invalid workflows
+- **Database errors** - Rollback transaction and retry
+
+## Design patterns
+
+### Service Locator
+
+Services are resolved via Laravel's service container:
+
+```php
+public function __construct(
+    private ZuoraService $zuoraService
+) {}
+```
+
+### Repository Pattern
+
+Models act as repositories for data access:
+
+```php
+$customer->workflows()->create($data);
+$customer->workflows()->where('zuora_id', $id)->first();
+```
+
+### Command Pattern
+
+Jobs encapsulate sync operations:
+
+```php
+SyncCustomerWorkflows::dispatch($customer);
+```
+
+### Observer Pattern
+
+Laravel events trigger actions:
+
+```php
+protected static function booted(): void
+{
+    static::created(function (Customer $customer) {
+        SyncCustomerWorkflows::dispatch($customer);
+    });
+}
+```
+
+## Performance considerations
+
+### Token caching
+
+OAuth tokens are cached for 1 hour to reduce API calls:
+
+```php
+Cache::remember("zuora_token_{$customer->id}", 3600, function () {
+    return $this->authenticate($customer);
+});
+```
+
+### Database indexes
+
+Indexes optimize query performance:
+
+- `idx_customer_id` - Fast customer workflow lookups
+- `idx_zuora_id` - Fast workflow ID lookups
+- `idx_state` - Fast state filtering
+
+### Pagination
+
+Default page size is 50 workflows per request, balancing API limits and performance.
+
+### Lazy loading
+
+Filament resources use `select()` to minimize data transfer:
+
+```php
+->query(fn () => Workflow::select(['id', 'name', 'state', 'customer_id']))
+```
+
+## Security considerations
+
+### Credential storage
+
+Zuora credentials are encrypted at rest using Laravel's encryption:
+
+```php
+protected $casts = [
+    'client_secret' => 'encrypted',
+];
+```
+
+### Token management
+
+OAuth tokens are cached in memory/Redis, never persisted to disk.
+
+### Role-based access
+
+Filament Shield provides granular permission control:
+
+- Super Admin - Full access
+- Admin - Manage customers and workflows
+- Viewer - Read-only access
+
+## Testing strategy
+
+### Unit tests
+
+Test individual services in isolation:
+
+```php
+test('ZuoraService authenticates successfully', function () {
+    $customer = Customer::factory()->create();
+    $service = app(ZuoraService::class);
+    
+    $token = $service->authenticate($customer);
+    
+    expect($token)->toBeString();
+});
+```
+
+### Integration tests
+
+Test the full sync flow:
+
+```php
+test('sync workflows for customer', function () {
+    $customer = Customer::factory()->create();
+    $service = app(WorkflowSyncService::class);
+    
+    $stats = $service->syncCustomerWorkflows($customer);
+    
+    expect($stats)->toHaveKeys(['created', 'updated', 'deleted', 'total']);
+    expect($customer->workflows()->count())->toBeGreaterThan(0);
+});
+```
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Deployment" icon="rocket" href="/deployment">
+    Deploy to production environments
+  </Card>
+  <Card title="Contributing" icon="code-branch" href="/contributing">
+    Contribute to the project
+  </Card>
+</CardGroup>
