@@ -3,8 +3,8 @@
   "theme": "mint",
   "name": "Zuora Workflow Manager",
   "logo": {
-    "light": "/images/logo-white.svg",
-    "dark": "/images/logo.svg"
+    "light": "/images/logo.svg",
+    "dark": "/images/logo-white.svg"
   },
   "favicon": "/images/favicon.ico",
   "colors": {
@@ -56,5 +56,8 @@
   },
   "appearance": {
     "default": "system"
+  },
+  "navbar": {
+    "links": []
   }
 }
