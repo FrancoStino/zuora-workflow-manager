@@ -25,26 +25,44 @@
   "navigation": {
     "groups": [
       {
-        "group": "Overview",
+        "group": "Panoramica",
         "pages": [
-          "index"
+          "index",
+          "introduzione"
         ]
       },
       {
-        "group": "Guides",
+        "group": "Guida introduttiva",
         "pages": [
-          "guides/getting-started",
-          "guides/architecture",
-          "guides/features",
-          "guides/development",
-          "guides/deployment"
+          "getting-started/requisiti",
+          "getting-started/installazione",
+          "getting-started/configurazione",
+          "getting-started/primo-utilizzo"
         ]
       },
       {
-        "group": "Reference",
+        "group": "Architettura",
         "pages": [
-          "reference/api",
-          "reference/configuration"
+          "architecture/panoramica"
+        ]
+      },
+      {
+        "group": "Funzionalità",
+        "pages": [
+          "features/sincronizzazione-workflow"
+        ]
+      },
+      {
+        "group": "Guida sviluppatore",
+        "pages": [
+          "developer/comandi-cli",
+          "developer/troubleshooting"
+        ]
+      },
+      {
+        "group": "Riferimenti API",
+        "pages": [
+          "api/zuora-service"
         ]
       }
     ]
