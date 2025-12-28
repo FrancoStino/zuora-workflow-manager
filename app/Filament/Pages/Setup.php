@@ -108,19 +108,12 @@ class Setup extends Page implements HasForms
                                 ->minLength(8)
                                 ->helperText('Set a password for admin account  '),
                         ]),
-                    Step::make('Summary')
-                        ->description('Review and complete the setup')
-                        ->schema([
-                            TextEntry::make('summary')
-                                ->state(new HtmlString('You are about to complete the setup. Please review the information and click "Complete Setup" to finalize the process.')),
-                        ]),
                 ])
                     ->submitAction(
                         Action::make('completeSetup')
                             ->label('Complete Setup')
                             ->action('completeSetup')
-                    )
-                    ->columnSpan('full'),
+                    ),
             ])
             ->statePath('data');
     }

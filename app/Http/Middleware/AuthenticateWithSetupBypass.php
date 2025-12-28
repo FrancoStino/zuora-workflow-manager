@@ -19,6 +19,7 @@ class AuthenticateWithSetupBypass extends FilamentAuthenticate
     {
         $isSetupRoute = $this->isSetupRoute($request);
         $isLoginRoute = $request->is('login');
+        $isOAuthRoute = $request->is('oauth*');
         $setupCompleted = $this->isSetupCompleted();
 
         // If setup not completed
@@ -40,6 +41,11 @@ class AuthenticateWithSetupBypass extends FilamentAuthenticate
 
         // Allow access to login without authentication
         if ($isLoginRoute) {
+            return $next($request);
+        }
+
+        // Allow access to OAuth routes without authentication
+        if ($isOAuthRoute) {
             return $next($request);
         }
 

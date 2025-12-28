@@ -15,37 +15,9 @@ trait HasGeneralSettingsSchema
     public function getGeneralSettingsSchema(): array
     {
         return [
-            $this->getSiteInformationSection(),
+            //            $this->getSiteInformationSection(),
             $this->getOAuthSection(),
             $this->getMaintenanceSection(),
-        ];
-    }
-
-    public function getSiteInformationSection(): Section
-    {
-        return Section::make('Site Information')
-            ->description('Configure the basic information about your application')
-            ->icon(Heroicon::OutlinedInformationCircle)
-            ->columnSpanFull()
-            ->columns(1)
-            ->schema($this->getSiteInformationFields());
-    }
-
-    public function getSiteInformationFields(): array
-    {
-        return [
-            TextInput::make('site_name')
-                ->label('Site Name')
-                ->required()
-                ->maxLength(255)
-                ->helperText('The name of the application shown in the interface'),
-
-            Textarea::make('site_description')
-                ->label('Site Description')
-                ->required()
-                ->rows(3)
-                ->maxLength(500)
-                ->helperText('A brief description of the application'),
         ];
     }
 
@@ -118,6 +90,34 @@ trait HasGeneralSettingsSchema
                 ->label('Maintenance Mode')
                 ->helperText('When enabled, only administrators can access to the site')
                 ->inline(false),
+        ];
+    }
+
+    public function getSiteInformationSection(): Section
+    {
+        return Section::make('Site Information')
+            ->description('Configure the basic information about your application')
+            ->icon(Heroicon::OutlinedInformationCircle)
+            ->columnSpanFull()
+            ->columns(1)
+            ->schema($this->getSiteInformationFields());
+    }
+
+    public function getSiteInformationFields(): array
+    {
+        return [
+            TextInput::make('site_name')
+                ->label('Site Name')
+                ->required()
+                ->maxLength(255)
+                ->helperText('The name of the application shown in the interface'),
+
+            Textarea::make('site_description')
+                ->label('Site Description')
+                ->required()
+                ->rows(3)
+                ->maxLength(500)
+                ->helperText('A brief description of the application'),
         ];
     }
 }
