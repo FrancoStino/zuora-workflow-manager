@@ -9,7 +9,6 @@ use App\Settings\GeneralSettings;
 use BackedEnum;
 use Exception;
 use Filament\Actions\Action;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Infolists\Components\TextEntry;
@@ -85,27 +84,7 @@ class Setup extends Page implements HasForms
                         ->description('Create your administrator account')
                         ->columns(1)
                         ->schema([
-                            TextInput::make('name')
-                                ->label('First Name')
-                                ->required()
-                                ->maxLength(255),
-                            TextInput::make('surname')
-                                ->label('Surname')
-                                ->required()
-                                ->maxLength(255),
-                            TextInput::make('admin_default_email')
-                                ->label('Admin Default Email')
-                                ->email()
-                                ->required()
-                                ->unique(User::class, 'email')
-                                ->maxLength(255),
-                            TextInput::make('admin_password')
-                                ->label('Admin Password')
-                                ->password()
-                                ->revealable()
-                                ->requiredIf('oauth_enabled', false)
-                                ->minLength(8)
-                                ->helperText('Optional: Set a password for admin account (leave empty if using OAuth) else required if OAuth is disabled'),
+                            ...$this->getApplicationFields(),
                         ]),
                     Step::make('Summary')
                         ->description('Review and complete the setup')
@@ -159,7 +138,7 @@ class Setup extends Page implements HasForms
     /**
      * Create the initial admin user with provided credentials.
      *
-     * @param array<string, mixed> $data Setup form data
+     * @param  array<string, mixed>  $data  Setup form data
      */
     private function createAdminUser(array $data): User
     {
@@ -171,7 +150,7 @@ class Setup extends Page implements HasForms
                 'surname' => $data['surname'],
             ]);
 
-            if (!empty($data['admin_password'])) {
+            if (! empty($data['admin_password'])) {
                 $user->update(['password' => bcrypt($data['admin_password'])]);
             }
 
@@ -182,14 +161,14 @@ class Setup extends Page implements HasForms
             'name' => $data['name'],
             'surname' => $data['surname'],
             'email' => $data['admin_default_email'],
-            'password' => !empty($data['admin_password']) ? bcrypt($data['admin_password']) : null,
+            'password' => ! empty($data['admin_password']) ? bcrypt($data['admin_password']) : null,
         ]);
     }
 
     /**
      * Generate Shield roles and permissions if they don't exist.
      *
-     * @param User $user The admin user to assign super-admin role
+     * @param  User  $user  The admin user to assign super-admin role
      *
      * @throws SetupException|BindingResolutionException
      */
@@ -222,8 +201,8 @@ class Setup extends Page implements HasForms
             app()->make(PermissionRegistrar::class)->forgetCachedPermissions();
 
         } catch (Exception $e) {
-            Log::error('Failed to generate Shield roles: ' . $e->getMessage());
-            throw new SetupException('Could not generate Shield roles. ' . $e->getMessage());
+            Log::error('Failed to generate Shield roles: '.$e->getMessage());
+            throw new SetupException('Could not generate Shield roles. '.$e->getMessage());
         }
     }
 
@@ -251,7 +230,7 @@ class Setup extends Page implements HasForms
                 ['guard_name' => 'web']
             );
 
-            if (!$role->hasPermissionTo($permission)) {
+            if (! $role->hasPermissionTo($permission)) {
                 $role->givePermissionTo($permission);
             }
         }
@@ -265,7 +244,7 @@ class Setup extends Page implements HasForms
     /**
      * Save OAuth configuration to settings.
      *
-     * @param array<string, mixed> $data Setup form data
+     * @param  array<string, mixed>  $data  Setup form data
      */
     private function saveOAuthConfiguration(array $data, GeneralSettings $settings): void
     {
@@ -321,7 +300,7 @@ class Setup extends Page implements HasForms
     /**
      * Send error notification with failure message.
      *
-     * @param string $message Error message
+     * @param  string  $message  Error message
      */
     private function notifyFailure(string $message): void
     {

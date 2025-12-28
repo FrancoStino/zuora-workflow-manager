@@ -80,6 +80,7 @@ trait HasGeneralSettingsSchema
 
             TextInput::make('oauth_google_client_id')
                 ->label('Google Client ID')
+                ->required()
                 ->placeholder('Enter Google OAuth Client ID or set GOOGLE_CLIENT_ID in .env')
                 ->helperText('Get this from Google Cloud Console. Leave empty to use .env GOOGLE_CLIENT_ID')
                 // Convert null to empty string on save
@@ -88,6 +89,7 @@ trait HasGeneralSettingsSchema
 
             TextInput::make('oauth_google_client_secret')
                 ->label('Google Client Secret')
+                ->required()
                 ->password()
                 ->revealable()
                 ->dehydrateStateUsing(fn ($state, $record) => $state ?: ($record ? $record->oauth_google_client_secret : null))
@@ -111,6 +113,14 @@ trait HasGeneralSettingsSchema
     public function getApplicationFields(): array
     {
         return [
+            TextInput::make('name')
+                ->label('First Name')
+                ->required()
+                ->maxLength(255),
+            TextInput::make('surname')
+                ->label('Surname')
+                ->required()
+                ->maxLength(255),
             TextInput::make('admin_default_email')
                 ->columnSpanFull()
                 ->label('Admin Default Email')
@@ -118,6 +128,13 @@ trait HasGeneralSettingsSchema
                 ->required()
                 ->maxLength(255)
                 ->helperText('The default email for the administrator account.'),
+            TextInput::make('admin_password')
+                ->label('Admin Password')
+                ->password()
+                ->required()
+                ->revealable()
+                ->minLength(8)
+                ->helperText('Set a password for admin account  '),
         ];
     }
 

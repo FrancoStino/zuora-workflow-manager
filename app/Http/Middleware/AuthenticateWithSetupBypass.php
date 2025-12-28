@@ -18,26 +18,32 @@ class AuthenticateWithSetupBypass extends FilamentAuthenticate
     public function handle($request, Closure $next, ...$guards): Response
     {
         $isSetupRoute = $this->isSetupRoute($request);
+        $isLoginRoute = $request->is('login'); // ← Aggiungi questo
         $setupCompleted = $this->isSetupCompleted();
 
-        // Se il setup non è completato
-        if (!$setupCompleted) {
-            // Permetti accesso alla pagina setup senza autenticazione
+        // If setup not completed
+        if (! $setupCompleted) {
+            // Allow access to the setup page without authentication
             if ($isSetupRoute) {
                 return $next($request);
             }
 
-            // Reindirizza tutte le altre richieste al setup
+            // Redirect all other requests to the setup
             return redirect('/setup');
         }
 
-        // Setup completato + accesso a /setup (senza parametro reset)
-        if ($isSetupRoute && !$request->has('reset')) {
-            // Reindirizza basato sullo status di autenticazione
+        // Setup completed
+        if ($isSetupRoute) {
+            // Redirect based on authentication status
             return Auth::check() ? redirect('/') : redirect('/login');
         }
 
-        // Setup completato: applica la normale autenticazione di Filament
+        // Allow access to login without authentication
+        if ($isLoginRoute) {
+            return $next($request);
+        }
+
+        // Setup completed: apply normal Filament authentication
         return parent::handle($request, $next, ...$guards);
     }
 
@@ -55,7 +61,7 @@ class AuthenticateWithSetupBypass extends FilamentAuthenticate
     private function isSetupCompleted(): bool
     {
         try {
-            if (!Schema::hasTable('setup_completed')) {
+            if (! Schema::hasTable('setup_completed')) {
                 return false;
             }
 
