@@ -80,5 +80,13 @@
   },
   "appearance": {
     "default": "system"
+  },
+  "footer": {
+    "socials": {
+      "website": "https://www.davideladisa.it",
+      "linkedin": "https://www.linkedin.com/in/davide-ladisa/",
+      "github": "https://github.com/FrancoStino/",
+      "instagram": "https://www.instagram.com/davideladisa.it/"
+    }
   }
 }
