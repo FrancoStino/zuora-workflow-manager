@@ -1,0 +1,349 @@
+---
+title: Primo utilizzo
+description: Guida al primo utilizzo di Zuora Workflow Manager
+---
+
+# Primo utilizzo
+
+Questa guida ti accompagnerà attraverso i primi passi per utilizzare Zuora Workflow Manager.
+
+## 1. Accesso all'applicazione
+
+Apri il browser e naviga a:
+
+```
+https://zuora-workflows.lndo.site
+```
+
+Effettua il login con le credenziali dell'account amministratore creato durante l'installazione.
+
+## 2. Panoramica dashboard
+
+Dopo il login, vedrai la dashboard principale con:
+
+- **Sidebar**: Menu di navigazione con tutte le sezioni
+- **Header**: Barra superiore con ricerca globale e profilo utente
+- **Main area**: Area principale con widgets e statistiche
+
+### Sezioni principali
+
+- **Dashboard**: Panoramica con statistiche
+- **Customers**: Gestione organizzazioni customer
+- **Workflows**: Visualizzazione workflow sincronizzati
+- **Tasks**: Gestione task estratti dai workflow
+- **Users**: Gestione utenti (solo admin)
+- **Roles**: Gestione ruoli e permessi (solo admin)
+- **Settings**: Configurazione applicazione (solo super admin)
+- **Jobs**: Monitoraggio job in background
+
+## 3. Creazione primo customer
+
+### Step 1: Naviga a Customers
+
+Click su **Customers** nella sidebar.
+
+### Step 2: Crea nuovo customer
+
+1. Click sul pulsante **New Customer** in alto a destra
+2. Compila il form:
+   - **Name**: Nome dell'organizzazione (es. "Acme Corp")
+   - **Zuora Client ID**: Il tuo Client ID OAuth 2.0
+   - **Zuora Client Secret**: Il tuo Client Secret OAuth 2.0
+   - **Zuora Base URL**: Seleziona l'endpoint corretto
+     - Produzione: `https://rest.zuora.com`
+     - Test: `https://rest.test.zuora.com`
+     - Sandbox: `https://rest.sandbox.zuora.com`
+
+### Step 3: Salva il customer
+
+Click su **Create** per salvare il customer.
+
+<Tip>
+Il Client Secret viene automaticamente criptato nel database per sicurezza.
+</Tip>
+
+## 4. Prima sincronizzazione workflow
+
+### Step 1: Avvia sincronizzazione
+
+Dalla lista Customers:
+1. Trova il customer appena creato
+2. Click sull'icona **Sync Workflows** nella colonna Actions
+3. Conferma l'operazione
+
+### Step 2: Monitora il job
+
+1. Naviga a **Jobs** → **Jobs Waiting** nella sidebar
+2. Dovresti vedere il job `SyncCustomersJob` in coda
+3. Se il queue worker è attivo, il job verrà elaborato automaticamente
+
+<Note>
+Assicurati che il queue worker sia attivo con `lando queue` per elaborare i job.
+</Note>
+
+### Step 3: Verifica risultati
+
+1. Naviga a **Workflows** nella sidebar
+2. Dovresti vedere i workflow sincronizzati da Zuora
+3. Ogni workflow mostra:
+   - Nome
+   - Customer associato
+   - Stato
+   - Data ultima sincronizzazione
+
+## 5. Visualizzazione workflow
+
+### Step 1: Apri un workflow
+
+Dalla lista Workflows:
+1. Click su un workflow per aprire la vista dettagliata
+2. Vedrai tre tab principali:
+   - **Workflow Details**: Informazioni generali
+   - **Tasks**: Task estratti dal workflow
+   - **Graphical View**: Visualizzazione grafica
+   - **Workflow Json**: JSON completo del workflow
+
+### Step 2: Esplora i task
+
+Nel tab **Tasks**:
+- Visualizza tutti i task del workflow
+- Usa i filtri per:
+  - **Action Type**: Email, Export, SOAP, etc.
+  - **Priority**: High, Medium, Low
+  - **State**: Pending, Running, Completed
+- Click su un task per vedere i dettagli completi
+
+### Step 3: Visualizzazione grafica
+
+Nel tab **Graphical View**:
+- Visualizza il workflow come grafo interattivo
+- I nodi rappresentano i task
+- Le frecce rappresentano le connessioni tra task
+- Zoom e pan per esplorare workflow complessi
+
+### Step 4: Export JSON
+
+Nel tab **Workflow Json**:
+- Visualizza il JSON completo del workflow
+- Click su **Copy JSON** per copiare negli appunti
+- Click su **Download JSON** per scaricare il file
+
+## 6. Gestione task
+
+### Visualizzazione task
+
+1. Naviga a **Tasks** nella sidebar
+2. Visualizza tutti i task di tutti i workflow
+3. Usa i filtri per trovare task specifici:
+   - **Workflow**: Filtra per workflow
+   - **Action Type**: Filtra per tipo di azione
+   - **Priority**: Filtra per priorità
+   - **State**: Filtra per stato
+
+### Dettagli task
+
+Click su un task per vedere:
+- **Informazioni generali**: Nome, descrizione, tipo
+- **Parametri**: Configurazione del task
+- **Workflow associato**: Link al workflow parent
+- **Metadata**: Date di creazione e aggiornamento
+
+## 7. Sincronizzazione automatica
+
+### Configurazione scheduler
+
+Per abilitare la sincronizzazione automatica:
+
+1. Avvia lo scheduler in una finestra terminale:
+   ```bash
+   lando schedule
+   ```
+
+2. Lo scheduler eseguirà automaticamente:
+   - Sincronizzazione workflow ogni ora (configurabile)
+   - Pulizia job falliti
+   - Altre task schedulate
+
+### Sincronizzazione manuale
+
+Puoi sempre sincronizzare manualmente:
+
+1. **Da UI**: Click su "Sync Workflows" nella lista Customers
+2. **Da CLI**: 
+   ```bash
+   # Sincronizza tutti i customer
+   lando artisan app:sync-workflows --all
+   
+   # Sincronizza un customer specifico
+   lando artisan app:sync-workflows --customer="Acme Corp"
+   ```
+
+## 8. Monitoraggio job
+
+### Dashboard Jobs
+
+Naviga a **Jobs** per monitorare:
+
+- **Jobs**: Job in esecuzione e completati
+- **Jobs Waiting**: Job in coda
+- **Failed Jobs**: Job falliti con possibilità di retry
+- **Job Batches**: Batch di job correlati
+
+### Retry job falliti
+
+Se un job fallisce:
+1. Naviga a **Jobs** → **Failed Jobs**
+2. Click sul job fallito per vedere l'errore
+3. Click su **Retry** per rieseguire il job
+
+### CLI monitoring
+
+Monitora i job da terminale:
+
+```bash
+# Visualizza job falliti
+lando artisan queue:failed
+
+# Retry tutti i job falliti
+lando artisan queue:retry all
+
+# Retry un job specifico
+lando artisan queue:retry {job-id}
+
+# Pulisci job falliti
+lando artisan queue:flush
+```
+
+## 9. Gestione utenti (Admin)
+
+### Creazione utenti
+
+1. Naviga a **Users**
+2. Click su **New User**
+3. Compila il form:
+   - **Name**: Nome completo
+   - **Email**: Email utente
+   - **Password**: Password (minimo 8 caratteri)
+   - **Roles**: Seleziona i ruoli da assegnare
+4. Click su **Create**
+
+### Assegnazione ruoli
+
+1. Click su un utente esistente
+2. Nella sezione **Roles**, seleziona i ruoli:
+   - **super_admin**: Accesso completo
+   - **panel_user**: Accesso base
+3. Click su **Save**
+
+## 10. Configurazione Settings (Super Admin)
+
+### Accesso Settings
+
+1. Naviga a **Settings** → **General Settings**
+2. Configura le sezioni disponibili:
+
+#### Site Information
+- Nome e descrizione del sito
+
+#### OAuth Configuration
+- Abilita Google OAuth login
+- Configura domini email consentiti
+- Inserisci credenziali Google OAuth
+
+#### Application Configuration
+- Email amministratore di default
+
+#### Maintenance
+- Abilita/disabilita modalità manutenzione
+
+3. Click su **Save** per salvare le modifiche
+
+## 11. Ricerca globale
+
+### Utilizzo ricerca
+
+1. Click sull'icona di ricerca nell'header (o premi `Cmd/Ctrl + K`)
+2. Digita il termine di ricerca
+3. Visualizza risultati da:
+   - Workflows
+   - Customers
+   - Tasks
+   - Users
+4. Click su un risultato per aprirlo
+
+### Filtri ricerca
+
+La ricerca supporta:
+- **Nome**: Cerca per nome
+- **ID Zuora**: Cerca per ID Zuora
+- **Customer**: Cerca per customer
+- **Stato**: Cerca per stato
+
+## 12. Best practices
+
+### Sincronizzazione
+
+- **Automatica**: Usa lo scheduler per sync regolare
+- **Manuale**: Usa sync manuale solo quando necessario
+- **Monitoraggio**: Controlla regolarmente i job falliti
+
+### Gestione customer
+
+- **Naming**: Usa nomi descrittivi per i customer
+- **Credenziali**: Verifica che le credenziali siano corrette
+- **Endpoint**: Usa l'endpoint corretto per l'ambiente
+
+### Performance
+
+- **Queue worker**: Mantieni sempre attivo il queue worker
+- **Cache**: Usa Redis per cache e code in produzione
+- **Database**: Monitora le performance del database
+
+### Sicurezza
+
+- **Password**: Usa password forti per gli utenti
+- **Ruoli**: Assegna solo i permessi necessari
+- **Credenziali**: Non condividere mai le credenziali Zuora
+- **APP_KEY**: Mantieni segreto l'APP_KEY
+
+## Troubleshooting comune
+
+### Workflow non sincronizzati
+
+Verifica:
+1. Credenziali Zuora corrette
+2. Queue worker attivo
+3. Job non falliti in **Failed Jobs**
+
+### Job bloccati in coda
+
+Verifica:
+1. Queue worker attivo con `lando queue`
+2. Nessun errore nei log con `lando logs -f`
+3. Database accessibile
+
+### Errori di autenticazione
+
+Verifica:
+1. Client ID e Secret corretti
+2. Base URL corretto per l'ambiente
+3. Credenziali non scadute
+
+## Prossimi passi
+
+Ora che hai familiarità con l'applicazione, esplora:
+
+<CardGroup cols={2}>
+  <Card title="Architettura" icon="sitemap" href="/architecture/panoramica">
+    Approfondisci l'architettura del sistema
+  </Card>
+  <Card title="Funzionalità" icon="star" href="/features/sincronizzazione-workflow">
+    Scopri tutte le funzionalità disponibili
+  </Card>
+  <Card title="Comandi CLI" icon="terminal" href="/developer/comandi-cli">
+    Esplora i comandi da terminale
+  </Card>
+  <Card title="Troubleshooting" icon="wrench" href="/developer/troubleshooting">
+    Risolvi problemi comuni
+  </Card>
+</CardGroup>

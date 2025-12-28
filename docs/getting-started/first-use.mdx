@@ -1,0 +1,349 @@
+---
+title: First use
+description: Guide to first use of Zuora Workflow Manager
+---
+
+# First use
+
+This guide will walk you through the first steps to use Zuora Workflow Manager.
+
+## 1. Access the application
+
+Open your browser and navigate to:
+
+```
+https://zuora-workflows.lndo.site
+```
+
+Login with the administrator account credentials created during installation.
+
+## 2. Dashboard overview
+
+After login, you will see the main dashboard with:
+
+- **Sidebar**: Navigation menu with all sections
+- **Header**: Top bar with global search and user profile
+- **Main area**: Main area with widgets and statistics
+
+### Main sections
+
+- **Dashboard**: Overview with statistics
+- **Customers**: Customer organization management
+- **Workflows**: Synchronized workflow visualization
+- **Tasks**: Task management extracted from workflows
+- **Users**: User management (admin only)
+- **Roles**: Role and permission management (admin only)
+- **Settings**: Application configuration (super admin only)
+- **Jobs**: Background job monitoring
+
+## 3. Create first customer
+
+### Step 1: Navigate to Customers
+
+Click **Customers** in the sidebar.
+
+### Step 2: Create new customer
+
+1. Click the **New Customer** button in the top right
+2. Fill out the form:
+   - **Name**: Organization name (e.g., "Acme Corp")
+   - **Zuora Client ID**: Your OAuth 2.0 Client ID
+   - **Zuora Client Secret**: Your OAuth 2.0 Client Secret
+   - **Zuora Base URL**: Select the correct endpoint
+     - Production: `https://rest.zuora.com`
+     - Test: `https://rest.test.zuora.com`
+     - Sandbox: `https://rest.sandbox.zuora.com`
+
+### Step 3: Save the customer
+
+Click **Create** to save the customer.
+
+<Tip>
+The Client Secret is automatically encrypted in the database for security.
+</Tip>
+
+## 4. First workflow synchronization
+
+### Step 1: Start synchronization
+
+From the Customers list:
+1. Find the newly created customer
+2. Click the **Sync Workflows** icon in the Actions column
+3. Confirm the operation
+
+### Step 2: Monitor the job
+
+1. Navigate to **Jobs** → **Jobs Waiting** in the sidebar
+2. You should see the `SyncCustomersJob` job in queue
+3. If the queue worker is active, the job will be processed automatically
+
+<Note>
+Make sure the queue worker is active with `lando queue` to process jobs.
+</Note>
+
+### Step 3: Verify results
+
+1. Navigate to **Workflows** in the sidebar
+2. You should see workflows synchronized from Zuora
+3. Each workflow shows:
+   - Name
+   - Associated customer
+   - Status
+   - Last synchronization date
+
+## 5. Workflow visualization
+
+### Step 1: Open a workflow
+
+From the Workflows list:
+1. Click on a workflow to open the detailed view
+2. You will see three main tabs:
+   - **Workflow Details**: General information
+   - **Tasks**: Tasks extracted from the workflow
+   - **Graphical View**: Graphical visualization
+   - **Workflow Json**: Complete workflow JSON
+
+### Step 2: Explore tasks
+
+In the **Tasks** tab:
+- View all workflow tasks
+- Use filters for:
+  - **Action Type**: Email, Export, SOAP, etc.
+  - **Priority**: High, Medium, Low
+  - **State**: Pending, Running, Completed
+- Click on a task to see complete details
+
+### Step 3: Graphical visualization
+
+In the **Graphical View** tab:
+- View the workflow as an interactive graph
+- Nodes represent tasks
+- Arrows represent connections between tasks
+- Zoom and pan to explore complex workflows
+
+### Step 4: Export JSON
+
+In the **Workflow Json** tab:
+- View the complete workflow JSON
+- Click **Copy JSON** to copy to clipboard
+- Click **Download JSON** to download the file
+
+## 6. Task management
+
+### Task visualization
+
+1. Navigate to **Tasks** in the sidebar
+2. View all tasks from all workflows
+3. Use filters to find specific tasks:
+   - **Workflow**: Filter by workflow
+   - **Action Type**: Filter by action type
+   - **Priority**: Filter by priority
+   - **State**: Filter by state
+
+### Task details
+
+Click on a task to see:
+- **General information**: Name, description, type
+- **Parameters**: Task configuration
+- **Associated workflow**: Link to parent workflow
+- **Metadata**: Creation and update dates
+
+## 7. Automatic synchronization
+
+### Scheduler configuration
+
+To enable automatic synchronization:
+
+1. Start the scheduler in a terminal window:
+   ```bash
+   lando schedule
+   ```
+
+2. The scheduler will automatically execute:
+   - Workflow synchronization every hour (configurable)
+   - Failed job cleanup
+   - Other scheduled tasks
+
+### Manual synchronization
+
+You can always synchronize manually:
+
+1. **From UI**: Click "Sync Workflows" in the Customers list
+2. **From CLI**: 
+   ```bash
+   # Synchronize all customers
+   lando artisan app:sync-workflows --all
+   
+   # Synchronize a specific customer
+   lando artisan app:sync-workflows --customer="Acme Corp"
+   ```
+
+## 8. Job monitoring
+
+### Jobs dashboard
+
+Navigate to **Jobs** to monitor:
+
+- **Jobs**: Running and completed jobs
+- **Jobs Waiting**: Queued jobs
+- **Failed Jobs**: Failed jobs with retry option
+- **Job Batches**: Batches of related jobs
+
+### Retry failed jobs
+
+If a job fails:
+1. Navigate to **Jobs** → **Failed Jobs**
+2. Click on the failed job to see the error
+3. Click **Retry** to re-execute the job
+
+### CLI monitoring
+
+Monitor jobs from terminal:
+
+```bash
+# View failed jobs
+lando artisan queue:failed
+
+# Retry all failed jobs
+lando artisan queue:retry all
+
+# Retry a specific job
+lando artisan queue:retry {job-id}
+
+# Clear failed jobs
+lando artisan queue:flush
+```
+
+## 9. User management (Admin)
+
+### User creation
+
+1. Navigate to **Users**
+2. Click **New User**
+3. Fill out the form:
+   - **Name**: Full name
+   - **Email**: User email
+   - **Password**: Password (minimum 8 characters)
+   - **Roles**: Select roles to assign
+4. Click **Create**
+
+### Role assignment
+
+1. Click on an existing user
+2. In the **Roles** section, select roles:
+   - **super_admin**: Full access
+   - **panel_user**: Basic access
+3. Click **Save**
+
+## 10. Settings configuration (Super Admin)
+
+### Access Settings
+
+1. Navigate to **Settings** → **General Settings**
+2. Configure available sections:
+
+#### Site Information
+- Site name and description
+
+#### OAuth Configuration
+- Enable Google OAuth login
+- Configure allowed email domains
+- Enter Google OAuth credentials
+
+#### Application Configuration
+- Default administrator email
+
+#### Maintenance
+- Enable/disable maintenance mode
+
+3. Click **Save** to save changes
+
+## 11. Global search
+
+### Using search
+
+1. Click the search icon in the header (or press `Cmd/Ctrl + K`)
+2. Type the search term
+3. View results from:
+   - Workflows
+   - Customers
+   - Tasks
+   - Users
+4. Click on a result to open it
+
+### Search filters
+
+Search supports:
+- **Name**: Search by name
+- **Zuora ID**: Search by Zuora ID
+- **Customer**: Search by customer
+- **Status**: Search by status
+
+## 12. Best practices
+
+### Synchronization
+
+- **Automatic**: Use scheduler for regular sync
+- **Manual**: Use manual sync only when necessary
+- **Monitoring**: Regularly check failed jobs
+
+### Customer management
+
+- **Naming**: Use descriptive names for customers
+- **Credentials**: Verify credentials are correct
+- **Endpoint**: Use correct endpoint for environment
+
+### Performance
+
+- **Queue worker**: Always keep queue worker active
+- **Cache**: Use Redis for cache and queues in production
+- **Database**: Monitor database performance
+
+### Security
+
+- **Passwords**: Use strong passwords for users
+- **Roles**: Assign only necessary permissions
+- **Credentials**: Never share Zuora credentials
+- **APP_KEY**: Keep APP_KEY secret
+
+## Common troubleshooting
+
+### Workflows not synchronized
+
+Verify:
+1. Zuora credentials are correct
+2. Queue worker is active
+3. No failed jobs in **Failed Jobs**
+
+### Jobs stuck in queue
+
+Verify:
+1. Queue worker active with `lando queue`
+2. No errors in logs with `lando logs -f`
+3. Database is accessible
+
+### Authentication errors
+
+Verify:
+1. Client ID and Secret are correct
+2. Base URL is correct for environment
+3. Credentials have not expired
+
+## Next steps
+
+Now that you are familiar with the application, explore:
+
+<CardGroup cols={2}>
+  <Card title="Architecture" icon="sitemap" href="/architecture/overview">
+    Learn more about system architecture
+  </Card>
+  <Card title="Features" icon="star" href="/features/workflow-synchronization">
+    Discover all available features
+  </Card>
+  <Card title="CLI commands" icon="terminal" href="/developer/cli-commands">
+    Explore terminal commands
+  </Card>
+  <Card title="Troubleshooting" icon="wrench" href="/developer/troubleshooting">
+    Solve common problems
+  </Card>
+</CardGroup>

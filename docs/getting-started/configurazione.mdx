@@ -1,0 +1,354 @@
+---
+title: Configurazione
+description: Guida alla configurazione di Zuora Workflow Manager
+---
+
+# Configurazione
+
+Dopo l'installazione, è necessario configurare l'applicazione per connettersi a Zuora e personalizzare le impostazioni.
+
+## Configurazione file .env
+
+Il file `.env` contiene tutte le variabili d'ambiente dell'applicazione.
+
+### Configurazione applicazione
+
+```env
+APP_NAME="Zuora Workflow Manager"
+APP_ENV=local
+APP_KEY=base64:... # Generato automaticamente
+APP_DEBUG=true
+APP_URL=https://zuora-workflows.lndo.site
+```
+
+### Configurazione database
+
+```env
+DB_CONNECTION=mariadb
+DB_HOST=database
+DB_PORT=3306
+DB_DATABASE=zuora_workflows
+DB_USERNAME=zuora_workflows
+DB_PASSWORD=zuora_workflows
+```
+
+<Note>
+Con Lando, queste impostazioni sono già configurate correttamente.
+</Note>
+
+### Configurazione code
+
+```env
+QUEUE_CONNECTION=database
+```
+
+Opzioni disponibili:
+- `database` - Code nel database (consigliato per sviluppo e produzione)
+- `redis` - Code in Redis (richiede Redis configurato)
+- `sync` - Esecuzione sincrona immediata (no background jobs)
+
+### Configurazione cache
+
+```env
+CACHE_STORE=redis
+REDIS_HOST=cache
+REDIS_PASSWORD=null
+REDIS_PORT=6379
+```
+
+### Configurazione email (opzionale)
+
+Per abilitare le notifiche email:
+
+```env
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.mailtrap.io
+MAIL_PORT=2525
+MAIL_USERNAME=your_username
+MAIL_PASSWORD=your_password
+MAIL_ENCRYPTION=tls
+MAIL_FROM_ADDRESS="noreply@zuora-workflows.local"
+MAIL_FROM_NAME="${APP_NAME}"
+```
+
+### Configurazione Google OAuth (opzionale)
+
+Per abilitare il login con Google:
+
+```env
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+GOOGLE_REDIRECT_URI="${APP_URL}/oauth/google/callback"
+```
+
+<Tip>
+Puoi anche configurare Google OAuth tramite l'interfaccia Settings nell'admin panel.
+</Tip>
+
+## Configurazione credenziali Zuora
+
+Le credenziali Zuora sono configurate **per customer** tramite l'interfaccia amministrativa, non nel file `.env`.
+
+### Step 1: Accedi all'admin panel
+
+Naviga a `https://zuora-workflows.lndo.site` e effettua il login.
+
+### Step 2: Crea un nuovo customer
+
+1. Click su **Customers** nel menu laterale
+2. Click su **New Customer**
+3. Compila il form:
+   - **Name**: Nome dell'organizzazione customer
+   - **Zuora Client ID**: Il tuo Client ID OAuth 2.0 di Zuora
+   - **Zuora Client Secret**: Il tuo Client Secret OAuth 2.0 di Zuora
+   - **Zuora Base URL**: L'endpoint API Zuora
+
+### Step 3: Seleziona l'endpoint Zuora corretto
+
+| Ambiente | Base URL |
+|----------|----------|
+| Produzione | `https://rest.zuora.com` |
+| Test | `https://rest.test.zuora.com` |
+| Sandbox | `https://rest.sandbox.zuora.com` |
+
+### Step 4: Salva il customer
+
+Click su **Create** per salvare il customer.
+
+<Warning>
+Il Client Secret viene criptato automaticamente nel database usando l'`APP_KEY`. Non condividere mai il tuo `APP_KEY`.
+</Warning>
+
+## Ottenere credenziali OAuth 2.0 da Zuora
+
+### Step 1: Accedi a Zuora Central Platform
+
+Vai su [Zuora Central Platform](https://www.zuora.com/apps/newlogin.do).
+
+### Step 2: Naviga alle impostazioni OAuth
+
+1. Click su **Settings** → **Administration**
+2. Seleziona **Manage OAuth Clients**
+
+### Step 3: Crea un nuovo OAuth Client
+
+1. Click su **Create New Client**
+2. Inserisci un nome descrittivo (es. "Workflow Manager")
+3. Seleziona gli scope necessari:
+   - `workflow:read`
+   - `workflow:write`
+4. Click su **Create**
+
+### Step 4: Copia le credenziali
+
+Zuora mostrerà:
+- **Client ID**: Copia e salva
+- **Client Secret**: Copia e salva (mostrato solo una volta!)
+
+<Warning>
+Il Client Secret viene mostrato solo una volta. Salvalo in un luogo sicuro.
+</Warning>
+
+## Configurazione scheduler
+
+Per abilitare la sincronizzazione automatica dei workflow, configura lo scheduler.
+
+### Sviluppo con Lando
+
+Avvia lo scheduler in una finestra terminale separata:
+
+```bash
+lando schedule
+```
+
+### Produzione
+
+Aggiungi un cron job che esegue lo scheduler ogni minuto:
+
+```bash
+* * * * * cd /path/to/application && php artisan schedule:run >> /dev/null 2>&1
+```
+
+### Frequenza sincronizzazione
+
+La frequenza di default è **ogni ora**. Per modificarla, edita `routes/console.php`:
+
+```php
+Schedule::command('app:sync-workflows --all')
+    ->hourly()              // Ogni ora (default)
+    // ->everyThirtyMinutes()  // Ogni 30 minuti
+    // ->everyFiveMinutes()    // Ogni 5 minuti
+    // ->daily()               // Una volta al giorno
+    ->name('sync-customer-workflows');
+```
+
+## Configurazione queue worker
+
+### Sviluppo con Lando
+
+Avvia il queue worker:
+
+```bash
+lando queue
+```
+
+### Produzione
+
+Usa Supervisor per mantenere il queue worker sempre attivo. Crea `/etc/supervisor/conf.d/zuora-workflows.conf`:
+
+```ini
+[program:zuora-workflows-worker]
+process_name=%(program_name)s_%(process_num)02d
+command=php /path/to/application/artisan queue:work --sleep=3 --tries=3 --max-time=3600
+autostart=true
+autorestart=true
+stopasgroup=true
+killasgroup=true
+user=www-data
+numprocs=1
+redirect_stderr=true
+stdout_logfile=/path/to/application/storage/logs/worker.log
+stopwaitsecs=3600
+```
+
+Ricarica Supervisor:
+
+```bash
+sudo supervisorctl reread
+sudo supervisorctl update
+sudo supervisorctl start zuora-workflows-worker:*
+```
+
+## Configurazione Settings UI
+
+Alcune impostazioni possono essere configurate tramite l'interfaccia Settings.
+
+### Accesso Settings
+
+1. Effettua il login come **Super Admin**
+2. Click su **Settings** nel menu
+3. Seleziona **General Settings**
+
+### Sezioni disponibili
+
+#### Site Information
+- **Site Name**: Nome del sito
+- **Site Description**: Descrizione del sito
+
+#### OAuth Configuration
+- **OAuth Enabled**: Abilita/disabilita OAuth login
+- **Allowed Domains**: Domini email consentiti per la registrazione
+- **Google Client ID**: Client ID Google OAuth
+- **Google Client Secret**: Client Secret Google OAuth (criptato)
+
+#### Application Configuration
+- **Admin Email**: Email amministratore di default
+
+#### Maintenance
+- **Maintenance Mode**: Abilita/disabilita modalità manutenzione
+
+<Note>
+Le impostazioni OAuth configurate tramite Settings UI hanno priorità sulle variabili d'ambiente.
+</Note>
+
+## Configurazione permessi (RBAC)
+
+L'applicazione utilizza Filament Shield per il controllo degli accessi basato su ruoli.
+
+### Ruoli predefiniti
+
+- **super_admin**: Accesso completo a tutte le funzionalità
+- **panel_user**: Accesso base al pannello
+
+### Gestione ruoli
+
+1. Naviga a **Shield** → **Roles**
+2. Click su un ruolo per modificare i permessi
+3. Seleziona/deseleziona i permessi per resource
+4. Click su **Save**
+
+### Assegnazione ruoli agli utenti
+
+1. Naviga a **Users**
+2. Click su un utente
+3. Seleziona i ruoli nella sezione **Roles**
+4. Click su **Save**
+
+## Verifica configurazione
+
+### Test connessione Zuora
+
+Dopo aver configurato un customer:
+
+1. Naviga a **Customers**
+2. Click sul customer appena creato
+3. Click su **Sync Workflows**
+4. Verifica che il job venga accodato senza errori
+
+### Test queue worker
+
+Verifica che il queue worker stia elaborando i job:
+
+```bash
+lando artisan queue:work --verbose
+```
+
+Dovresti vedere output simile a:
+```
+[2024-01-01 10:00:00][1] Processing: App\Jobs\SyncCustomersJob
+[2024-01-01 10:00:05][1] Processed:  App\Jobs\SyncCustomersJob
+```
+
+### Test scheduler
+
+Verifica che lo scheduler sia configurato correttamente:
+
+```bash
+lando artisan schedule:list
+```
+
+Output atteso:
+```
+0 * * * * php artisan app:sync-workflows --all ... Next Due: 1 hour from now
+```
+
+## Troubleshooting configurazione
+
+### Errore: "Invalid Zuora credentials"
+
+Verifica che:
+- Client ID e Client Secret siano corretti
+- Base URL sia corretto per il tuo ambiente
+- Le credenziali abbiano gli scope necessari
+
+### Errore: "Queue connection refused"
+
+Verifica la configurazione della coda:
+```bash
+lando artisan queue:failed
+```
+
+Se usi `database` queue, verifica che la tabella `jobs` esista:
+```bash
+lando artisan migrate
+```
+
+### Errore: "Cache connection refused"
+
+Verifica che Redis sia attivo:
+```bash
+lando info
+```
+
+Se Redis non è disponibile, usa cache `file`:
+```env
+CACHE_STORE=file
+```
+
+## Prossimi passi
+
+Ora che la configurazione è completa, inizia a utilizzare l'applicazione:
+
+<Card title="Primo utilizzo" icon="rocket" href="/getting-started/primo-utilizzo">
+  Guida al primo utilizzo dell'applicazione
+</Card>

@@ -1,0 +1,401 @@
+---
+title: Panoramica architettura
+description: Architettura generale di Zuora Workflow Manager
+---
+
+# Panoramica architettura
+
+Zuora Workflow Manager è costruito seguendo i principi SOLID e utilizza un'architettura a layer ben definita per garantire manutenibilità, testabilità e scalabilità.
+
+## Architettura generale
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    Filament UI Layer                    │
+│  (Resources, Pages, Forms, Tables, Actions, Widgets)   │
+└─────────────────────────────────────────────────────────┘
+                          ↓
+┌─────────────────────────────────────────────────────────┐
+│                   Application Layer                     │
+│     (Controllers, Commands, Jobs, Middleware)           │
+└─────────────────────────────────────────────────────────┘
+                          ↓
+┌─────────────────────────────────────────────────────────┐
+│                    Service Layer                        │
+│  (ZuoraService, WorkflowSyncService, OAuthService)     │
+└─────────────────────────────────────────────────────────┘
+                          ↓
+┌─────────────────────────────────────────────────────────┐
+│                     Domain Layer                        │
+│        (Models, Policies, Rules, Casts)                 │
+└─────────────────────────────────────────────────────────┘
+                          ↓
+┌─────────────────────────────────────────────────────────┐
+│                 Infrastructure Layer                    │
+│    (Database, Cache, Queue, External APIs)              │
+└─────────────────────────────────────────────────────────┘
+```
+
+## Principi architetturali
+
+### 1. Separation of Concerns
+Ogni layer ha responsabilità ben definite:
+- **UI Layer**: Presentazione e interazione utente
+- **Application Layer**: Orchestrazione e coordinamento
+- **Service Layer**: Logica di business
+- **Domain Layer**: Entità e regole di dominio
+- **Infrastructure Layer**: Persistenza e servizi esterni
+
+### 2. Dependency Injection
+Tutte le dipendenze sono iniettate tramite il service container di Laravel:
+
+```php
+public function __construct(
+    private ZuoraService $zuoraService,
+    private WorkflowSyncService $syncService
+) {}
+```
+
+### 3. Single Responsibility
+Ogni classe ha una singola responsabilità:
+- **ZuoraService**: Solo comunicazione con API Zuora
+- **WorkflowSyncService**: Solo orchestrazione sincronizzazione
+- **Workflow Model**: Solo rappresentazione entità workflow
+
+### 4. Interface Segregation
+Le interfacce sono piccole e specifiche per evitare dipendenze non necessarie.
+
+### 5. Open/Closed Principle
+Il codice è aperto all'estensione ma chiuso alla modifica tramite:
+- Traits per funzionalità riutilizzabili
+- Events e Listeners per estensibilità
+- Service Provider per configurazione
+
+## Componenti principali
+
+### Filament UI Layer
+
+Gestisce tutta l'interfaccia utente tramite Filament:
+
+**Resources**:
+- `CustomerResource`: CRUD customer
+- `WorkflowResource`: Visualizzazione workflow
+- `TaskResource`: Gestione task
+- `UserResource`: Gestione utenti
+- `RoleResource`: Gestione ruoli
+
+**Pages**:
+- `Dashboard`: Panoramica con statistiche
+- `Settings`: Configurazione applicazione
+- `Setup`: Wizard iniziale
+
+**Components**:
+- Forms: Costruzione form dinamici
+- Tables: Tabelle con filtri e ricerca
+- Actions: Azioni su record
+- Widgets: Dashboard widgets
+
+### Application Layer
+
+Coordina le operazioni dell'applicazione:
+
+**Commands**:
+- `SyncWorkflows`: Sincronizzazione workflow da CLI
+- `SyncWorkflowTasks`: Sincronizzazione task da CLI
+
+**Jobs**:
+- `SyncCustomersJob`: Job per sincronizzazione background
+
+**Middleware**:
+- `AuthenticateWithSetupBypass`: Bypass auth per setup
+- Middleware Filament standard
+
+**Listeners**:
+- `AssignWorkflowRoleOnSocialiteRegistration`: Assegna ruolo a nuovi utenti OAuth
+- `UpdateUserAvatarOnSocialiteLogin`: Aggiorna avatar da OAuth
+
+### Service Layer
+
+Contiene la logica di business:
+
+**ZuoraService**:
+- Autenticazione OAuth 2.0
+- Chiamate API Zuora
+- Gestione token e cache
+- Error handling
+
+**WorkflowSyncService**:
+- Orchestrazione sincronizzazione
+- Paginazione risultati
+- CRUD workflow
+- Estrazione task
+
+**OAuthService**:
+- Integrazione Google OAuth
+- Gestione callback
+- Validazione domini
+
+### Domain Layer
+
+Rappresenta le entità di dominio:
+
+**Models**:
+- `Customer`: Organizzazioni con credenziali Zuora
+- `Workflow`: Workflow sincronizzati
+- `Task`: Task estratti dai workflow
+- `User`: Utenti applicazione
+- `Setting`: Configurazioni applicazione
+
+**Policies**:
+- Controllo accessi per ogni resource
+- Integrazione con Filament Shield
+
+**Casts**:
+- `EncryptedCastZuoraClientSecret`: Encryption credenziali Zuora
+- `EncryptedCastGoogleClientSecret`: Encryption credenziali Google
+
+**Rules**:
+- `ValidateDomain`: Validazione domini email
+
+### Infrastructure Layer
+
+Gestisce persistenza e servizi esterni:
+
+**Database**:
+- MariaDB 11.4
+- Migrazioni versionate
+- Foreign keys e indexes
+
+**Cache**:
+- Redis per cache applicazione
+- Cache token OAuth (1 ora TTL)
+
+**Queue**:
+- Database o Redis queue driver
+- Job con retry logic
+- Progress tracking
+
+**External APIs**:
+- Zuora REST API
+- Google OAuth API
+
+## Flusso dati
+
+### Sincronizzazione workflow
+
+```
+1. User Action (UI/CLI)
+   ↓
+2. Dispatch SyncCustomersJob
+   ↓
+3. Queue System
+   ↓
+4. WorkflowSyncService
+   ├─ Fetch workflows from Zuora (ZuoraService)
+   ├─ Download workflow JSON
+   ├─ Save/update in database
+   └─ Extract and sync tasks (Workflow Model)
+   ↓
+5. Database persistence
+   ↓
+6. UI update (Filament)
+```
+
+### Autenticazione Zuora
+
+```
+1. Customer credentials (encrypted in DB)
+   ↓
+2. ZuoraService->getAccessToken()
+   ├─ Check cache
+   ├─ If not cached: OAuth 2.0 flow
+   └─ Cache token (1 hour TTL)
+   ↓
+3. Use token for API calls
+   ↓
+4. Handle errors and retry
+```
+
+### Visualizzazione workflow
+
+```
+1. User navigates to Workflows
+   ↓
+2. WorkflowResource->table()
+   ├─ Query database
+   ├─ Apply filters
+   └─ Format data
+   ↓
+3. Filament renders table
+   ↓
+4. User clicks workflow
+   ↓
+5. ViewWorkflow page
+   ├─ Load workflow details
+   ├─ Load tasks (relation)
+   ├─ Render graph visualization
+   └─ Display JSON
+```
+
+## Pattern utilizzati
+
+### Repository Pattern
+Anche se non esplicitamente implementato, i Models Eloquent fungono da repository:
+
+```php
+// Query workflows
+$workflows = Workflow::where('customer_id', $customerId)
+    ->with('tasks')
+    ->get();
+```
+
+### Service Pattern
+Logica di business incapsulata in servizi:
+
+```php
+// Sync workflows
+$stats = $this->workflowSyncService->syncCustomerWorkflows($customer);
+```
+
+### Job Pattern
+Operazioni asincrone tramite job:
+
+```php
+// Dispatch job
+SyncCustomersJob::dispatch($customer);
+```
+
+### Observer Pattern
+Eventi e listener per estensibilità:
+
+```php
+// Listen to Socialite registration
+Event::listen(SocialiteUserConnected::class, AssignWorkflowRoleOnSocialiteRegistration::class);
+```
+
+### Factory Pattern
+Creazione oggetti complessi:
+
+```php
+// Filament form builder
+Forms\Components\TextInput::make('name')
+    ->required()
+    ->maxLength(255);
+```
+
+## Scalabilità
+
+### Horizontal Scaling
+
+**Application servers**:
+- Stateless application
+- Load balancer ready
+- Session storage in Redis
+
+**Queue workers**:
+- Multiple workers su server diversi
+- Priority queues per task critici
+- Auto-scaling basato su carico
+
+**Database**:
+- Read replicas per query pesanti
+- Connection pooling
+- Query optimization con indexes
+
+### Vertical Scaling
+
+**Performance optimization**:
+- Cache layer (Redis)
+- Query optimization
+- Eager loading relazioni
+- Chunked processing per grandi dataset
+
+### Caching Strategy
+
+**Application cache**:
+- Settings (persistent)
+- OAuth tokens (1 hour TTL)
+- Query results (configurable TTL)
+
+**HTTP cache**:
+- Static assets (Vite)
+- API responses (quando appropriato)
+
+## Sicurezza
+
+### Authentication
+- Laravel authentication
+- Google OAuth (opzionale)
+- Session management
+
+### Authorization
+- Role-based access control (Filament Shield)
+- Policies per ogni resource
+- Permission granulari
+
+### Data Protection
+- Encryption at rest (credenziali)
+- HTTPS only
+- CSRF protection
+- SQL injection prevention (Eloquent)
+- XSS prevention (Blade escaping)
+
+### API Security
+- OAuth 2.0 per Zuora API
+- Token caching sicuro
+- Rate limiting
+- Error handling senza leak di informazioni
+
+## Monitoring e Logging
+
+### Application Logging
+- Laravel Log facade
+- Structured logging
+- Log levels appropriati
+- Rotation automatica
+
+### Job Monitoring
+- Moox Jobs integration
+- Real-time job status
+- Failed jobs tracking
+- Retry mechanism
+
+### Performance Monitoring
+- Query logging (development)
+- Slow query detection
+- Memory usage tracking
+- Response time monitoring
+
+## Testing Strategy
+
+### Unit Tests
+- Service layer
+- Models
+- Helpers
+
+### Feature Tests
+- API integration
+- Workflow sync
+- Authentication
+
+### Browser Tests
+- UI interactions (opzionale con Dusk)
+
+## Prossimi passi
+
+Approfondisci i singoli layer:
+
+<CardGroup cols={2}>
+  <Card title="Service Layer" icon="gear" href="/architecture/service-layer">
+    Dettagli sui servizi
+  </Card>
+  <Card title="Models" icon="database" href="/architecture/models">
+    Struttura dei modelli
+  </Card>
+  <Card title="Jobs & Queue" icon="list-check" href="/architecture/jobs-queue">
+    Sistema di code e job
+  </Card>
+  <Card title="Filament UI" icon="window" href="/architecture/filament-ui">
+    Interfaccia utente
+  </Card>
+</CardGroup>

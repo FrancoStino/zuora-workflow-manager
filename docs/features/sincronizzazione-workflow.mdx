@@ -1,0 +1,389 @@
+---
+title: Sincronizzazione workflow
+description: Come funziona la sincronizzazione dei workflow da Zuora
+---
+
+# Sincronizzazione workflow
+
+La sincronizzazione dei workflow è il cuore di Zuora Workflow Manager. Questo processo scarica i workflow da Zuora API e li salva nel database locale per visualizzazione e gestione.
+
+## Come funziona
+
+### Flusso di sincronizzazione
+
+```
+1. Trigger (UI/CLI/Scheduler)
+   ↓
+2. Dispatch SyncCustomersJob
+   ↓
+3. Queue elabora il job
+   ↓
+4. WorkflowSyncService
+   ├─ Autentica con Zuora OAuth 2.0
+   ├─ Fetch workflows (paginati)
+   ├─ Download JSON export per ogni workflow
+   ├─ Save/update nel database
+   └─ Estrai e sincronizza task
+   ↓
+5. Workflow disponibili nella UI
+```
+
+### Paginazione
+
+La sincronizzazione gestisce automaticamente la paginazione:
+
+- **Page size**: 50 workflow per pagina (configurabile)
+- **Auto-pagination**: Continua fino all'ultima pagina
+- **Progress tracking**: Monitora il progresso tramite Moox Jobs
+
+## Modalità di sincronizzazione
+
+### 1. Sincronizzazione manuale (UI)
+
+Dalla lista Customers:
+
+1. Click sull'icona **Sync Workflows** nella colonna Actions
+2. Il job viene accodato immediatamente
+3. Monitora il progresso in **Jobs** → **Jobs Waiting**
+
+**Quando usarla**:
+- Dopo aver creato un nuovo customer
+- Quando servono dati aggiornati immediatamente
+- Per testare la connessione Zuora
+
+### 2. Sincronizzazione automatica (Scheduler)
+
+Lo scheduler esegue automaticamente la sincronizzazione:
+
+```php
+// routes/console.php
+Schedule::command('app:sync-workflows --all')
+    ->hourly()  // Ogni ora (default)
+    ->name('sync-customer-workflows');
+```
+
+**Configurazione frequenza**:
+
+```php
+->hourly()              // Ogni ora
+->everyThirtyMinutes()  // Ogni 30 minuti
+->everyFiveMinutes()    // Ogni 5 minuti
+->daily()               // Una volta al giorno
+->dailyAt('02:00')      // Ogni giorno alle 2:00
+```
+
+**Avvio scheduler**:
+
+```bash
+# Sviluppo
+lando schedule
+
+# Produzione (cron job)
+* * * * * cd /path/to/app && php artisan schedule:run >> /dev/null 2>&1
+```
+
+### 3. Sincronizzazione CLI
+
+Sincronizza da terminale:
+
+```bash
+# Sincronizza tutti i customer (asincrono)
+lando artisan app:sync-workflows --all
+
+# Sincronizza un customer specifico
+lando artisan app:sync-workflows --customer="Acme Corp"
+
+# Sincronizza tutti i customer (sincrono, no queue)
+lando artisan app:sync-workflows --all --sync
+```
+
+**Quando usarla**:
+- Durante il deployment
+- Per troubleshooting
+- Per sync immediato senza queue
+
+## Processo dettagliato
+
+### Step 1: Validazione credenziali
+
+Prima di iniziare, il sistema valida:
+
+```php
+// Verifica che il customer abbia:
+- zuora_client_id (non vuoto)
+- zuora_client_secret (non vuoto)
+- zuora_base_url (URL valido)
+```
+
+Se le credenziali non sono valide, il job viene terminato senza retry.
+
+### Step 2: Autenticazione OAuth 2.0
+
+```php
+// ZuoraService->getAccessToken()
+1. Controlla cache (key: zuora_access_token_{hash})
+2. Se non in cache:
+   - POST /oauth/token
+   - grant_type=client_credentials
+   - Salva token in cache (TTL: 1 ora)
+3. Ritorna access token
+```
+
+### Step 3: Fetch workflows
+
+```php
+// ZuoraService->listWorkflows()
+1. GET /workflows?page=1&page_length=50
+2. Normalizza risposta API
+3. Estrai workflow data e pagination info
+4. Ripeti per ogni pagina fino a hasMore=false
+```
+
+### Step 4: Download JSON export
+
+Per ogni workflow:
+
+```php
+// ZuoraService->downloadWorkflow()
+1. GET /workflows/{id}/export
+2. Ritorna JSON completo del workflow
+3. Include tasks, triggers, schedule, etc.
+```
+
+### Step 5: Salvataggio database
+
+```php
+// WorkflowSyncService->syncWorkflowRecord()
+1. firstOrNew(['zuora_id' => $id, 'customer_id' => $customerId])
+2. Fill attributes:
+   - name, description, state
+   - created_on, updated_on
+   - last_synced_at = now()
+   - json_export = downloaded JSON
+3. save()
+```
+
+### Step 6: Estrazione task
+
+```php
+// Workflow->syncTasksFromJson()
+1. Estrai tasks da json_export['tasks']
+2. Per ogni task:
+   - updateOrCreate(['workflow_id', 'task_id'])
+   - Salva attributi task
+3. Elimina task non più presenti (cleanup)
+```
+
+### Step 7: Cleanup workflow obsoleti
+
+```php
+// WorkflowSyncService->deleteStaleWorkflows()
+1. Trova workflow locali non più in Zuora
+2. whereNotIn('zuora_id', $zuoraIds)
+3. delete() (cascade elimina anche i task)
+```
+
+## Gestione errori
+
+### Retry logic
+
+I job hanno retry automatico:
+
+```php
+public int $tries = 3;           // 3 tentativi
+public int $backoff = 60;        // 60 secondi tra tentativi
+```
+
+**Backoff esponenziale**:
+- Tentativo 1: Immediato
+- Tentativo 2: Dopo 60 secondi
+- Tentativo 3: Dopo 120 secondi
+
+### Errori gestiti
+
+**Errori di autenticazione**:
+- Invalid credentials → Job terminato (no retry)
+- Token expired → Rigenera token automaticamente
+
+**Errori di rete**:
+- Timeout → Retry automatico
+- Connection refused → Retry automatico
+- Rate limiting → Retry con backoff
+
+**Errori di dati**:
+- Invalid JSON → Log warning, continua con altri workflow
+- Missing required fields → Log warning, skip workflow
+
+### Monitoring errori
+
+**Failed Jobs**:
+1. Naviga a **Jobs** → **Failed Jobs**
+2. Visualizza errore dettagliato
+3. Click **Retry** per rieseguire
+
+**Logs**:
+```bash
+# Visualizza log in tempo reale
+lando logs -f
+
+# Cerca errori specifici
+lando logs -f | grep -i "error"
+
+# Log file
+lando exec appserver tail -f storage/logs/laravel.log
+```
+
+## Performance
+
+### Ottimizzazioni implementate
+
+**Caching**:
+- OAuth tokens cached (1 ora)
+- Riduce chiamate di autenticazione
+
+**Paginazione**:
+- 50 workflow per pagina
+- Evita timeout su grandi dataset
+
+**Background processing**:
+- Job asincroni
+- Non blocca UI
+- Elaborazione parallela possibile
+
+**Database optimization**:
+- Indexes su zuora_id, customer_id
+- Foreign keys per integrità
+- Cascade delete per cleanup
+
+### Metriche tipiche
+
+**Tempo sincronizzazione**:
+- 10 workflow: ~5-10 secondi
+- 50 workflow: ~20-30 secondi
+- 100 workflow: ~40-60 secondi
+
+**Fattori che influenzano**:
+- Latenza rete Zuora
+- Dimensione JSON workflow
+- Numero di task per workflow
+- Carico database
+
+## Best practices
+
+### Frequenza sincronizzazione
+
+**Sviluppo**:
+- Manuale quando necessario
+- Scheduler ogni ora per testing
+
+**Produzione**:
+- Scheduler ogni ora (default)
+- Ogni 30 minuti per dati critici
+- Manuale per aggiornamenti immediati
+
+### Monitoraggio
+
+**Controlla regolarmente**:
+- Failed jobs (retry o investigate)
+- Sync duration (performance issues?)
+- Error logs (pattern di errori?)
+
+**Alerts**:
+- Email su job falliti (configurabile)
+- Slack notifications (via Laravel)
+- Monitoring tools (Sentry, Bugsnag)
+
+### Troubleshooting
+
+**Workflow non sincronizzati**:
+1. Verifica credenziali customer
+2. Controlla queue worker attivo
+3. Verifica failed jobs
+4. Controlla logs per errori
+
+**Sincronizzazione lenta**:
+1. Verifica latenza rete Zuora
+2. Controlla carico database
+3. Aumenta workers se necessario
+4. Considera cache aggiuntiva
+
+**Dati mancanti**:
+1. Verifica JSON export completo
+2. Controlla log per warning
+3. Verifica permessi API Zuora
+4. Test manuale con Postman
+
+## API Zuora utilizzate
+
+### GET /workflows
+
+Lista tutti i workflow:
+
+```http
+GET https://rest.zuora.com/workflows?page=1&page_length=50
+Authorization: Bearer {access_token}
+```
+
+**Response**:
+```json
+{
+  "data": [
+    {
+      "id": "wf_123",
+      "name": "Subscription Workflow",
+      "status": "Active",
+      "createdAt": "2024-01-01T00:00:00Z",
+      ...
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "page_length": 50,
+    "next_page": 2
+  }
+}
+```
+
+### GET /workflows/{id}/export
+
+Export JSON completo:
+
+```http
+GET https://rest.zuora.com/workflows/{id}/export
+Authorization: Bearer {access_token}
+```
+
+**Response**:
+```json
+{
+  "id": "wf_123",
+  "name": "Subscription Workflow",
+  "tasks": [
+    {
+      "id": "task_1",
+      "name": "Send Email",
+      "action_type": "Email",
+      ...
+    }
+  ],
+  "triggers": [...],
+  "schedule": {...}
+}
+```
+
+## Prossimi passi
+
+<CardGroup cols={2}>
+  <Card title="Gestione Customer" icon="users" href="/features/gestione-customer">
+    Gestione organizzazioni customer
+  </Card>
+  <Card title="Gestione Task" icon="list-check" href="/features/gestione-task">
+    Estrazione e gestione task
+  </Card>
+  <Card title="API Zuora" icon="code" href="/developer/api-zuora">
+    Dettagli API Zuora
+  </Card>
+  <Card title="Troubleshooting" icon="wrench" href="/developer/troubleshooting">
+    Risoluzione problemi
+  </Card>
+</CardGroup>

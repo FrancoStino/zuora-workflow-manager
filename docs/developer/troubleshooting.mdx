@@ -1,0 +1,613 @@
+---
+title: Troubleshooting
+description: Guide to resolving common problems
+---
+
+# Troubleshooting
+
+This guide will help you resolve the most common problems with Zuora Workflow Manager.
+
+## Installation problems
+
+### Error: "Cannot connect to database"
+
+**Symptom**:
+```
+SQLSTATE[HY000] [2002] Connection refused
+```
+
+**Possible causes**:
+1. Lando is not started
+2. Database container is not ready
+3. Incorrect database credentials
+
+**Solutions**:
+
+```bash
+# 1. Verify Lando is started
+lando info
+
+# 2. Restart Lando
+lando restart
+
+# 3. Verify credentials in .env
+DB_CONNECTION=mariadb
+DB_HOST=database
+DB_PORT=3306
+DB_DATABASE=zuora_workflows
+DB_USERNAME=zuora_workflows
+DB_PASSWORD=zuora_workflows
+
+# 4. Test database connection
+lando mariadb
+```
+
+### Error: "Permission denied"
+
+**Symptom**:
+```
+Permission denied: storage/logs/laravel.log
+```
+
+**Cause**: Incorrect file system permissions
+
+**Solution**:
+
+```bash
+# On Linux/Mac
+sudo chown -R $USER:$USER .
+chmod -R 755 storage bootstrap/cache
+
+# Verify permissions
+ls -la storage/
+```
+
+### Error: "Port already in use"
+
+**Symptom**:
+```
+Error: Port 443 is already allocated
+```
+
+**Cause**: Port 443 already in use by another service
+
+**Solution**:
+
+```bash
+# Option 1: Stop the service using the port
+sudo lsof -i :443
+sudo kill -9 {PID}
+
+# Option 2: Change port in .lando.yml
+proxy:
+  appserver:
+    - zuora-workflows.lndo.site:8443
+
+# Rebuild Lando
+lando rebuild -y
+```
+
+## Synchronization problems
+
+### Workflows not synchronized
+
+**Symptom**: Click "Sync Workflows" but no workflows appear
+
+**Diagnosis**:
+
+```bash
+# 1. Check queued jobs
+lando artisan queue:failed
+
+# 2. Check logs
+lando logs -f | grep -i "error"
+
+# 3. Verify customer credentials
+# Go to Customers → Edit customer → Verify credentials
+```
+
+**Common solutions**:
+
+**A. Queue worker not active**:
+```bash
+# Start queue worker
+lando queue
+```
+
+**B. Incorrect Zuora credentials**:
+1. Verify Client ID and Secret
+2. Verify correct Base URL
+3. Test credentials with Postman
+
+**C. Failed job**:
+```bash
+# View failed jobs
+lando artisan queue:failed
+
+# Retry job
+lando artisan queue:retry all
+```
+
+### Error: "Invalid Zuora credentials"
+
+**Symptom**:
+```
+ZuoraAuthenticationException: Failed to authenticate with Zuora
+```
+
+**Possible causes**:
+1. Incorrect Client ID
+2. Incorrect Client Secret
+3. Expired credentials
+4. Incorrect Base URL
+
+**Solutions**:
+
+```bash
+# 1. Verify credentials in Zuora Central Platform
+# https://www.zuora.com/apps/newlogin.do
+# Settings → Administration → Manage OAuth Clients
+
+# 2. Verify Base URL
+# Production: https://rest.zuora.com
+# Test: https://rest.test.zuora.com
+# Sandbox: https://rest.sandbox.zuora.com
+
+# 3. Manual test with curl
+curl -X POST https://rest.zuora.com/oauth/token \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "grant_type=client_credentials" \
+  -d "client_id=YOUR_CLIENT_ID" \
+  -d "client_secret=YOUR_CLIENT_SECRET"
+```
+
+### Slow synchronization
+
+**Symptom**: Synchronization takes a long time
+
+**Possible causes**:
+1. Many workflows to synchronize
+2. Zuora network latency
+3. Slow database
+4. Single worker
+
+**Solutions**:
+
+```bash
+# 1. Check number of workflows
+lando artisan tinker
+>>> Customer::first()->workflows()->count()
+
+# 2. Monitor performance
+lando logs -f | grep -i "sync"
+
+# 3. Increase workers (production)
+# Modify Supervisor config for more workers
+
+# 4. Optimize database
+lando artisan db:show
+lando mariadb
+> SHOW PROCESSLIST;
+> EXPLAIN SELECT * FROM workflows WHERE customer_id = 1;
+```
+
+## Queue problems
+
+### Jobs stuck in queue
+
+**Symptom**: Jobs in "Jobs Waiting" but not being processed
+
+**Cause**: Queue worker not active
+
+**Solution**:
+
+```bash
+# Check worker is active
+ps aux | grep "queue:work"
+
+# Start worker
+lando queue
+
+# Verify processing
+lando artisan queue:work --verbose
+```
+
+### Jobs fail repeatedly
+
+**Symptom**: Same job fails 3 times
+
+**Diagnosis**:
+
+```bash
+# View failed job details
+lando artisan queue:failed
+
+# View complete exception
+lando artisan tinker
+>>> $failed = DB::table('failed_jobs')->first()
+>>> dd($failed->exception)
+```
+
+**Common solutions**:
+
+**A. Timeout**:
+```bash
+# Increase timeout
+lando artisan queue:work --timeout=300
+```
+
+**B. Memory limit**:
+```php
+// In .env
+MEMORY_LIMIT=512M
+```
+
+**C. Code error**:
+```bash
+# Fix the bug and retry
+lando artisan queue:retry all
+```
+
+### Queue connection refused
+
+**Symptom**:
+```
+Connection refused [tcp://cache:6379]
+```
+
+**Cause**: Redis not available
+
+**Solution**:
+
+```bash
+# Option 1: Use database queue
+# In .env
+QUEUE_CONNECTION=database
+
+# Option 2: Verify Redis
+lando info
+lando redis-cli ping
+# Should respond: PONG
+
+# Option 3: Restart Lando
+lando restart
+```
+
+## Cache problems
+
+### Cache not updating
+
+**Symptom**: Changes not visible in application
+
+**Solution**:
+
+```bash
+# Clear all caches
+lando artisan optimize:clear
+
+# Or individually
+lando artisan cache:clear
+lando artisan config:clear
+lando artisan view:clear
+lando artisan route:clear
+```
+
+### Error: "Cache connection refused"
+
+**Symptom**:
+```
+Connection refused [tcp://cache:6379]
+```
+
+**Solution**:
+
+```bash
+# Use file cache temporarily
+# In .env
+CACHE_STORE=file
+
+# Verify Redis
+lando info
+lando redis-cli ping
+
+# Restart if necessary
+lando restart
+```
+
+## Authentication problems
+
+### Cannot login
+
+**Symptom**: Correct credentials but login fails
+
+**Diagnosis**:
+
+```bash
+# Verify user exists
+lando artisan tinker
+>>> User::where('email', 'admin@example.com')->first()
+
+# Verify password
+>>> Hash::check('password', $user->password)
+```
+
+**Solutions**:
+
+```bash
+# Reset password
+lando artisan tinker
+>>> $user = User::where('email', 'admin@example.com')->first()
+>>> $user->password = Hash::make('newpassword')
+>>> $user->save()
+
+# Or create new admin
+lando artisan make:filament-user
+```
+
+### Google OAuth not working
+
+**Symptom**: Error during Google login
+
+**Diagnosis**:
+
+```bash
+# Verify configuration
+lando artisan tinker
+>>> app(GeneralSettings::class)->oauth_enabled
+>>> app(GeneralSettings::class)->oauth_google_client_id
+```
+
+**Solutions**:
+
+1. **Verify Google credentials**:
+   - Google Cloud Console → Credentials
+   - Verify Client ID and Secret
+   - Verify Redirect URI: `{APP_URL}/oauth/google/callback`
+
+2. **Verify Settings**:
+   - Settings → General Settings → OAuth Configuration
+   - OAuth Enabled = true
+   - Correct Client ID and Secret
+
+3. **Verify allowed domains**:
+   - Settings → OAuth Allowed Domains
+   - Add email domain (e.g., `example.com`)
+
+## Performance problems
+
+### Slow application
+
+**Diagnosis**:
+
+```bash
+# Enable query log
+# In .env
+DB_LOG_QUERIES=true
+
+# Monitor slow queries
+lando logs -f | grep -i "query"
+
+# Check cache
+lando artisan cache:clear
+lando redis-cli INFO stats
+```
+
+**Solutions**:
+
+```bash
+# 1. Enable cache
+# In .env
+CACHE_STORE=redis
+
+# 2. Optimize database
+lando mariadb
+> ANALYZE TABLE workflows;
+> OPTIMIZE TABLE workflows;
+
+# 3. Enable opcache (production)
+# In php.ini
+opcache.enable=1
+opcache.memory_consumption=256
+
+# 4. Use queue for heavy operations
+# Already implemented for workflow sync
+```
+
+### Slow database
+
+**Diagnosis**:
+
+```bash
+# Check slow queries
+lando mariadb
+> SHOW VARIABLES LIKE 'slow_query_log';
+> SET GLOBAL slow_query_log = 'ON';
+> SET GLOBAL long_query_time = 2;
+
+# Analyze queries
+> SHOW PROCESSLIST;
+> EXPLAIN SELECT * FROM workflows WHERE customer_id = 1;
+```
+
+**Solutions**:
+
+```bash
+# Check indexes
+lando mariadb
+> SHOW INDEX FROM workflows;
+
+# Add indexes if missing
+> CREATE INDEX idx_customer_id ON workflows(customer_id);
+> CREATE INDEX idx_zuora_id ON workflows(zuora_id);
+
+# Optimize tables
+> OPTIMIZE TABLE workflows;
+> OPTIMIZE TABLE tasks;
+```
+
+## Deployment problems
+
+### Error 500 in production
+
+**Diagnosis**:
+
+```bash
+# Check logs
+tail -f storage/logs/laravel.log
+
+# Check permissions
+ls -la storage/
+ls -la bootstrap/cache/
+
+# Check .env
+cat .env | grep -i "app_"
+```
+
+**Solutions**:
+
+```bash
+# 1. Fix permissions
+chmod -R 755 storage bootstrap/cache
+chown -R www-data:www-data storage bootstrap/cache
+
+# 2. Clear cache
+php artisan optimize:clear
+
+# 3. Verify APP_KEY
+php artisan key:generate
+
+# 4. Verify APP_DEBUG
+# In .env (production)
+APP_DEBUG=false
+APP_ENV=production
+```
+
+### Queue worker not starting in production
+
+**Diagnosis**:
+
+```bash
+# Check Supervisor
+sudo supervisorctl status
+
+# Check Supervisor logs
+tail -f /var/log/supervisor/supervisord.log
+```
+
+**Solutions**:
+
+```bash
+# Restart Supervisor
+sudo supervisorctl reread
+sudo supervisorctl update
+sudo supervisorctl restart zuora-workflows-worker:*
+
+# Check config
+cat /etc/supervisor/conf.d/zuora-workflows.conf
+```
+
+## Useful debugging commands
+
+### Check system status
+
+```bash
+# Application info
+lando artisan about
+
+# Lando info
+lando info
+
+# Check services
+lando ssh -c "ps aux | grep -E 'php|nginx|mariadb|redis'"
+```
+
+### Log monitoring
+
+```bash
+# Real-time logs
+lando logs -f
+
+# Specific service logs
+lando logs -s appserver -f
+
+# Laravel logs
+lando exec appserver tail -f storage/logs/laravel.log
+
+# Grep for errors
+lando logs -f | grep -i "error\\|exception\\|fail"
+```
+
+### Database debugging
+
+```bash
+# Access database
+lando mariadb
+
+# Useful queries
+> SELECT COUNT(*) FROM workflows;
+> SELECT COUNT(*) FROM tasks;
+> SELECT * FROM jobs WHERE attempts > 0;
+> SELECT * FROM failed_jobs ORDER BY failed_at DESC LIMIT 10;
+```
+
+### Cache debugging
+
+```bash
+# Check Redis cache
+lando redis-cli
+
+# Useful Redis commands
+> KEYS *
+> GET zuora_access_token_*
+> TTL zuora_access_token_*
+> FLUSHALL  # Warning: deletes all cache!
+```
+
+## Getting support
+
+If the problem persists:
+
+### 1. Gather information
+
+```bash
+# System info
+lando artisan about > system-info.txt
+
+# Recent logs
+lando logs > lando-logs.txt
+tail -100 storage/logs/laravel.log > laravel-logs.txt
+
+# Failed jobs
+lando artisan queue:failed > failed-jobs.txt
+```
+
+### 2. Open an Issue
+
+Go to [GitHub Issues](https://github.com/FrancoStino/zuora-workflows/issues) and include:
+
+- Problem description
+- Steps to reproduce
+- Output from commands above
+- Application version
+- Environment (development/production)
+
+### 3. Discussions
+
+For general questions, use [GitHub Discussions](https://github.com/FrancoStino/zuora-workflows/discussions).
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="CLI commands" icon="terminal" href="/developer/cli-commands">
+    All available commands
+  </Card>
+  <Card title="Testing" icon="flask" href="/developer/testing">
+    Testing guide
+  </Card>
+  <Card title="Deployment" icon="rocket" href="/deployment/production">
+    Production deployment
+  </Card>
+  <Card title="Monitoring" icon="chart-line" href="/deployment/monitoring">
+    Application monitoring
+  </Card>
+</CardGroup>

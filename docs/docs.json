@@ -27,24 +27,42 @@
       {
         "group": "Overview",
         "pages": [
-          "index"
+          "index",
+          "introduction"
         ]
       },
       {
-        "group": "Guides",
+        "group": "Getting started",
         "pages": [
-          "guides/getting-started",
-          "guides/architecture",
-          "guides/features",
-          "guides/development",
-          "guides/deployment"
+          "getting-started/requirements",
+          "getting-started/installation",
+          "getting-started/configuration",
+          "getting-started/first-use"
         ]
       },
       {
-        "group": "Reference",
+        "group": "Architecture",
         "pages": [
-          "reference/api",
-          "reference/configuration"
+          "architecture/overview"
+        ]
+      },
+      {
+        "group": "Features",
+        "pages": [
+          "features/workflow-synchronization"
+        ]
+      },
+      {
+        "group": "Developer guide",
+        "pages": [
+          "developer/cli-commands",
+          "developer/troubleshooting"
+        ]
+      },
+      {
+        "group": "API reference",
+        "pages": [
+          "api/zuora-service"
         ]
       }
     ]

@@ -1,0 +1,184 @@
+---
+title: System requirements
+description: Requirements needed to install and use Zuora Workflow Manager
+---
+
+# System requirements
+
+Before installing Zuora Workflow Manager, make sure you have all the necessary requirements installed on your system.
+
+## Mandatory requirements
+
+### Lando
+**Version**: Latest
+
+Lando is a containerized development environment that simplifies the configuration of complex stacks.
+
+- **Download**: [lando.dev](https://lando.dev)
+- **Documentation**: [docs.lando.dev](https://docs.lando.dev)
+
+### Docker
+**Version**: 20.0 or higher
+
+Docker is required by Lando to run containers.
+
+- **Download**: [docker.com](https://www.docker.com/)
+- **Documentation**: [docs.docker.com](https://docs.docker.com/)
+
+### Node.js
+**Version**: 24.0 or higher
+
+Node.js is required to compile frontend assets.
+
+- **Download**: [nodejs.org](https://nodejs.org/)
+- **Documentation**: [nodejs.org/docs](https://nodejs.org/docs/)
+
+### Yarn
+**Version**: Latest
+
+Yarn is the package manager used to manage frontend dependencies.
+
+- **Download**: [yarnpkg.com](https://yarnpkg.com/)
+- **Documentation**: [yarnpkg.com/getting-started](https://yarnpkg.com/getting-started)
+
+## Lando stack
+
+Lando automatically configures the following stack:
+
+| Component | Version | Description |
+|-----------|---------|-------------|
+| PHP | 8.4 | Backend language |
+| MariaDB | 11.4 | Relational database |
+| Nginx | Latest | Web server |
+| Redis | 7.0 | Cache and queues |
+| Xdebug | Latest | PHP debugger |
+
+## PHP dependencies (managed by Composer)
+
+The following dependencies are automatically installed via Composer:
+
+### Framework and core
+- **Laravel**: ^12.0
+- **Filament**: ^4.2
+
+### Main packages
+- **Filament Shield**: ^4.0 (RBAC)
+- **Spatie Laravel Settings**: ^4.0 (Settings management)
+- **Moox Jobs**: ^4.0.0-dev (Job monitoring)
+- **Filament Socialite**: ^3.0 (OAuth login)
+
+### UI packages
+- **Filament JSON Field**: ^13.0
+- **Global Search Modal**: ^4.2
+- **Sticky Table Header**: ^1.3
+- **Blade FontAwesome**: ^3.0
+
+## Frontend dependencies (managed by Yarn)
+
+The following dependencies are automatically installed via Yarn:
+
+- **@joint/layout-directed-graph**: Workflow graph visualization
+- **Tailwind CSS**: ^4.0
+- **Alpine.js**: JavaScript framework
+- **Vite**: ^7.0 (Build tool)
+
+## Zuora requirements
+
+To use the application, you need:
+
+### OAuth 2.0 credentials
+- **Client ID**: Provided by Zuora
+- **Client Secret**: Provided by Zuora
+- **Base URL**: Zuora API endpoint
+
+You can obtain OAuth 2.0 credentials from [Zuora Central Platform](https://knowledgecenter.zuora.com/Zuora_Central_Platform/API/Client_Authentication).
+
+### Available API endpoints
+- **Production**: `https://rest.zuora.com`
+- **Test**: `https://rest.test.zuora.com`
+- **Sandbox**: `https://rest.sandbox.zuora.com`
+
+## Optional requirements
+
+### Google OAuth (optional)
+To enable Google OAuth login:
+
+- **Google Client ID**
+- **Google Client Secret**
+
+Configurable via Settings UI or environment variables.
+
+### Email service (optional)
+For email notifications:
+
+- **SMTP server** configured in `.env`
+- Or email service like Mailgun, SendGrid, etc.
+
+## Verify requirements
+
+### Verify Lando
+```bash
+lando version
+```
+
+Expected output:
+```
+v3.x.x
+```
+
+### Verify Docker
+```bash
+docker --version
+```
+
+Expected output:
+```
+Docker version 20.x.x or higher
+```
+
+### Verify Node.js
+```bash
+node --version
+```
+
+Expected output:
+```
+v24.x.x or higher
+```
+
+### Verify Yarn
+```bash
+yarn --version
+```
+
+Expected output:
+```
+4.x.x or higher
+```
+
+## Recommended system resources
+
+### Minimum
+- **CPU**: 2 cores
+- **RAM**: 4 GB
+- **Disk**: 10 GB free
+
+### Recommended
+- **CPU**: 4 cores or more
+- **RAM**: 8 GB or more
+- **Disk**: 20 GB free or more
+
+## Supported operating systems
+
+Lando supports:
+- **macOS**: 10.13 or higher
+- **Windows**: 10/11 with WSL2
+- **Linux**: Ubuntu 18.04+, Debian 9+, Fedora 28+
+
+## Next steps
+
+Once you have verified all requirements, proceed with installation:
+
+<Card title="Installation" icon="download" href="/getting-started/installation">
+  Complete installation guide
+</Card>

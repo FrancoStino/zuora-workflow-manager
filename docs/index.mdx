@@ -1,0 +1,81 @@
+---
+title: Welcome
+description: Complete documentation for Zuora Workflow Manager
+---
+
+# Zuora Workflow Manager
+
+Welcome to the official documentation for **Zuora Workflow Manager**, a powerful web application for synchronizing, visualizing, and managing Zuora workflows directly from your Filament admin panel.
+
+## What is Zuora Workflow Manager?
+
+Zuora Workflow Manager is a modern Laravel application that provides:
+
+- 🔄 **Automatic synchronization** of workflows from Zuora
+- 📊 **Rich Filament dashboard** with workflow and task visualization
+- ⚙️ **Background processing** via queue system
+- 🔐 **OAuth 2.0** for secure authentication
+- 📥 **Direct workflow export** from Zuora
+- 🔒 **RBAC** with role-based access control
+- 🗄️ **Multi-tenant** with Zuora credentials per customer
+
+## Key features
+
+### Automatic synchronization
+Configurable synchronization (hourly by default) with manual sync buttons for immediate updates.
+
+### Filament dashboard
+Rich interface for viewing workflows and tasks with advanced search, filters, and sorting.
+
+### Background jobs
+Queue-based processing with retry logic (3 attempts, 60s exponential backoff).
+
+### Task management
+Automatic task extraction from workflow JSON with detailed visualization and advanced filters.
+
+### Graphical visualization
+Interactive graphical representation of workflows with @joint/layout-directed-graph.
+
+## Get started
+
+<CardGroup cols={2}>
+  <Card title="Installation" icon="download" href="/getting-started/installation">
+    Install Zuora Workflow Manager with Lando
+  </Card>
+  <Card title="Configuration" icon="gear" href="/getting-started/configuration">
+    Configure the application and Zuora credentials
+  </Card>
+  <Card title="Architecture" icon="sitemap" href="/architecture/overview">
+    Discover the system architecture
+  </Card>
+  <Card title="API reference" icon="code" href="/api/zuora-service">
+    Explore available services and APIs
+  </Card>
+</CardGroup>
+
+## System requirements
+
+- **Lando** (Latest) - Containerized development environment
+- **Docker** 20.0+ - Container runtime
+- **Node.js** 24.0+ - JavaScript runtime
+- **Yarn** (Latest) - Package manager
+
+**Lando stack:** PHP 8.4, MariaDB 11.4, Nginx, Redis 7.0, Xdebug
+
+## Useful links
+
+- [GitHub repository](https://github.com/FrancoStino/zuora-workflows)
+- [Changelog](https://github.com/FrancoStino/zuora-workflows/blob/develop/CHANGELOG.md)
+- [Report an issue](https://github.com/FrancoStino/zuora-workflows/issues)
+- [Discussions](https://github.com/FrancoStino/zuora-workflows/discussions)
+
+## Support
+
+For support and questions:
+- Open a [GitHub issue](https://github.com/FrancoStino/zuora-workflows/issues)
+- Join the [Discussions](https://github.com/FrancoStino/zuora-workflows/discussions)
+- Check the [Troubleshooting guide](/developer/troubleshooting)
+
+## License
+
+This project is released under the MIT license. See the [LICENSE](https://github.com/FrancoStino/zuora-workflows/blob/develop/LICENSE) file for details.

@@ -1,0 +1,309 @@
+---
+title: Installation
+description: Step-by-step guide to install Zuora Workflow Manager
+---
+
+# Installation
+
+This guide will walk you through the process of installing Zuora Workflow Manager using Lando.
+
+## Prerequisites
+
+Make sure you have installed all [system requirements](/getting-started/requirements) before proceeding.
+
+## Step 1: Clone the repository
+
+Clone the GitHub repository to your local system:
+
+```bash
+git clone https://github.com/FrancoStino/zuora-workflows.git
+cd zuora-workflows
+```
+
+If you want to use the `develop` branch:
+
+```bash
+git clone -b develop https://github.com/FrancoStino/zuora-workflows.git
+cd zuora-workflows
+```
+
+## Step 2: Start Lando
+
+Start the Lando environment. This command will automatically download and configure all necessary containers:
+
+```bash
+lando start
+```
+
+<Note>
+The first start may take several minutes to download the required Docker images.
+</Note>
+
+Lando will automatically execute:
+- Start containers (PHP 8.4, MariaDB 11.4, Nginx, Redis)
+- Run `composer install`
+- Configure development environment
+
+Expected output:
+```
+BOOMSHAKALAKA!!!
+
+Your app has started up correctly.
+Here are some vitals:
+
+ NAME            zuora-workflows
+ LOCATION        /path/to/zuora-workflows
+ SERVICES        appserver, database, cache
+ APPSERVER URLS  https://zuora-workflows.lndo.site
+```
+
+## Step 3: Environment configuration
+
+Copy the environment variables example file:
+
+```bash
+cp .env.example .env
+```
+
+Generate the Laravel application key:
+
+```bash
+lando artisan key:generate
+```
+
+## Step 4: Database configuration
+
+Run migrations to create database tables:
+
+```bash
+lando artisan migrate
+```
+
+Expected output:
+```
+Migration table created successfully.
+Migrating: 0001_01_01_000000_create_users_table
+Migrated:  0001_01_01_000000_create_users_table
+...
+```
+
+<Warning>
+If you receive database connection errors, make sure Lando is started correctly with `lando info`.
+</Warning>
+
+## Step 5: Install frontend dependencies
+
+Install frontend dependencies with Yarn (use Yarn globally, not through Lando):
+
+```bash
+yarn install
+```
+
+Compile frontend assets:
+
+```bash
+yarn run build
+```
+
+For development with hot-reload:
+
+```bash
+yarn run dev
+```
+
+## Step 6: Access the application
+
+Open your browser and navigate to:
+
+```
+https://zuora-workflows.lndo.site
+```
+
+<Note>
+Lando uses HTTPS with self-signed certificates. Your browser may show a security warning. Proceed anyway to access the application.
+</Note>
+
+## Step 7: Create administrator account
+
+On first access, you will be redirected to the setup page where you can create your administrator account:
+
+1. Enter **Name**
+2. Enter **Email**
+3. Enter **Password** (minimum 8 characters)
+4. Confirm password
+5. Click **Create Admin Account**
+
+## Step 8: Start queue worker (optional)
+
+To process background jobs, start the queue worker:
+
+```bash
+lando queue
+```
+
+This command is equivalent to:
+```bash
+lando artisan queue:work --verbose
+```
+
+<Tip>
+Leave the queue worker running in a separate terminal window during development.
+</Tip>
+
+## Step 9: Start scheduler (optional)
+
+To enable scheduled automatic synchronization:
+
+```bash
+lando schedule
+```
+
+This command is equivalent to:
+```bash
+lando artisan schedule:work
+```
+
+## Verify installation
+
+### Verify Lando services
+
+Check that all services are active:
+
+```bash
+lando info
+```
+
+Expected output:
+```json
+{
+  "appserver": {
+    "type": "php:8.4",
+    "urls": ["https://zuora-workflows.lndo.site"]
+  },
+  "database": {
+    "type": "mariadb:11.4",
+    "creds": {
+      "database": "zuora_workflows",
+      "user": "zuora_workflows",
+      "password": "zuora_workflows"
+    }
+  },
+  "cache": {
+    "type": "redis:7.0"
+  }
+}
+```
+
+### Verify database
+
+Access the database to verify tables:
+
+```bash
+lando mariadb
+```
+
+Run verification query:
+```sql
+SHOW TABLES;
+SELECT COUNT(*) FROM users;
+```
+
+### Verify application
+
+Visit the application URL and verify:
+- ✅ Login page loads correctly
+- ✅ You can login with admin account
+- ✅ Filament dashboard is accessible
+- ✅ Menu items are visible
+
+## Useful Lando commands
+
+### Application management
+```bash
+lando start          # Start containers
+lando stop           # Stop containers
+lando restart        # Restart containers
+lando rebuild        # Rebuild containers
+lando destroy        # Delete containers
+```
+
+### Artisan commands
+```bash
+lando artisan migrate              # Run migrations
+lando artisan migrate:fresh        # Recreate database
+lando artisan migrate:fresh --seed # Recreate and seed database
+lando artisan tinker               # Interactive REPL
+```
+
+### Database
+```bash
+lando mariadb                      # Access database
+lando mariadb zuora_workflows      # Access with specific database
+```
+
+### Queue and scheduler
+```bash
+lando queue                        # Start queue worker
+lando schedule                     # Start scheduler
+```
+
+### Logs
+```bash
+lando logs -f                      # View all logs
+lando logs -s appserver -f         # PHP container logs
+```
+
+### Composer and Yarn
+```bash
+lando composer install             # Install PHP dependencies
+lando composer update              # Update PHP dependencies
+yarn install                       # Install frontend dependencies
+yarn run build                     # Compile assets
+```
+
+## Troubleshooting
+
+### Error: "Cannot connect to database"
+
+Verify that the database is started:
+```bash
+lando info
+```
+
+Restart Lando if necessary:
+```bash
+lando restart
+```
+
+### Error: "Permission denied"
+
+On Linux, you may need to adjust permissions:
+```bash
+sudo chown -R $USER:$USER .
+```
+
+### Error: "Port already in use"
+
+If port 443 is already in use, modify `.lando.yml`:
+```yaml
+proxy:
+  appserver:
+    - zuora-workflows.lndo.site:8443
+```
+
+### Cache issues
+
+Clear application cache:
+```bash
+lando artisan cache:clear
+lando artisan config:clear
+lando artisan view:clear
+```
+
+## Next steps
+
+Now that installation is complete, proceed with configuration:
+
+<Card title="Configuration" icon="gear" href="/getting-started/configuration">
+  Configure the application and Zuora credentials
+</Card>

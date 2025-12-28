@@ -1,0 +1,184 @@
+---
+title: Requisiti di sistema
+description: Requisiti necessari per installare e utilizzare Zuora Workflow Manager
+---
+
+# Requisiti di sistema
+
+Prima di installare Zuora Workflow Manager, assicurati di avere tutti i requisiti necessari installati sul tuo sistema.
+
+## Requisiti obbligatori
+
+### Lando
+**Versione**: Latest
+
+Lando è un ambiente di sviluppo containerizzato che semplifica la configurazione di stack complessi.
+
+- **Download**: [lando.dev](https://lando.dev)
+- **Documentazione**: [docs.lando.dev](https://docs.lando.dev)
+
+### Docker
+**Versione**: 20.0 o superiore
+
+Docker è richiesto da Lando per eseguire i container.
+
+- **Download**: [docker.com](https://www.docker.com/)
+- **Documentazione**: [docs.docker.com](https://docs.docker.com/)
+
+### Node.js
+**Versione**: 24.0 o superiore
+
+Node.js è necessario per compilare gli asset frontend.
+
+- **Download**: [nodejs.org](https://nodejs.org/)
+- **Documentazione**: [nodejs.org/docs](https://nodejs.org/docs/)
+
+### Yarn
+**Versione**: Latest
+
+Yarn è il package manager utilizzato per gestire le dipendenze frontend.
+
+- **Download**: [yarnpkg.com](https://yarnpkg.com/)
+- **Documentazione**: [yarnpkg.com/getting-started](https://yarnpkg.com/getting-started)
+
+## Stack Lando
+
+Lando configura automaticamente il seguente stack:
+
+| Componente | Versione | Descrizione |
+|------------|----------|-------------|
+| PHP | 8.4 | Linguaggio backend |
+| MariaDB | 11.4 | Database relazionale |
+| Nginx | Latest | Web server |
+| Redis | 7.0 | Cache e code |
+| Xdebug | Latest | Debugger PHP |
+
+## Dipendenze PHP (gestite da Composer)
+
+Le seguenti dipendenze sono installate automaticamente tramite Composer:
+
+### Framework e core
+- **Laravel**: ^12.0
+- **Filament**: ^4.2
+
+### Packages principali
+- **Filament Shield**: ^4.0 (RBAC)
+- **Spatie Laravel Settings**: ^4.0 (Gestione settings)
+- **Moox Jobs**: ^4.0.0-dev (Monitoraggio job)
+- **Filament Socialite**: ^3.0 (OAuth login)
+
+### Packages UI
+- **Filament JSON Field**: ^13.0
+- **Global Search Modal**: ^4.2
+- **Sticky Table Header**: ^1.3
+- **Blade FontAwesome**: ^3.0
+
+## Dipendenze frontend (gestite da Yarn)
+
+Le seguenti dipendenze sono installate automaticamente tramite Yarn:
+
+- **@joint/layout-directed-graph**: Visualizzazione grafi workflow
+- **Tailwind CSS**: ^4.0
+- **Alpine.js**: Framework JavaScript
+- **Vite**: ^7.0 (Build tool)
+
+## Requisiti Zuora
+
+Per utilizzare l'applicazione, hai bisogno di:
+
+### Credenziali OAuth 2.0
+- **Client ID**: Fornito da Zuora
+- **Client Secret**: Fornito da Zuora
+- **Base URL**: Endpoint API Zuora
+
+Puoi ottenere le credenziali OAuth 2.0 dal [Zuora Central Platform](https://knowledgecenter.zuora.com/Zuora_Central_Platform/API/Client_Authentication).
+
+### Endpoint API disponibili
+- **Produzione**: `https://rest.zuora.com`
+- **Test**: `https://rest.test.zuora.com`
+- **Sandbox**: `https://rest.sandbox.zuora.com`
+
+## Requisiti opzionali
+
+### Google OAuth (opzionale)
+Per abilitare il login con Google OAuth:
+
+- **Google Client ID**
+- **Google Client Secret**
+
+Configurabili tramite Settings UI o variabili d'ambiente.
+
+### Email service (opzionale)
+Per notifiche email:
+
+- **SMTP server** configurato in `.env`
+- Oppure servizio email come Mailgun, SendGrid, etc.
+
+## Verifica requisiti
+
+### Verifica Lando
+```bash
+lando version
+```
+
+Output atteso:
+```
+v3.x.x
+```
+
+### Verifica Docker
+```bash
+docker --version
+```
+
+Output atteso:
+```
+Docker version 20.x.x or higher
+```
+
+### Verifica Node.js
+```bash
+node --version
+```
+
+Output atteso:
+```
+v24.x.x or higher
+```
+
+### Verifica Yarn
+```bash
+yarn --version
+```
+
+Output atteso:
+```
+4.x.x or higher
+```
+
+## Risorse di sistema consigliate
+
+### Minime
+- **CPU**: 2 core
+- **RAM**: 4 GB
+- **Disco**: 10 GB liberi
+
+### Consigliate
+- **CPU**: 4 core o più
+- **RAM**: 8 GB o più
+- **Disco**: 20 GB liberi o più
+
+## Sistemi operativi supportati
+
+Lando supporta:
+- **macOS**: 10.13 o superiore
+- **Windows**: 10/11 con WSL2
+- **Linux**: Ubuntu 18.04+, Debian 9+, Fedora 28+
+
+## Prossimi passi
+
+Una volta verificati tutti i requisiti, procedi con l'installazione:
+
+<Card title="Installazione" icon="download" href="/getting-started/installazione">
+  Guida completa all'installazione
+</Card>
