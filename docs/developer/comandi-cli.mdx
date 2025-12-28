@@ -1,0 +1,636 @@
+---
+title: Comandi CLI
+description: Guida completa ai comandi Artisan disponibili
+---
+
+# Comandi CLI
+
+Zuora Workflow Manager fornisce diversi comandi Artisan per gestire l'applicazione da terminale.
+
+## Comandi workflow
+
+### app:sync-workflows
+
+Sincronizza i workflow da Zuora API al database locale.
+
+**Signature**:
+```bash
+php artisan app:sync-workflows {--customer=} {--all} {--sync}
+```
+
+**Opzioni**:
+- `--customer=NAME`: Sincronizza solo il customer specificato
+- `--all`: Sincronizza tutti i customer
+- `--sync`: Esegue sincrono (no queue)
+
+**Esempi**:
+
+```bash
+# Sincronizza tutti i customer (asincrono con queue)
+lando artisan app:sync-workflows --all
+
+# Sincronizza un customer specifico
+lando artisan app:sync-workflows --customer="Acme Corp"
+
+# Sincronizza tutti i customer sincrono (no queue)
+lando artisan app:sync-workflows --all --sync
+
+# Sincronizza un customer sincrono
+lando artisan app:sync-workflows --customer="Acme Corp" --sync
+```
+
+**Output**:
+```
+Queuing sync jobs for 3 customers...
+
+✓ Sync job queued for: Acme Corp
+✓ Sync job queued for: Beta Inc
+✓ Sync job queued for: Gamma LLC
+
+All jobs queued successfully. Monitor with:
+  php artisan queue:work
+  php artisan queue:monitor
+```
+
+**Note**:
+- Modalità asincrona (default): Accoda job per elaborazione background
+- Modalità sincrona (`--sync`): Esegue immediatamente, blocca terminale
+- Richiede queue worker attivo per modalità asincrona
+
+### workflows:sync-tasks
+
+Sincronizza i task dai workflow JSON già presenti nel database.
+
+**Signature**:
+```bash
+php artisan workflows:sync-tasks {--all} {--workflow-id=}
+```
+
+**Opzioni**:
+- `--all`: Sincronizza task per tutti i workflow
+- `--workflow-id=ID`: Sincronizza task per un workflow specifico
+
+**Esempi**:
+
+```bash
+# Sincronizza task per tutti i workflow
+lando artisan workflows:sync-tasks --all
+
+# Sincronizza task per un workflow specifico
+lando artisan workflows:sync-tasks --workflow-id=123
+```
+
+**Quando usarlo**:
+- Dopo modifiche al metodo `syncTasksFromJson()`
+- Per ricostruire i task da JSON esistenti
+- Per troubleshooting task mancanti
+
+**Note**:
+- Non scarica nuovi workflow da Zuora
+- Usa solo i JSON già presenti nel database
+- Utile per re-processing dopo bug fix
+
+## Comandi queue
+
+### queue:work
+
+Avvia un queue worker per elaborare i job.
+
+**Signature**:
+```bash
+php artisan queue:work [connection] [options]
+```
+
+**Opzioni comuni**:
+- `--queue=QUEUE`: Specifica la coda da elaborare
+- `--tries=N`: Numero massimo di tentativi (default: 1)
+- `--timeout=N`: Timeout in secondi (default: 60)
+- `--sleep=N`: Secondi di sleep quando la coda è vuota (default: 3)
+- `--max-time=N`: Tempo massimo di esecuzione in secondi
+- `--max-jobs=N`: Numero massimo di job da elaborare
+- `--verbose`: Output dettagliato
+
+**Esempi**:
+
+```bash
+# Worker base
+lando artisan queue:work
+
+# Worker con retry e timeout
+lando artisan queue:work --tries=3 --timeout=120
+
+# Worker verbose per debugging
+lando artisan queue:work --verbose
+
+# Worker con limite di tempo
+lando artisan queue:work --max-time=3600
+
+# Worker per coda specifica
+lando artisan queue:work --queue=high-priority
+```
+
+**Shortcut Lando**:
+```bash
+lando queue  # Equivalente a: lando artisan queue:work --verbose
+```
+
+**Output**:
+```
+[2024-01-01 10:00:00][1] Processing: App\Jobs\SyncCustomersJob
+[2024-01-01 10:00:05][1] Processed:  App\Jobs\SyncCustomersJob
+```
+
+### queue:listen
+
+Avvia un queue listener (riavvia automaticamente dopo ogni job).
+
+**Signature**:
+```bash
+php artisan queue:listen [connection] [options]
+```
+
+**Differenza con queue:work**:
+- `queue:work`: Più efficiente, non ricarica framework
+- `queue:listen`: Ricarica framework dopo ogni job, utile per sviluppo
+
+**Esempio**:
+```bash
+lando artisan queue:listen --tries=1
+```
+
+### queue:failed
+
+Visualizza i job falliti.
+
+**Signature**:
+```bash
+php artisan queue:failed
+```
+
+**Output**:
+```
++------+---------------------------+-------+------------+---------------------+
+| ID   | Connection                | Queue | Class      | Failed At           |
++------+---------------------------+-------+------------+---------------------+
+| 1    | database                  | default| SyncCustom...| 2024-01-01 10:00:00|
++------+---------------------------+-------+------------+---------------------+
+```
+
+### queue:retry
+
+Riprova job falliti.
+
+**Signature**:
+```bash
+php artisan queue:retry {id|all}
+```
+
+**Esempi**:
+
+```bash
+# Retry tutti i job falliti
+lando artisan queue:retry all
+
+# Retry un job specifico
+lando artisan queue:retry 1
+
+# Retry multiple job
+lando artisan queue:retry 1 2 3
+```
+
+### queue:flush
+
+Elimina tutti i job falliti.
+
+**Signature**:
+```bash
+php artisan queue:flush
+```
+
+**Esempio**:
+```bash
+lando artisan queue:flush
+```
+
+**Warning**: Questa operazione è irreversibile!
+
+### queue:forget
+
+Elimina un job fallito specifico.
+
+**Signature**:
+```bash
+php artisan queue:forget {id}
+```
+
+**Esempio**:
+```bash
+lando artisan queue:forget 1
+```
+
+## Comandi scheduler
+
+### schedule:work
+
+Avvia lo scheduler in modalità foreground.
+
+**Signature**:
+```bash
+php artisan schedule:work
+```
+
+**Esempio**:
+```bash
+lando schedule  # Shortcut Lando
+```
+
+**Output**:
+```
+[2024-01-01 10:00:00] Running scheduled command: app:sync-workflows --all
+[2024-01-01 10:00:05] Scheduled command completed successfully
+```
+
+**Note**:
+- Esegue task schedulate ogni minuto
+- Utile per sviluppo
+- In produzione usa cron job
+
+### schedule:list
+
+Visualizza tutti i task schedulati.
+
+**Signature**:
+```bash
+php artisan schedule:list
+```
+
+**Output**:
+```
+0 * * * * php artisan app:sync-workflows --all ... Next Due: 1 hour from now
+```
+
+### schedule:run
+
+Esegue i task schedulati una volta (usato da cron).
+
+**Signature**:
+```bash
+php artisan schedule:run
+```
+
+**Cron job produzione**:
+```bash
+* * * * * cd /path/to/app && php artisan schedule:run >> /dev/null 2>&1
+```
+
+## Comandi database
+
+### migrate
+
+Esegue le migrazioni del database.
+
+**Signature**:
+```bash
+php artisan migrate [options]
+```
+
+**Opzioni**:
+- `--force`: Forza esecuzione in produzione
+- `--seed`: Esegue seeder dopo migrazioni
+- `--step`: Esegue una migrazione alla volta
+
+**Esempi**:
+
+```bash
+# Esegui tutte le migrazioni
+lando artisan migrate
+
+# Esegui con seeder
+lando artisan migrate --seed
+
+# Forza in produzione
+lando artisan migrate --force
+```
+
+### migrate:fresh
+
+Elimina tutte le tabelle e riesegue le migrazioni.
+
+**Signature**:
+```bash
+php artisan migrate:fresh [options]
+```
+
+**Opzioni**:
+- `--seed`: Esegue seeder dopo migrazioni
+
+**Esempio**:
+```bash
+lando artisan migrate:fresh --seed
+```
+
+**Warning**: Elimina tutti i dati!
+
+### migrate:rollback
+
+Rollback dell'ultima batch di migrazioni.
+
+**Signature**:
+```bash
+php artisan migrate:rollback [options]
+```
+
+**Opzioni**:
+- `--step=N`: Rollback di N batch
+
+**Esempio**:
+```bash
+lando artisan migrate:rollback --step=1
+```
+
+### db:seed
+
+Esegue i database seeder.
+
+**Signature**:
+```bash
+php artisan db:seed [options]
+```
+
+**Opzioni**:
+- `--class=CLASS`: Esegue un seeder specifico
+
+**Esempio**:
+```bash
+lando artisan db:seed
+lando artisan db:seed --class=UserSeeder
+```
+
+## Comandi cache
+
+### cache:clear
+
+Pulisce la cache dell'applicazione.
+
+**Signature**:
+```bash
+php artisan cache:clear
+```
+
+**Esempio**:
+```bash
+lando artisan cache:clear
+```
+
+### config:clear
+
+Pulisce la cache della configurazione.
+
+**Signature**:
+```bash
+php artisan config:clear
+```
+
+**Esempio**:
+```bash
+lando artisan config:clear
+```
+
+### view:clear
+
+Pulisce la cache delle view compilate.
+
+**Signature**:
+```bash
+php artisan view:clear
+```
+
+**Esempio**:
+```bash
+lando artisan view:clear
+```
+
+### route:clear
+
+Pulisce la cache delle route.
+
+**Signature**:
+```bash
+php artisan route:clear
+```
+
+**Esempio**:
+```bash
+lando artisan route:clear
+```
+
+### optimize:clear
+
+Pulisce tutte le cache (config, route, view, cache).
+
+**Signature**:
+```bash
+php artisan optimize:clear
+```
+
+**Esempio**:
+```bash
+lando artisan optimize:clear
+```
+
+## Comandi Filament
+
+### make:filament-user
+
+Crea un nuovo utente Filament.
+
+**Signature**:
+```bash
+php artisan make:filament-user
+```
+
+**Esempio**:
+```bash
+lando artisan make:filament-user
+```
+
+**Prompt interattivo**:
+```
+Name: John Doe
+Email: john@example.com
+Password: ********
+```
+
+### shield:generate
+
+Genera permessi per Filament Shield.
+
+**Signature**:
+```bash
+php artisan shield:generate [options]
+```
+
+**Opzioni**:
+- `--all`: Genera per tutte le resource
+
+**Esempio**:
+```bash
+lando artisan shield:generate --all
+```
+
+## Comandi utility
+
+### tinker
+
+Avvia REPL interattivo.
+
+**Signature**:
+```bash
+php artisan tinker
+```
+
+**Esempio**:
+```bash
+lando artisan tinker
+
+>>> $customer = Customer::first()
+>>> $customer->workflows()->count()
+=> 42
+```
+
+### about
+
+Visualizza informazioni sull'applicazione.
+
+**Signature**:
+```bash
+php artisan about
+```
+
+**Output**:
+```
+Environment ............... local
+Debug Mode ................ ENABLED
+URL ....................... https://zuora-workflows.lndo.site
+Database .................. mariadb
+Cache Driver .............. redis
+Queue Driver .............. database
+```
+
+### list
+
+Visualizza tutti i comandi disponibili.
+
+**Signature**:
+```bash
+php artisan list
+```
+
+## Script Composer
+
+### composer run dev
+
+Avvia stack di sviluppo completo.
+
+**Comando**:
+```bash
+lando composer run dev
+```
+
+**Esegue**:
+- `php artisan serve` (server)
+- `php artisan queue:listen` (queue)
+- `php artisan pail` (logs)
+- `yarn run dev` (vite)
+
+**Note**: Usa `concurrently` per eseguire tutti i processi in parallelo.
+
+### composer run test
+
+Esegue i test.
+
+**Comando**:
+```bash
+lando composer run test
+```
+
+**Equivalente a**:
+```bash
+lando artisan config:clear
+lando artisan test
+```
+
+### composer run setup
+
+Setup completo dell'applicazione.
+
+**Comando**:
+```bash
+lando composer run setup
+```
+
+**Esegue**:
+1. `composer install`
+2. Copia `.env.example` a `.env`
+3. `php artisan key:generate`
+4. `php artisan migrate --force`
+5. `yarn install`
+6. `yarn run build`
+
+## Best practices
+
+### Sviluppo
+
+```bash
+# Avvia queue worker in una finestra
+lando queue
+
+# Avvia scheduler in un'altra finestra
+lando schedule
+
+# Monitora log in un'altra finestra
+lando logs -f
+```
+
+### Produzione
+
+```bash
+# Setup cron per scheduler
+* * * * * cd /path/to/app && php artisan schedule:run >> /dev/null 2>&1
+
+# Setup Supervisor per queue worker
+# Vedi /deployment/queue-worker
+```
+
+### Troubleshooting
+
+```bash
+# Pulisci tutte le cache
+lando artisan optimize:clear
+
+# Verifica job falliti
+lando artisan queue:failed
+
+# Retry job falliti
+lando artisan queue:retry all
+
+# Verifica configurazione
+lando artisan about
+```
+
+## Prossimi passi
+
+<CardGroup cols={2}>
+  <Card title="Testing" icon="flask" href="/developer/testing">
+    Guida al testing
+  </Card>
+  <Card title="Troubleshooting" icon="wrench" href="/developer/troubleshooting">
+    Risoluzione problemi
+  </Card>
+  <Card title="Deployment" icon="rocket" href="/deployment/produzione">
+    Deploy in produzione
+  </Card>
+  <Card title="API Zuora" icon="code" href="/developer/api-zuora">
+    Dettagli API Zuora
+  </Card>
+</CardGroup>
