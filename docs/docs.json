@@ -25,42 +25,42 @@
   "navigation": {
     "groups": [
       {
-        "group": "Panoramica",
+        "group": "Overview",
         "pages": [
           "index",
-          "introduzione"
+          "introduction"
         ]
       },
       {
-        "group": "Guida introduttiva",
+        "group": "Getting started",
         "pages": [
-          "getting-started/requisiti",
-          "getting-started/installazione",
-          "getting-started/configurazione",
-          "getting-started/primo-utilizzo"
+          "getting-started/requirements",
+          "getting-started/installation",
+          "getting-started/configuration",
+          "getting-started/first-use"
         ]
       },
       {
-        "group": "Architettura",
+        "group": "Architecture",
         "pages": [
-          "architecture/panoramica"
+          "architecture/overview"
         ]
       },
       {
-        "group": "Funzionalità",
+        "group": "Features",
         "pages": [
-          "features/sincronizzazione-workflow"
+          "features/workflow-synchronization"
         ]
       },
       {
-        "group": "Guida sviluppatore",
+        "group": "Developer guide",
         "pages": [
-          "developer/comandi-cli",
+          "developer/cli-commands",
           "developer/troubleshooting"
         ]
       },
       {
-        "group": "Riferimenti API",
+        "group": "API reference",
         "pages": [
           "api/zuora-service"
         ]

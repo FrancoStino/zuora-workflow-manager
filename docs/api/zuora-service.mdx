@@ -1,30 +1,30 @@
 ---
 title: ZuoraService
-description: Documentazione del servizio per l'integrazione con Zuora API
+description: Service documentation for Zuora API integration
 ---
 
 # ZuoraService
 
-`ZuoraService` è il servizio principale per l'integrazione con Zuora REST API. Gestisce autenticazione OAuth 2.0, chiamate API e error handling.
+`ZuoraService` is the main service for integration with Zuora REST API. It handles OAuth 2.0 authentication, API calls, and error handling.
 
 ## Namespace
 
 ```php
-App\Services\ZuoraService
+App\\Services\\ZuoraService
 ```
 
-## Dipendenze
+## Dependencies
 
-- `Illuminate\Support\Facades\Cache`
-- `Illuminate\Support\Facades\Http`
-- `App\Exceptions\ZuoraAuthenticationException`
-- `App\Exceptions\ZuoraHttpException`
+- `Illuminate\\Support\\Facades\\Cache`
+- `Illuminate\\Support\\Facades\\Http`
+- `App\\Exceptions\\ZuoraAuthenticationException`
+- `App\\Exceptions\\ZuoraHttpException`
 
-## Metodi pubblici
+## Public methods
 
 ### getAccessToken()
 
-Ottiene un access token OAuth 2.0 da Zuora, con caching automatico.
+Obtains an OAuth 2.0 access token from Zuora, with automatic caching.
 
 **Signature**:
 ```php
@@ -35,17 +35,17 @@ public function getAccessToken(
 ): string
 ```
 
-**Parametri**:
-- `$clientId` (string|null): Client ID OAuth 2.0
-- `$clientSecret` (string|null): Client Secret OAuth 2.0
-- `$baseUrl` (string|null): Base URL API Zuora
+**Parameters**:
+- `$clientId` (string|null): OAuth 2.0 Client ID
+- `$clientSecret` (string|null): OAuth 2.0 Client Secret
+- `$baseUrl` (string|null): Zuora API Base URL
 
 **Return**: `string` - Access token
 
 **Throws**:
-- `ZuoraAuthenticationException` - Se le credenziali sono mancanti o invalide
+- `ZuoraAuthenticationException` - If credentials are missing or invalid
 
-**Esempio**:
+**Example**:
 ```php
 $token = $zuoraService->getAccessToken(
     'client_id_123',
@@ -56,20 +56,20 @@ $token = $zuoraService->getAccessToken(
 
 **Caching**:
 - **Cache key**: `zuora_access_token_{md5(clientId.clientSecret)}`
-- **TTL**: 3600 secondi (1 ora)
-- **Driver**: Configurato in `config/cache.php`
+- **TTL**: 3600 seconds (1 hour)
+- **Driver**: Configured in `config/cache.php`
 
-**Flusso**:
-1. Controlla se il token è in cache
-2. Se in cache, ritorna il token cached
-3. Se non in cache:
-   - POST `/oauth/token` con grant_type=client_credentials
-   - Salva token in cache
-   - Ritorna token
+**Flow**:
+1. Check if token is in cache
+2. If cached, return cached token
+3. If not cached:
+   - POST `/oauth/token` with grant_type=client_credentials
+   - Save token in cache
+   - Return token
 
 ### listWorkflows()
 
-Recupera la lista dei workflow da Zuora con paginazione.
+Retrieves the list of workflows from Zuora with pagination.
 
 **Signature**:
 ```php
@@ -82,21 +82,21 @@ public function listWorkflows(
 ): array
 ```
 
-**Parametri**:
-- `$clientId` (string): Client ID OAuth 2.0
-- `$clientSecret` (string): Client Secret OAuth 2.0
-- `$baseUrl` (string): Base URL API Zuora (default: `https://rest.zuora.com`)
-- `$page` (int): Numero pagina (default: 1)
-- `$pageSize` (int): Numero workflow per pagina (default: 12)
+**Parameters**:
+- `$clientId` (string): OAuth 2.0 Client ID
+- `$clientSecret` (string): OAuth 2.0 Client Secret
+- `$baseUrl` (string): Zuora API Base URL (default: `https://rest.zuora.com`)
+- `$page` (int): Page number (default: 1)
+- `$pageSize` (int): Number of workflows per page (default: 12)
 
-**Return**: `array` - Array con chiavi:
-- `data` (array): Array di workflow normalizzati
-- `pagination` (array|null): Informazioni paginazione
+**Return**: `array` - Array with keys:
+- `data` (array): Array of normalized workflows
+- `pagination` (array|null): Pagination information
 
 **Throws**:
-- `ZuoraHttpException` - Se la richiesta fallisce
+- `ZuoraHttpException` - If the request fails
 
-**Esempio**:
+**Example**:
 ```php
 $result = $zuoraService->listWorkflows(
     'client_id_123',
@@ -106,11 +106,11 @@ $result = $zuoraService->listWorkflows(
     50
 );
 
-// $result['data'] contiene i workflow
-// $result['pagination'] contiene info paginazione
+// $result['data'] contains workflows
+// $result['pagination'] contains pagination info
 ```
 
-**Struttura workflow normalizzato**:
+**Normalized workflow structure**:
 ```php
 [
     'id' => 'wf_123',
@@ -134,7 +134,7 @@ $result = $zuoraService->listWorkflows(
 
 ### downloadWorkflow()
 
-Scarica il JSON export completo di un workflow specifico.
+Downloads the complete JSON export of a specific workflow.
 
 **Signature**:
 ```php
@@ -146,18 +146,18 @@ public function downloadWorkflow(
 ): array
 ```
 
-**Parametri**:
-- `$clientId` (string): Client ID OAuth 2.0
-- `$clientSecret` (string): Client Secret OAuth 2.0
-- `$baseUrl` (string): Base URL API Zuora
-- `$workflowId` (string|int): ID del workflow da scaricare
+**Parameters**:
+- `$clientId` (string): OAuth 2.0 Client ID
+- `$clientSecret` (string): OAuth 2.0 Client Secret
+- `$baseUrl` (string): Zuora API Base URL
+- `$workflowId` (string|int): ID of workflow to download
 
-**Return**: `array` - JSON completo del workflow
+**Return**: `array` - Complete workflow JSON
 
 **Throws**:
-- `ZuoraHttpException` - Se la richiesta fallisce
+- `ZuoraHttpException` - If the request fails
 
-**Esempio**:
+**Example**:
 ```php
 $workflowJson = $zuoraService->downloadWorkflow(
     'client_id_123',
@@ -166,11 +166,11 @@ $workflowJson = $zuoraService->downloadWorkflow(
     'wf_123'
 );
 
-// $workflowJson contiene il JSON completo
-// Include: tasks, triggers, schedule, etc.
+// $workflowJson contains complete JSON
+// Includes: tasks, triggers, schedule, etc.
 ```
 
-**Struttura JSON export**:
+**JSON export structure**:
 ```php
 [
     'id' => 'wf_123',
@@ -190,55 +190,55 @@ $workflowJson = $zuoraService->downloadWorkflow(
 ]
 ```
 
-## Metodi privati
+## Private methods
 
 ### normalizeWorkflow()
 
-Normalizza la struttura del workflow da Zuora API a formato consistente.
+Normalizes workflow structure from Zuora API to consistent format.
 
 **Signature**:
 ```php
 private function normalizeWorkflow(array $workflow): array
 ```
 
-**Scopo**: Gestire differenze tra versioni API Zuora e fornire struttura consistente.
+**Purpose**: Handle differences between Zuora API versions and provide consistent structure.
 
 ### extractErrorMessage()
 
-Estrae il messaggio di errore da una risposta HTTP fallita.
+Extracts error message from a failed HTTP response.
 
 **Signature**:
 ```php
 private function extractErrorMessage(array $errorJson, string $errorBody): string
 ```
 
-**Chiavi cercate** (in ordine):
+**Keys searched** (in order):
 1. `message`
 2. `error`
 3. `error_description`
-4. Fallback: body completo
+4. Fallback: complete body
 
 ### throwHttpException()
 
-Lancia un'eccezione formattata da una risposta HTTP fallita.
+Throws a formatted exception from a failed HTTP response.
 
 **Signature**:
 ```php
 private function throwHttpException($response): void
 ```
 
-## Eccezioni
+## Exceptions
 
 ### ZuoraAuthenticationException
 
-Lanciata quando l'autenticazione OAuth 2.0 fallisce.
+Thrown when OAuth 2.0 authentication fails.
 
-**Casi**:
-- Credenziali mancanti
-- Credenziali invalide
+**Cases**:
+- Missing credentials
+- Invalid credentials
 - Token generation failed
 
-**Esempio**:
+**Example**:
 ```php
 try {
     $token = $zuoraService->getAccessToken($clientId, $clientSecret, $baseUrl);
@@ -249,13 +249,13 @@ try {
 
 ### ZuoraHttpException
 
-Lanciata quando una chiamata API Zuora fallisce.
+Thrown when a Zuora API call fails.
 
-**Proprietà**:
+**Properties**:
 - `statusCode` (int): HTTP status code
-- `message` (string): Messaggio errore
+- `message` (string): Error message
 
-**Esempio**:
+**Example**:
 ```php
 try {
     $workflows = $zuoraService->listWorkflows(...);
@@ -265,12 +265,12 @@ try {
 }
 ```
 
-## Utilizzo nel codice
+## Usage in code
 
-### In un Service
+### In a Service
 
 ```php
-namespace App\Services;
+namespace App\\Services;
 
 class WorkflowSyncService
 {
@@ -302,12 +302,12 @@ class WorkflowSyncService
 }
 ```
 
-### In un Job
+### In a Job
 
 ```php
-namespace App\Jobs;
+namespace App\\Jobs;
 
-use App\Services\ZuoraService;
+use App\\Services\\ZuoraService;
 
 class SyncWorkflowsJob
 {
@@ -324,12 +324,12 @@ class SyncWorkflowsJob
 }
 ```
 
-### In un Command
+### In a Command
 
 ```php
-namespace App\Console\Commands;
+namespace App\\Console\\Commands;
 
-use App\Services\ZuoraService;
+use App\\Services\\ZuoraService;
 
 class TestZuoraConnection extends Command
 {
@@ -346,7 +346,7 @@ class TestZuoraConnection extends Command
             $this->line('Token: ' . substr($token, 0, 20) . '...');
             
             return 0;
-        } catch (\Exception $e) {
+        } catch (\\Exception $e) {
             $this->error('✗ Authentication failed: ' . $e->getMessage());
             return 1;
         }
@@ -356,14 +356,14 @@ class TestZuoraConnection extends Command
 
 ## Testing
 
-### Unit Test esempio
+### Unit Test example
 
 ```php
-namespace Tests\Unit\Services;
+namespace Tests\\Unit\\Services;
 
-use App\Services\ZuoraService;
-use Illuminate\Support\Facades\Http;
-use Tests\TestCase;
+use App\\Services\\ZuoraService;
+use Illuminate\\Support\\Facades\\Http;
+use Tests\\TestCase;
 
 class ZuoraServiceTest extends TestCase
 {
@@ -406,7 +406,7 @@ class ZuoraServiceTest extends TestCase
 
 ### 1. Dependency Injection
 
-Sempre iniettare il servizio tramite constructor:
+Always inject the service through constructor:
 
 ```php
 public function __construct(private ZuoraService $zuoraService) {}
@@ -414,7 +414,7 @@ public function __construct(private ZuoraService $zuoraService) {}
 
 ### 2. Error Handling
 
-Gestire sempre le eccezioni:
+Always handle exceptions:
 
 ```php
 try {
@@ -428,30 +428,30 @@ try {
 
 ### 3. Caching
 
-Il servizio gestisce automaticamente il caching dei token. Non è necessario implementare caching aggiuntivo.
+The service automatically handles token caching. No need to implement additional caching.
 
 ### 4. Rate Limiting
 
-Zuora API ha rate limits. Implementare retry logic nei job:
+Zuora API has rate limits. Implement retry logic in jobs:
 
 ```php
 public int $tries = 3;
 public int $backoff = 60;
 ```
 
-## Prossimi passi
+## Next steps
 
 <CardGroup cols={2}>
   <Card title="WorkflowSyncService" icon="sync" href="/api/workflow-sync-service">
-    Servizio di sincronizzazione workflow
+    Workflow synchronization service
   </Card>
   <Card title="Models" icon="database" href="/api/models">
-    Documentazione modelli
+    Model documentation
   </Card>
-  <Card title="API Zuora" icon="book" href="/developer/api-zuora">
-    Dettagli API Zuora
+  <Card title="Zuora API" icon="book" href="/developer/zuora-api">
+    Zuora API details
   </Card>
   <Card title="Troubleshooting" icon="wrench" href="/developer/troubleshooting">
-    Risoluzione problemi
+    Problem resolution
   </Card>
 </CardGroup>
