@@ -1,0 +1,480 @@
+---
+title: Verifica Installazione
+description: Verifica che l'installazione sia completa e funzionante
+---
+
+# Verifica Installazione
+
+Dopo aver completato l'installazione e configurazione, verifica che tutti i componenti funzionino correttamente.
+
+## Checklist di Verifica
+
+Use questa checklist completa per assicurarti che tutto sia configurato correttamente.
+
+### ✅ 1. Verifica Servizi Lando
+
+Controlla che tutti i container siano in esecuzione:
+
+```bash
+lando ps
+```
+
+**Rispetta Aspettata:**
+
+```
+SERVICE      STATUS    URLS                              PORTS
+appserver    RUNNING   https://zuora-workflows.lndo.site 443->80, 8080->80
+database     RUNNING                                      3306
+cache        RUNNING                                      6379
+```
+
+<Warning>
+Se qualche servizio mostra "EXITED", riavvia con `lando rebuild -y`
+</Warning>
+
+### ✅ 2. Verifica Applicazione Laravel
+
+#### Versione PHP e Laravel
+
+```bash
+lando php -v
+lando artisan --version
+```
+
+**Rispetta Aspettata:**
+- PHP 8.4+
+- Laravel 12.x
+
+#### Application Health
+
+```bash
+lando artisan about --only=environment
+```
+
+**Verifica Output:**
+
+```
+Environment
+---------------------------------------------------------------------------
+Application Name: Zuora Workflows
+Laravel Version: 12.x.x
+PHP Version: 8.4.0
+Composer Version: 2.x.x
+Environment: local
+Debug Mode: ENABLED
+URL: https://zuora-workflows.lndo.site
+Maintenance Mode: OFF
+```
+
+#### Application Key
+
+```bash
+lando artisan key:generate
+```
+
+Se la chiave non esiste, verrà generata automaticamente.
+
+### ✅ 3. Verifica Database
+
+#### Connessione Database
+
+```bash
+lando mariadb
+```
+
+Se riesci ad accedere alla shell MariaDB, la connessione funziona.
+
+#### Tabelle Create
+
+```bash
+lando mariadb -e "SHOW TABLES;"
+```
+
+**Tabelle Richieste:**
+
+```
++------------------------+
+| Tables_in_zuora_workflows |
++------------------------+
+| customers              |
+| users                  |
+| workflows              |
+| tasks                  |
+| settings               |
+| jobs                   |
+| failed_jobs            |
+| job_batches            |
+| migrations             |
++------------------------+
+```
+
+#### Migrations Status
+
+```bash
+lando artisan migrate:status
+```
+
+Tutte le migrazioni dovrebbero mostrare "Yes" nella colonna Batch.
+
+### ✅ 4. Verifica Storage Permissions
+
+```bash
+# Verifica permessi storage
+ls -la storage/ -la
+
+# Verifica permessi cache
+ls -la bootstrap/cache/ -la
+```
+
+**Permessi Richiesti:**
+
+- Directory: `775` o `770`
+- File: `664` o `660`
+
+**Fix se necessario:**
+
+```bash
+chmod -R 775 storage bootstrap/cache
+chmod -R 775 public
+```
+
+### ✅ 5. Verifica Frontend Assets
+
+#### Asset Compilati
+
+```bash
+ls -la public/build/
+```
+
+Dovresti vedere file CSS e JS compilati da Vite:
+
+```
+-rw-r--r-- 1 user user 12345 Dec 27 14:30 assets/
+-rw-r--r-- 1 user user 67890 Dec 27 14:30 app.css
+-rw-r--r-- 1 user user 123456 Dec 27 14:30 app.js
+```
+
+#### Test Vite Dev Server
+
+```bash
+yarn run dev
+```
+
+Vite dovrebbe avviarsi e mostrare messaggio:
+
+```
+  VITE v7.x.x  ready in xxx ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
+  ➜  press h + enter to show help
+```
+
+### ✅ 6. Verifica Queue System
+
+#### Queue Connection
+
+```bash
+# Verifica configurazione queue
+lando artisan tinker --execute="echo config('queue.default');"
+```
+
+Dovrebbe mostrare: `database` (o `sync`, `redis`)
+
+#### Test Queue Worker
+
+```bash
+# Avvia queue worker (test singolo job)
+lando artisan queue:work --once
+```
+
+Dovrebbe completarsi senza errori.
+
+#### Monitoraggio Queue
+
+```bash
+# Monitora job in coda
+lando artisan queue:monitor database
+```
+
+Output atteso:
+
+```
+Queue     Size    Status
+database  0       OK
+```
+
+#### Failed Jobs
+
+```bash
+# Controlla job falliti
+lando artisan queue:failed
+```
+
+Dovrebbe mostrare: `No failed jobs` (o un numero basso in sviluppo)
+
+### ✅ 7. Verifica Scheduler
+
+#### Lista Scheduled Tasks
+
+```bash
+lando artisan schedule:list
+```
+
+**Output Atteso:**
+
+```
+Next Due: 2025-12-27 14:00:00 UTC
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│ Command                                                                   │
+├────────────────────────────────────────────────────────────────────────────────────────┤
+│ php artisan app:sync-workflows --all │
+└────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+#### Test Scheduler
+
+```bash
+# Esegui scheduler manualmente
+lando artisan schedule:run
+```
+
+Dovrebbe mostrare messaggio di esecuzione del task.
+
+### ✅ 8. Verifica Filament Admin Panel
+
+#### Accesso Dashboard
+
+Naviga a: `https://zuora-workflows.lndo.site/admin`
+
+**Verifica:**
+- ✅ Pagina login caricata correttamente
+- ✅ Design Filament visualizzato
+- ✅ Form login funzionante
+- ✅ Redirect dopo login alla dashboard
+
+#### Login Test
+
+1. Crea account utente
+2. Effettua login
+3. Verifica accesso a dashboard
+
+**Verifica Post-Login:**
+- ✅ Dashboard principale caricata
+- ✅ Menu sidebar visibile
+- ✅ Risorse accessibili (Customers, Workflows, Tasks)
+- ✅ User profile menu funzionante
+
+#### Debugbar (Sviluppo)
+
+Se `DEBUGBAR_ENABLED=true`, verifica:
+
+- ✅ Barra di debug in basso alla pagina
+- ✅ Queries eseguite visualizzate
+- ✅ Tempo di esecuzione mostrato
+- ✅ Memory usage mostrato
+
+### ✅ 9. Verifica API Endpoints
+
+#### Test Authentication
+
+```bash
+# Crea user e ottieni token (da Filament)
+curl -X GET https://zuora-workflows.lndo.site/api/user \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Accept: application/json"
+```
+
+Dovrebbe restituire dati utente JSON.
+
+#### Test Zuora Token Endpoint
+
+```bash
+curl -X GET "https://zuora-workflows.lndo.site/api/zuora/token" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Accept: application/json"
+```
+
+Dovrebbe restituire `{ "accessToken": "..." }` o errore 500 se credenziali mancanti.
+
+### ✅ 10. Verifica Log
+
+#### Laravel Log
+
+```bash
+# Ultimi 50 righe log
+tail -n 50 storage/logs/laravel.log
+
+# Segui log in tempo reale
+tail -f storage/logs/laravel.log
+```
+
+**Verifica:**
+- ✅ Nessun errore critico
+- ✅ Informazioni di caricamento
+- ✅ Queries loggate (se debug attivo)
+
+#### PHP Error Log
+
+```bash
+# Controlla errori PHP
+tail -n 50 storage/logs/laravel.log | grep -i error
+```
+
+Dovrebbe mostrare pochi o nessun errore.
+
+## Test Funzionalità Chiave
+
+### Test 1: Creazione Customer
+
+1. Accedi al panel admin
+2. Vai a Customers → New Customer
+3. Crea customer con dati test
+4. Verifica salvataggio
+
+```bash
+# Verifica customer nel database
+lando mariadb -e "SELECT * FROM customers;"
+```
+
+### Test 2: Sincronizzazione Workflow
+
+1. Apri customer creato
+2. Clicca "Sync Workflows"
+3. Verifica job dispatchato
+
+```bash
+# Controlla job in coda
+lando mariadb -e "SELECT * FROM jobs;"
+```
+
+4. Avvia queue worker se necessario:
+   ```bash
+   lando artisan queue:work
+   ```
+
+5. Verifica workflow sincronizzati:
+   ```bash
+   lando mariadb -e "SELECT * FROM workflows;"
+   ```
+
+### Test 3: Visualizzazione Workflow
+
+1. Vai a Workflows → Lista
+2. Clicca su un workflow
+3. Verifica visualizzazione dettagli
+4. Verifica task relation manager
+5. Verifica JSON export
+
+### Test 4: Estrazione Task
+
+1. Apri un workflow
+2. Vai alla tab Tasks
+3. Verifica task estratti dal JSON
+4. Verifica filtri task funzionano
+
+## Performance Baseline
+
+### Benchmark di Caricamento
+
+Usa il browser DevTools per misurare:
+
+```javascript
+// Nella console browser
+performance.mark('start')
+location.reload()
+performance.mark('end')
+performance.measure('load', 'start', 'end')
+performance.getEntriesByName('load')[0].duration
+```
+
+**Target:**
+- Dashboard < 2s
+- Lista Workflow < 1.5s
+- Dettaglio Workflow < 1s
+
+### Database Query Performance
+
+```bash
+# Attiva query logging (development only)
+lando artisan tinker --execute="DB::listen(function(\$query) { dump(\$query->sql); });"
+
+// Esegui qualche azione nell'app
+// Controlla queries loggate
+```
+
+**Target:**
+- < 50 queries per pagina
+- Nessuna query N+1
+- Index utilizzati dove necessario
+
+## Troubleshooting Base
+
+### Se Qualcosa Non Funziona
+
+#### 1. Clear Cache
+
+```bash
+lando artisan optimize:clear
+```
+
+#### 2. Rebuild Container
+
+```bash
+lando rebuild -y
+```
+
+#### 3. Controlla Log
+
+```bash
+lando logs -f
+```
+
+#### 4. Reset Application (ATTENZIONE)
+
+```bash
+# Reset completo - perde tutti i dati!
+lando artisan migrate:fresh
+lando artisan config:clear
+lando artisan cache:clear
+```
+
+## Successo!
+
+Se tutti i controlli sopra passano ✅, la tua installazione è completa e funzionante!
+
+### Cosa Fare Poi
+
+<CardGroup cols={2}>
+  <Card title="Configurazione API Zuora" icon="api" href="/configuration/zuora-api">
+    Configura credenziali API per sincronizzare workflow
+  </Card>
+  <Card title="Funzionalità" icon="play" href="/features/workflows">
+    Inizia a usare le funzionalità dell'applicazione
+  </Card>
+  <Card title="API Reference" icon="code" href="/api-reference/overview">
+    Esplora le API REST disponibili
+  </Card>
+  <Card title="Sviluppo" icon="terminal" href="/development/setup">
+    Configura ambiente di sviluppo completo
+  </Card>
+</CardGroup>
+
+## Checklist Completata
+
+| Check | Status | Note |
+|-------|--------|-------|
+| Servizi Lando running | ✅ | Tutti i container attivi |
+| Database funzionante | ✅ | Tabelle create correttamente |
+| Storage permissions | ✅ | Permessi corretti |
+| Frontend assets | ✅ | CSS/JS compilati |
+| Queue system | ✅ | Job dispatchati e processati |
+| Scheduler | ✅ | Task schedulati configurati |
+| Filament dashboard | ✅ | Admin panel accessibile |
+| API endpoints | ✅ | Endpoints rispondono |
+| Logs senza errori | ✅ | Sistema stabile |
+
+---
+
+**Versione**: 1.4.0 |
+**Ultimo Aggiornamento**: Dicembre 2025

@@ -1,0 +1,659 @@
+---
+title: Deployment Overview
+description: Guida completa al deployment di Zuora Workflow Manager
+---
+
+# Panoramica Deployment
+
+Questa guida copre il deployment di Zuora Workflow Manager in ambiente production, con focus su diversi scenari di hosting.
+
+## Prerequisiti Deployment
+
+### Requisiti di Sistema
+
+| Requisito | Versione Minima | Descrizione |
+|-----------|-----------------|-------------|
+| **PHP** | 8.4+ | Con estensioni: openssl, pdo, mbstring, tokenizer, xml, ctype, json, bcmath |
+| **Web Server** | Apache 2.4+ / Nginx 1.18+ | Per servire l'applicazione |
+| **Database** | MariaDB 10.6+ / MySQL 5.7+ | Per persistenza dati |
+| **Composer** | 2.x+ | Dependency management |
+| **Node.js** | 18+ / 20+ | Per build asset |
+| **Redis** (opzionale) | 6.0+ | Per queue e cache ad alte prestazioni |
+
+### Requisiti PHP Extensions
+
+```bash
+# Verifica estensioni installate
+php -m | grep -E "openssl|pdo|mbstring|tokenizer|xml|ctype|json|bcmath"
+```
+
+Estensioni richieste:
+- `openssl` - Per HTTPS e encryption
+- `pdo_mysql` - Per database MariaDB/MySQL
+- `mbstring` - Per string manipulation
+- `tokenizer` - Per compilation templates
+- `xml` - Per XML parsing
+- `ctype` - Per string validation
+- `json` - Per JSON encoding/decoding
+- `bcmath` - Per calcoli matematici
+
+## Strategy di Deployment
+
+### Opzione 1: Automated Deployment (GitHub Actions)
+
+L'applicazione include workflow GitHub Actions automatizzato.
+
+#### Configuration
+
+File: `.github/workflows/deploy.yml`
+
+**Steps Automatici:**
+1. ✅ Checkout code da repository
+2. ✅ Setup PHP 8.4 con estensioni
+3. ✅ Setup Node.js 20 per asset compilation
+4. ✅ Install Composer dependencies (production)
+5. ✅ Install Yarn dependencies
+6. ✅ Build assets con Vite
+7. ✅ Create `.env` con config production
+8. ✅ Deploy via SCP al server production
+9. ✅ Execute post-deployment commands:
+   - Set corretti permessi
+   - Run fresh migrations
+   - Clear e cache configurations
+   - Link storage
+   - Optimize application
+
+#### Attiva Deployment
+
+1. Vai a Settings → Secrets del repository GitHub
+2. Aggiungi i secrets richiesti:
+
+   ```yaml
+   # GitHub Secrets Richiesti
+   APP_KEY=base64:YOUR_APP_KEY
+   SSH_HOST=your-server.com
+   SSH_USERNAME=deploy
+   SSH_PRIVATE_KEY=-----BEGIN PRIVATE KEY---
+   DB_HOST=localhost
+   DB_PORT=3306
+   DB_DATABASE=zuora_workflows_prod
+   DB_USERNAME=zuora_workflows_user
+   DB_PASSWORD=secure_password_here
+   GOOGLE_CLIENT_ID=your_google_client_id
+   GOOGLE_CLIENT_SECRET=your_google_client_secret
+   ```
+
+3. Vai a Actions tab
+4. Seleziona "Deploy to Production"
+5. Clicca "Run workflow"
+
+### Opzione 2: Manual Deployment (SCP/SFTP)
+
+Deploy manuale via SCP o SFTP.
+
+#### Steps
+
+1. **Clone Repository:**
+   ```bash
+   git clone https://github.com/FrancoStino/zuora-workflows.git
+   cd zuora-workflows
+   ```
+
+2. **Install Dependencies:**
+   ```bash
+   # PHP dependencies (production)
+   composer install --no-dev --optimize-autoloader
+
+   # Node.js dependencies
+   yarn install --production
+   ```
+
+3. **Build Assets:**
+   ```bash
+   yarn run build
+   ```
+
+4. **Configure Environment:**
+   ```bash
+   cp .env.example .env
+   nano .env  # Edit with production values
+   php artisan key:generate
+   ```
+
+5. **Run Migrations:**
+   ```bash
+   php artisan migrate --force
+   ```
+
+6. **Set Permissions:**
+   ```bash
+   chmod -R 755 storage bootstrap/cache
+   chmod -R 775 storage bootstrap/cache
+   find storage -type f -exec chmod 664 {} \;
+   find bootstrap/cache -type f -exec chmod 664 {} \;
+   ```
+
+7. **Optimize Application:**
+   ```bash
+   php artisan config:cache
+   php artisan route:cache
+   php artisan view:cache
+   php artisan optimize
+   ```
+
+8. **Deploy via SCP:**
+   ```bash
+   scp -r . user@server.com:/var/www/html/zuora-workflows
+   ```
+
+### Opzione 3: Deployment con Git
+
+Deploy usando git pull sul server.
+
+#### Server Setup
+
+1. **Inizializza Git sul Server:**
+   ```bash
+   ssh user@server.com
+   cd /var/www/html
+   git clone https://github.com/FrancoStino/zuora-workflows.git
+   cd zuora-workflows
+   ```
+
+2. **Configure Post-Receive Hook:**
+   ```bash
+   mkdir .git/hooks
+   nano .git/hooks/post-receive
+   ```
+
+   ```bash
+   #!/bin/bash
+   cd /var/www/html/zuora-workflows
+   git --git-dir=.git --work-tree=. pull origin main
+   composer install --no-dev
+   yarn install
+   yarn run build
+   php artisan migrate --force
+   php artisan optimize:clear
+   php artisan optimize
+   chmod -R 775 storage bootstrap/cache
+   ```
+
+   ```bash
+   chmod +x .git/hooks/post-receive
+   ```
+
+#### Local Deployment
+
+```bash
+git push origin main
+```
+
+Il server eseguirà automaticamente il hook post-receive.
+
+## Configuration Production
+
+### Environment Variables
+
+Configura le variabili per production:
+
+```env
+# Application
+APP_NAME="Zuora Workflow Manager"
+APP_ENV=production
+APP_KEY=base64:YOUR_GENERATED_KEY_HERE
+APP_DEBUG=false
+APP_URL=https://yourdomain.com
+
+# Database
+DB_CONNECTION=mysql
+DB_HOST=localhost
+DB_PORT=3306
+DB_DATABASE=zuora_workflows_prod
+DB_USERNAME=zuora_workflows_user
+DB_PASSWORD=YOUR_SECURE_PASSWORD
+
+# Queue
+QUEUE_CONNECTION=database  # O 'redis' se Redis disponibile
+
+# Cache
+CACHE_DRIVER=redis  # O 'database'
+
+# Session
+SESSION_DRIVER=database
+SESSION_LIFETIME=120
+
+# Mail
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USERNAME=your-email@gmail.com
+MAIL_PASSWORD=your-app-password
+MAIL_ENCRYPTION=tls
+MAIL_FROM_ADDRESS=noreply@yourdomain.com
+MAIL_FROM_NAME="${APP_NAME}"
+
+# OAuth Google
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+```
+
+<Warning>
+Mai commitare il file `.env` in repository! I secrets devono essere in GitHub Secrets o variabili d'ambiente server.
+</Warning>
+
+### Web Server Configuration
+
+#### Apache Configuration
+
+```apache
+# /etc/apache2/sites-available/zuora-workflows.conf
+
+<VirtualHost *:80>
+    ServerName yourdomain.com
+    ServerAdmin admin@yourdomain.com
+    DocumentRoot /var/www/html/zuora-workflows/public
+
+    <Directory /var/www/html/zuora-workflows/public>
+        AllowOverride All
+        Require all granted
+    </Directory>
+
+    ErrorLog ${APACHE_LOG_DIR}/zuora-workflows-error.log
+    CustomLog ${APACHE_LOG_DIR}/zuora-workflows-access.log combined
+</VirtualHost>
+
+# Enable SSL
+<VirtualHost *:443>
+    ServerName yourdomain.com
+    ServerAdmin admin@yourdomain.com
+    DocumentRoot /var/www/html/zuora-workflows/public
+
+    SSLEngine on
+    SSLCertificateFile /path/to/cert.pem
+    SSLCertificateKeyFile /path/to/key.pem
+
+    <Directory /var/www/html/zuora-workflows/public>
+        AllowOverride All
+        Require all granted
+    </Directory>
+
+    ErrorLog ${APACHE_LOG_DIR}/zuora-workflows-error.log
+    CustomLog ${APACHE_LOG_DIR}/zuora-workflows-access.log combined
+</VirtualHost>
+```
+
+#### Nginx Configuration
+
+```nginx
+# /etc/nginx/sites-available/zuora-workflows
+
+server {
+    listen 80;
+    server_name yourdomain.com;
+    return 301 https://$server_name$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    server_name yourdomain.com;
+    root /var/www/html/zuora-workflows/public;
+    index index.php;
+
+    ssl_certificate /path/to/cert.pem;
+    ssl_certificate_key /path/to/key.pem;
+
+    add_header X-Frame-Options "SAMEORIGIN";
+    add_header X-Content-Type-Options "nosniff";
+
+    charset utf-8;
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location = /favicon.ico { access_log off; log_not_found off; }
+    location = /robots.txt  { access_log off; log_not_found off; }
+
+    error_page 404 /index.php;
+
+    location ~ \.php$ {
+        fastcgi_pass unix:/var/run/php/php8.4-fpm.sock;
+        fastcgi_index index.php;
+        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+        include fastcgi_params;
+    }
+
+    location ~ /\.(?!well-known).* {
+        deny all;
+    }
+}
+```
+
+## Queue Worker Setup
+
+### Opzione 1: Cron Job (Shared Hosting)
+
+Usa il Laravel Scheduler per processare queue jobs.
+
+```bash
+# Aggiungi crontab
+crontab -e
+```
+
+```bash
+# Ogni minuto, esegui scheduler
+* * * * * cd /var/www/html/zuora-workflows && php artisan schedule:run >> /dev/null 2>&1
+```
+
+<Note>
+Questo metodo è il più semplice per shared hosting e non richiede Supervisor.
+</Note>
+
+### Opzione 2: Supervisor (VPS/Dedicated)
+
+Per queue workers persistenti.
+
+#### Install Supervisor
+
+```bash
+sudo apt-get update
+sudo apt-get install supervisor
+```
+
+#### Create Configuration
+
+```bash
+sudo nano /etc/supervisor/conf.d/zuora-workflows-queue.conf
+```
+
+```ini
+[program:zuora-workflows-queue]
+process_name=%(program_name)s_%(process_num)02d
+command=php /var/www/html/zuora-workflows/artisan queue:work database --sleep=3 --tries=3 --timeout=90 --memory=256
+autostart=true
+autorestart=true
+stopasgroup=true
+killasgroup=true
+user=www-data
+numprocs=1
+redirect_stderr=true
+stdout_logfile=/var/log/supervisor/zuora-workflows-queue.log
+stopwaitsecs=3600
+```
+
+#### Avvia Queue Worker
+
+```bash
+sudo supervisorctl reread
+sudo supervisorctl update
+sudo supervisorctl start zuora-workflows-queue:*
+```
+
+#### Monitora Queue Worker
+
+```bash
+# Status
+sudo supervisorctl status zuora-workflows-queue:*
+
+# Logs
+sudo tail -f /var/log/supervisor/zuora-workflows-queue.log
+
+# Restart
+sudo supervisorctl restart zuora-workflows-queue:*
+```
+
+## SSL Certificate Setup
+
+### Let's Encrypt (Gratis)
+
+```bash
+# Installa Certbot
+sudo apt-get install certbot python3-certbot-apache  # Apache
+# o
+sudo apt-get install certbot python3-certbot-nginx   # Nginx
+
+# Genera certificato
+sudo certbot --apache -d yourdomain.com  # Apache
+# o
+sudo certbot --nginx -d yourdomain.com      # Nginx
+
+# Auto-renewal
+sudo certbot renew --dry-run
+```
+
+### Commercial SSL
+
+1. Compra certificato SSL da provider (e.g., Namecheap, GoDaddy)
+2. Upload certificati al server
+3. Configura web server:
+   ```apache
+   SSLCertificateFile /etc/ssl/certs/yourdomain.crt
+   SSLCertificateKeyFile /etc/ssl/private/yourdomain.key
+   ```
+   ```nginx
+   ssl_certificate /etc/ssl/certs/yourdomain.crt;
+   ssl_certificate_key /etc/ssl/private/yourdomain.key;
+   ```
+
+## Backup Strategy
+
+### Database Backup
+
+Automatizza backup del database:
+
+```bash
+# Script backup
+#!/bin/bash
+DATE=$(date +%Y%m%d_%H%M%S)
+BACKUP_DIR="/var/backups/zuora-workflows"
+mysqldump -u zuora_workflows_user -p'PASSWORD' zuora_workflows_prod > $BACKUP_DIR/backup_$DATE.sql
+gzip $BACKUP_DIR/backup_$DATE.sql
+find $BACKUP_DIR -type f -mtime +30 -delete
+```
+
+```bash
+# Add to crontab
+0 2 * * * /path/to/backup-script.sh
+```
+
+### Application Backup
+
+```bash
+# Backup files
+tar -czf /var/backups/zuora-workflows-$(date +%Y%m%d).tar.gz \
+    /var/www/html/zuora-workflows \
+    --exclude=node_modules \
+    --exclude=storage/logs \
+    --exclude=.git
+```
+
+### Restore Database
+
+```bash
+gunzip < backup_20251227_020000.sql.gz | mysql -u user -p database_name
+```
+
+## Monitoring & Logging
+
+### Application Monitoring
+
+```bash
+# Application health
+php artisan about --only=environment
+
+# Queue status
+php artisan queue:monitor database --max=100
+
+# Failed jobs
+php artisan queue:failed
+```
+
+### Log Files
+
+```bash
+# Laravel log
+tail -f /var/www/html/zuora-workflows/storage/logs/laravel.log
+
+# PHP error log
+tail -f /var/log/php8.4-fpm/error.log
+
+# Nginx access log
+tail -f /var/log/nginx/zuora-workflows-access.log
+
+# Supervisor log
+tail -f /var/log/supervisor/zuora-workflows-queue.log
+```
+
+### External Monitoring
+
+Usa servizi come:
+- **Uptime Robot** - Monitor uptime
+- **Sentry** - Error tracking
+- **New Relic** - APM monitoring
+- **Datadog** - Infrastructure monitoring
+
+## Security Checklist
+
+Prima di andare in production, verifica:
+
+### Application Security
+
+- [ ] `APP_DEBUG=false` in production
+- [ ] Strong `APP_KEY` generato
+- [ ] Database credentials in environment variables (non in .env committato)
+- [ ] HTTPS attivo con certificato SSL valido
+- [ ] File permissions configurate correttamente (755/775)
+- [ ] Queue worker in esecuzione
+- [ ] Error logs monitorati regolarmente
+- [ ] Backup automatizzati configurati
+- [ ] CORS configurato se necessario
+- [ ] Rate limiting attivo su API endpoints
+
+### Database Security
+
+- [ ] User database con permessi minimi
+- [ ] Password database strong (32+ caratteri)
+- [ ] Database non accessibile da esterno (localhost)
+- [ ] Backup automatizzati testati
+- [ ] Foreign keys constraint attivi
+
+### Server Security
+
+- [ ] Firewall configurato (ufw, iptables)
+- [ ] SSH solo con chiavi (disabilita password auth)
+- [ ] SSH port changed from default 22
+- [ ] Aggiornamenti regolari sistema operativo
+- [ ] Fail2ban installato per prevenzione brute-force
+- [ ] Log rotation configurato
+
+### API Security
+
+- [ ] API tokens scadono periodicamente
+- [ ] Rate limiting su tutti endpoints
+- [ ] Input validation su tutte le richieste
+- [ ] SQL injection prevenzione (ORM usage)
+- [ ] XSS prevenzione (escape output)
+- [ ] CSRF token su forms
+
+## Troubleshooting Production
+
+### Problemi Comuni
+
+#### 1. Jobs non processano
+
+**Sintomo:** Workflow sync non funzionano
+
+**Soluzione:**
+```bash
+# Verifica queue worker
+sudo supervisorctl status zuora-workflows-queue:*
+
+# Se non running, riavvia
+sudo supervisorctl start zuora-workflows-queue:*
+
+# Oppure verifica cron job
+crontab -l
+
+# Manual test
+php artisan queue:work --once
+```
+
+#### 2. Errori 500
+
+**Sintomo:** Pagina mostra errore generico
+
+**Soluzione:**
+```bash
+# Verifica log
+tail -f storage/logs/laravel.log
+
+# Verifica permessi storage
+ls -la storage/ -la
+
+# Clear cache
+php artisan optimize:clear
+
+# Check configuration
+php artisan config:clear
+```
+
+#### 3. Performance Lenta
+
+**Sintomo:** Pagina carica lentamente
+
+**Soluzione:**
+```bash
+# Enable OPcache
+php -i | grep opcache
+
+# Enable caching
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+
+# Check queries abilitate
+DB::enableQueryLog()
+// Esegui qualche azione
+dd(DB::getQueryLog())
+```
+
+#### 4. Errori Permission
+
+**Sintomo:** "Permission denied" errors
+
+**Soluzione:**
+```bash
+chmod -R 775 storage bootstrap/cache
+chown -R www-data:www-data storage bootstrap/cache
+```
+
+## Prossimi Passi
+
+<CardGroup cols={2}>
+  <Card title="Monitoring" icon="chart-line" href="/deployment/monitoring">
+    Configura monitoring e alerting
+  </Card>
+  <Card title="Troubleshooting" icon="wrench" href="/deployment/troubleshooting">
+    Risolvi problemi comuni
+  </Card>
+  <Card title="API Reference" icon="code" href="/api-reference/overview">
+    Esplora API endpoints
+  </Card>
+  <Card title="Features" icon="play" href="/features/workflows">
+    Usa le funzionalità dell'applicazione
+  </Card>
+</CardGroup>
+
+## Risorse
+
+- 📖 [Laravel Deployment](https://laravel.com/docs/deployment)
+- 📖 [Laravel Queues](https://laravel.com/docs/queues#running-the-queue-worker)
+- 📖 [Supervisor Documentation](http://supervisord.org/)
+- 📖 [Let's Encrypt](https://letsencrypt.org/)
+- 📖 [OWASP Security](https://owasp.org/)
+
+---
+
+**Versione**: 1.4.0 |
+**Ultimo Aggiornamento**: Dicembre 2025

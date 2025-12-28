@@ -16,38 +16,67 @@
     {
       "name": "GitHub",
       "url": "https://github.com/FrancoStino/zuora-workflows"
+    },
+    {
+      "name": "API Reference",
+      "url": "/api-reference/overview"
     }
   ],
   "topbarCtaButton": {
-    "name": "Get Started",
-    "url": "/installation"
+    "name": "Inizia Ora",
+    "url": "/getting-started/introduction"
   },
-  "navigation": {
-    "groups": [
-      {
-        "group": "Getting started",
-        "pages": [
-          "introduction",
-          "installation",
-          "configuration"
-        ]
-      },
-      {
-        "group": "Guides",
-        "pages": [
-          "usage",
-          "architecture",
-          "deployment"
-        ]
-      },
-      {
-        "group": "Community",
-        "pages": [
-          "contributing"
-        ]
-      }
-    ]
-  },
+  "navigation": [
+    {
+      "group": "Introduzione",
+      "pages": [
+        "getting-started/introduction",
+        "getting-started/installation",
+        "getting-started/configuration",
+        "getting-started/verification"
+      ]
+    },
+    {
+      "group": "Architettura",
+      "pages": [
+        "architecture/architecture",
+        "architecture/overview"
+      ]
+    },
+    {
+      "group": "Configurazione",
+      "pages": [
+        "configuration/settings-implementation"
+      ]
+    },
+    {
+      "group": "API Reference",
+      "pages": [
+        "api-reference/overview"
+      ]
+    },
+    {
+      "group": "Funzionalità",
+      "pages": [
+        "features/overview",
+        "features/sync",
+        "features/workflow-graph"
+      ]
+    },
+    {
+      "group": "Sviluppo",
+      "pages": [
+        "development/contributing"
+      ]
+    },
+    {
+      "group": "Deployment",
+      "pages": [
+        "deployment/overview",
+        "deployment/deployment"
+      ]
+    }
+  ],
   "footerSocials": {
     "github": "https://github.com/FrancoStino/zuora-workflows"
   },
