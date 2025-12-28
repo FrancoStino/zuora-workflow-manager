@@ -1,0 +1,354 @@
+---
+title: Configuration
+description: Guide to configuring Zuora Workflow Manager
+---
+
+# Configuration
+
+After installation, you need to configure the application to connect to Zuora and customize settings.
+
+## .env file configuration
+
+The `.env` file contains all application environment variables.
+
+### Application configuration
+
+```env
+APP_NAME="Zuora Workflow Manager"
+APP_ENV=local
+APP_KEY=base64:... # Generated automatically
+APP_DEBUG=true
+APP_URL=https://zuora-workflows.lndo.site
+```
+
+### Database configuration
+
+```env
+DB_CONNECTION=mariadb
+DB_HOST=database
+DB_PORT=3306
+DB_DATABASE=zuora_workflows
+DB_USERNAME=zuora_workflows
+DB_PASSWORD=zuora_workflows
+```
+
+<Note>
+With Lando, these settings are already configured correctly.
+</Note>
+
+### Queue configuration
+
+```env
+QUEUE_CONNECTION=database
+```
+
+Available options:
+- `database` - Database queues (recommended for development and production)
+- `redis` - Redis queues (requires configured Redis)
+- `sync` - Immediate synchronous execution (no background jobs)
+
+### Cache configuration
+
+```env
+CACHE_STORE=redis
+REDIS_HOST=cache
+REDIS_PASSWORD=null
+REDIS_PORT=6379
+```
+
+### Email configuration (optional)
+
+To enable email notifications:
+
+```env
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.mailtrap.io
+MAIL_PORT=2525
+MAIL_USERNAME=your_username
+MAIL_PASSWORD=your_password
+MAIL_ENCRYPTION=tls
+MAIL_FROM_ADDRESS="noreply@zuora-workflows.local"
+MAIL_FROM_NAME="${APP_NAME}"
+```
+
+### Google OAuth configuration (optional)
+
+To enable Google login:
+
+```env
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+GOOGLE_REDIRECT_URI="${APP_URL}/oauth/google/callback"
+```
+
+<Tip>
+You can also configure Google OAuth through the Settings interface in the admin panel.
+</Tip>
+
+## Zuora credentials configuration
+
+Zuora credentials are configured **per customer** through the administrative interface, not in the `.env` file.
+
+### Step 1: Access the admin panel
+
+Navigate to `https://zuora-workflows.lndo.site` and login.
+
+### Step 2: Create a new customer
+
+1. Click **Customers** in the sidebar
+2. Click **New Customer**
+3. Fill out the form:
+   - **Name**: Customer organization name
+   - **Zuora Client ID**: Your Zuora OAuth 2.0 Client ID
+   - **Zuora Client Secret**: Your Zuora OAuth 2.0 Client Secret
+   - **Zuora Base URL**: Zuora API endpoint
+
+### Step 3: Select the correct Zuora endpoint
+
+| Environment | Base URL |
+|-------------|----------|
+| Production | `https://rest.zuora.com` |
+| Test | `https://rest.test.zuora.com` |
+| Sandbox | `https://rest.sandbox.zuora.com` |
+
+### Step 4: Save the customer
+
+Click **Create** to save the customer.
+
+<Warning>
+The Client Secret is automatically encrypted in the database using the `APP_KEY`. Never share your `APP_KEY`.
+</Warning>
+
+## Obtaining OAuth 2.0 credentials from Zuora
+
+### Step 1: Access Zuora Central Platform
+
+Go to [Zuora Central Platform](https://www.zuora.com/apps/newlogin.do).
+
+### Step 2: Navigate to OAuth settings
+
+1. Click **Settings** → **Administration**
+2. Select **Manage OAuth Clients**
+
+### Step 3: Create a new OAuth Client
+
+1. Click **Create New Client**
+2. Enter a descriptive name (e.g., "Workflow Manager")
+3. Select required scopes:
+   - `workflow:read`
+   - `workflow:write`
+4. Click **Create**
+
+### Step 4: Copy credentials
+
+Zuora will display:
+- **Client ID**: Copy and save
+- **Client Secret**: Copy and save (shown only once!)
+
+<Warning>
+The Client Secret is shown only once. Save it in a secure location.
+</Warning>
+
+## Scheduler configuration
+
+To enable automatic workflow synchronization, configure the scheduler.
+
+### Development with Lando
+
+Start the scheduler in a separate terminal window:
+
+```bash
+lando schedule
+```
+
+### Production
+
+Add a cron job that runs the scheduler every minute:
+
+```bash
+* * * * * cd /path/to/application && php artisan schedule:run >> /dev/null 2>&1
+```
+
+### Synchronization frequency
+
+The default frequency is **every hour**. To modify it, edit `routes/console.php`:
+
+```php
+Schedule::command('app:sync-workflows --all')
+    ->hourly()              // Every hour (default)
+    // ->everyThirtyMinutes()  // Every 30 minutes
+    // ->everyFiveMinutes()    // Every 5 minutes
+    // ->daily()               // Once a day
+    ->name('sync-customer-workflows');
+```
+
+## Queue worker configuration
+
+### Development with Lando
+
+Start the queue worker:
+
+```bash
+lando queue
+```
+
+### Production
+
+Use Supervisor to keep the queue worker always active. Create `/etc/supervisor/conf.d/zuora-workflows.conf`:
+
+```ini
+[program:zuora-workflows-worker]
+process_name=%(program_name)s_%(process_num)02d
+command=php /path/to/application/artisan queue:work --sleep=3 --tries=3 --max-time=3600
+autostart=true
+autorestart=true
+stopasgroup=true
+killasgroup=true
+user=www-data
+numprocs=1
+redirect_stderr=true
+stdout_logfile=/path/to/application/storage/logs/worker.log
+stopwaitsecs=3600
+```
+
+Reload Supervisor:
+
+```bash
+sudo supervisorctl reread
+sudo supervisorctl update
+sudo supervisorctl start zuora-workflows-worker:*
+```
+
+## Settings UI configuration
+
+Some settings can be configured through the Settings interface.
+
+### Access Settings
+
+1. Login as **Super Admin**
+2. Click **Settings** in the menu
+3. Select **General Settings**
+
+### Available sections
+
+#### Site Information
+- **Site Name**: Site name
+- **Site Description**: Site description
+
+#### OAuth Configuration
+- **OAuth Enabled**: Enable/disable OAuth login
+- **Allowed Domains**: Email domains allowed for registration
+- **Google Client ID**: Google OAuth Client ID
+- **Google Client Secret**: Google OAuth Client Secret (encrypted)
+
+#### Application Configuration
+- **Admin Email**: Default administrator email
+
+#### Maintenance
+- **Maintenance Mode**: Enable/disable maintenance mode
+
+<Note>
+OAuth settings configured through Settings UI take priority over environment variables.
+</Note>
+
+## Permissions configuration (RBAC)
+
+The application uses Filament Shield for role-based access control.
+
+### Default roles
+
+- **super_admin**: Full access to all features
+- **panel_user**: Basic panel access
+
+### Role management
+
+1. Navigate to **Shield** → **Roles**
+2. Click on a role to edit permissions
+3. Select/deselect permissions per resource
+4. Click **Save**
+
+### Assigning roles to users
+
+1. Navigate to **Users**
+2. Click on a user
+3. Select roles in the **Roles** section
+4. Click **Save**
+
+## Verify configuration
+
+### Test Zuora connection
+
+After configuring a customer:
+
+1. Navigate to **Customers**
+2. Click on the newly created customer
+3. Click **Sync Workflows**
+4. Verify that the job is queued without errors
+
+### Test queue worker
+
+Verify that the queue worker is processing jobs:
+
+```bash
+lando artisan queue:work --verbose
+```
+
+You should see output similar to:
+```
+[2024-01-01 10:00:00][1] Processing: App\\Jobs\\SyncCustomersJob
+[2024-01-01 10:00:05][1] Processed:  App\\Jobs\\SyncCustomersJob
+```
+
+### Test scheduler
+
+Verify that the scheduler is configured correctly:
+
+```bash
+lando artisan schedule:list
+```
+
+Expected output:
+```
+0 * * * * php artisan app:sync-workflows --all ... Next Due: 1 hour from now
+```
+
+## Configuration troubleshooting
+
+### Error: "Invalid Zuora credentials"
+
+Verify that:
+- Client ID and Client Secret are correct
+- Base URL is correct for your environment
+- Credentials have the necessary scopes
+
+### Error: "Queue connection refused"
+
+Verify queue configuration:
+```bash
+lando artisan queue:failed
+```
+
+If using `database` queue, verify that the `jobs` table exists:
+```bash
+lando artisan migrate
+```
+
+### Error: "Cache connection refused"
+
+Verify that Redis is active:
+```bash
+lando info
+```
+
+If Redis is not available, use `file` cache:
+```env
+CACHE_STORE=file
+```
+
+## Next steps
+
+Now that configuration is complete, start using the application:
+
+<Card title="First use" icon="rocket" href="/getting-started/first-use">
+  Guide to first use of the application
+</Card>
