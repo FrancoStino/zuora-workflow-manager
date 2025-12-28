@@ -19,32 +19,34 @@
   "navbar": {
     "primary": {
       "type": "github",
-      "url": "https://github.com/FrancoStino/zuora-workflows"
+      "href": "https://github.com/FrancoStino/zuora-workflows"
     }
   },
-  "navigation": [
-    {
-      "group": "Overview",
-      "pages": [
-        "index"
-      ]
-    },
-    {
-      "group": "Guides",
-      "pages": [
-        "guides/getting-started",
-        "guides/architecture",
-        "guides/features",
-        "guides/development",
-        "guides/deployment"
-      ]
-    },
-    {
-      "group": "Reference",
-      "pages": [
-        "reference/api",
-        "reference/configuration"
-      ]
-    }
-  ]
+  "navigation": {
+    "groups": [
+      {
+        "group": "Overview",
+        "pages": [
+          "index"
+        ]
+      },
+      {
+        "group": "Guides",
+        "pages": [
+          "guides/getting-started",
+          "guides/architecture",
+          "guides/features",
+          "guides/development",
+          "guides/deployment"
+        ]
+      },
+      {
+        "group": "Reference",
+        "pages": [
+          "reference/api",
+          "reference/configuration"
+        ]
+      }
+    ]
+  }
 }
