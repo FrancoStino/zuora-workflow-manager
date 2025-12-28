@@ -48,5 +48,8 @@
         ]
       }
     ]
+  },
+  "background": {
+    "decoration": "windows"
   }
 }
