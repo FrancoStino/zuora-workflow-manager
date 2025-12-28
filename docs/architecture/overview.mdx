@@ -9,31 +9,18 @@ Zuora Workflow Manager is built following SOLID principles and uses a well-defin
 
 ## General architecture
 
-```
-┌─────────────────────────────────────────────────────────┐
-│                    Filament UI Layer                    │
-│  (Resources, Pages, Forms, Tables, Actions, Widgets)   │
-└─────────────────────────────────────────────────────────┘
-                          ↓
-┌─────────────────────────────────────────────────────────┐
-│                   Application Layer                     │
-│     (Controllers, Commands, Jobs, Middleware)           │
-└─────────────────────────────────────────────────────────┘
-                          ↓
-┌─────────────────────────────────────────────────────────┐
-│                    Service Layer                        │
-│  (ZuoraService, WorkflowSyncService, OAuthService)     │
-└─────────────────────────────────────────────────────────┘
-                          ↓
-┌─────────────────────────────────────────────────────────┐
-│                     Domain Layer                        │
-│        (Models, Policies, Rules, Casts)                 │
-└─────────────────────────────────────────────────────────┘
-                          ↓
-┌─────────────────────────────────────────────────────────┐
-│                 Infrastructure Layer                    │
-│    (Database, Cache, Queue, External APIs)              │
-└─────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    A[Filament UI Layer<br/>Resources, Pages, Forms, Tables, Actions, Widgets]
+    B[Application Layer<br/>Controllers, Commands, Jobs, Middleware]
+    C[Service Layer<br/>ZuoraService, WorkflowSyncService, OAuthService]
+    D[Domain Layer<br/>Models, Policies, Rules, Casts]
+    E[Infrastructure Layer<br/>Database, Cache, Queue, External APIs]
+    
+    A --> B
+    B --> C
+    C --> D
+    D --> E
 ```
 
 ## Architectural principles
