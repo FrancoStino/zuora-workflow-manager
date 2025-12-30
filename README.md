@@ -9,7 +9,7 @@
 [![Latest Release](https://img.shields.io/github/v/release/FrancoStino/zuora-workflows?style=for-the-badge&color=2196F3&logoColor=white)](https://github.com/FrancoStino/zuora-workflows/releases)
 [![License](https://img.shields.io/badge/License-MIT-4CAF50?style=for-the-badge&logoColor=white)](LICENSE)
 <br />
-[![Read the Docs](https://img.shields.io/badge/Read%20the%20Docs-000?style=for-the-badge&logo=readthedocs&logoColor=fff)](https://docs.zuora.workflows.davideladisa.it/)
+[![Read the Docs](https://img.shields.io/badge/Read%20the%20Docs-000?style=for-the-badge&logo=readthedocs&logoColor=fff)](https://zuoraworkflows.mintlify.app)
 </div>
 
 A powerful web application for synchronizing, viewing, and managing Zuora workflows directly from your [Filament admin
