@@ -5,7 +5,6 @@ namespace App\Livewire;
 use Exception;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Number;
 use Livewire\Component;
 
 class StarsGitHub extends Component
@@ -13,7 +12,7 @@ class StarsGitHub extends Component
     public function render()
     {
         $stars = $this->getStars();
-        if ($stars === null) {
+        if ($stars === null || $stars == 0) {
             return <<<'BLADE'
 <div class="hidden"></div>
 BLADE;
@@ -37,10 +36,10 @@ BLADE;
         return Cache::remember('github_stars', 86400, static function () {
             try {
                 $response = Http::timeout(5)
-                    ->get('https://api.github.com/repos/FrancoStino/zuora-workflows');
+                    ->get('https://img.shields.io/github/stars/FrancoStino/zuora-workflows.json');
 
                 return $response->successful()
-                    ? Number::abbreviate($response['stargazers_count'])
+                    ? $response['value']
                     : null;
             } catch (Exception) {
                 return null;
