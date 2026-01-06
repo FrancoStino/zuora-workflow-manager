@@ -1,6 +1,5 @@
-<footer
-    class="fixed bottom-0 left-0 z-20 w-full p-4 border-t border-gray-200 shadow md:flex md:items-center md:justify-between md:p-6 dark:border-gray-600">
-    <div class="flex flex-col lg:flex-row items-center justify-between gap-9">
+<footer>
+    <div class="flex flex-col lg:flex-row items-center justify-between gap-4 p-5">
         {{-- Copyright notice --}}
         <div class="text-sm">
             © {{ date('Y') }}
@@ -10,8 +9,8 @@
             - All Rights Reserved.
         </div>
 
-        {{-- Social buttons --}}
-        <div class="flex gap-2">
+        {{-- Buttons --}}
+        <div class="flex gap-4">
             <x-filament::button
                 tag="a"
                 href="https://github.com/FrancoStino/zuora-workflows"
@@ -21,12 +20,9 @@
                 outlined
                 size="sm"
             >
-                <x-filament::badge
-                    size="sm"
-                    color="gold"
-                >
-                    @livewire('stars-git-hub')
-                </x-filament::badge>
+
+                @livewire('stars-git-hub')
+
                 <x-filament::icon-button
                     icon="heroicon-o-star"
                     color="gold"

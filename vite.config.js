@@ -8,7 +8,8 @@ export default defineConfig({
             input: [
                 'resources/css/app.css',
                 'resources/css/workflow-graph.css',
-                'resources/js/app.js'
+                'resources/js/app.js',
+                'resources/css/filament/admin/theme.css',
             ],
             refresh: true,
         }),

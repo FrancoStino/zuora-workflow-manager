@@ -40,6 +40,7 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('')
+            ->viteTheme('resources/css/filament/admin/theme.css')
             ->login()
             ->maxContentWidth(Width::Full)
             ->spa(hasPrefetching: true)
@@ -103,7 +104,7 @@ class AdminPanelProvider extends PanelProvider
             )
             ->renderHook(
                 PanelsRenderHook::FOOTER,
-                fn () => view('footer'))
+                fn () => view('filament.sections.footer'))
             ->plugins([
                 GlobalSearchModalPlugin::make()
                     ->highlightQueryStyles([
