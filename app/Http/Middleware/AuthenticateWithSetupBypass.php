@@ -22,34 +22,34 @@ class AuthenticateWithSetupBypass extends FilamentAuthenticate
         $isOAuthRoute = $request->is('oauth*');
         $setupCompleted = $this->isSetupCompleted();
 
-        // If setup not completed
+        // Handle setup not completed scenario
         if (! $setupCompleted) {
-            // Allow access to the setup page without authentication
-            if ($isSetupRoute) {
-                return $next($request);
-            }
-
-            // Redirect all other requests to the setup
-            return redirect('/setup');
+            return $this->handleSetupNotCompleted($request, $isSetupRoute, $next);
         }
 
-        // Setup completed
+        // Handle setup completed scenario
+        return $this->handleSetupCompleted($request, $isSetupRoute, $isLoginRoute, $isOAuthRoute, $next, $guards);
+    }
+
+    private function handleSetupNotCompleted($request, bool $isSetupRoute, Closure $next): Response
+    {
         if ($isSetupRoute) {
-            // Redirect based on authentication status
+            return $next($request);
+        }
+
+        return redirect('/setup');
+    }
+
+    private function handleSetupCompleted($request, bool $isSetupRoute, bool $isLoginRoute, bool $isOAuthRoute, Closure $next, array $guards): Response
+    {
+        if ($isSetupRoute) {
             return Auth::check() ? redirect('/') : redirect('/login');
         }
 
-        // Allow access to login without authentication
-        if ($isLoginRoute) {
+        if ($isLoginRoute || $isOAuthRoute) {
             return $next($request);
         }
 
-        // Allow access to OAuth routes without authentication
-        if ($isOAuthRoute) {
-            return $next($request);
-        }
-
-        // Setup completed: apply normal Filament authentication
         return parent::handle($request, $next, ...$guards);
     }
 

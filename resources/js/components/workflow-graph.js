@@ -583,7 +583,7 @@ function initWorkflowGraph(containerId, workflowData) {
             }, 150);
         };
 
-        window.addEventListener('resize', handleResize);
+        globalThis.addEventListener('resize', handleResize);
 
         // Observe container visibility changes (for tab switching)
         const observer = new IntersectionObserver((entries) => {
@@ -604,7 +604,7 @@ function initWorkflowGraph(containerId, workflowData) {
 
         // Cleanup on destroy
         const cleanup = () => {
-            window.removeEventListener('resize', handleResize);
+            globalThis.removeEventListener('resize', handleResize);
             observer.disconnect();
             clearTimeout(resizeTimeout);
             if (resizeRafId) {
@@ -879,4 +879,4 @@ function initWorkflowGraph(containerId, workflowData) {
 export {initWorkflowGraph};
 
 // Also make available globally for backward compatibility
-window.initWorkflowGraph = initWorkflowGraph;
+globalThis.initWorkflowGraph = initWorkflowGraph;

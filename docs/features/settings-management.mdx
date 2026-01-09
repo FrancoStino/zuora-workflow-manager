@@ -63,7 +63,7 @@ Only users with `super_admin` role can access Settings.
 
 | Property | Value |
 |-----------|--------|
-| **Field** | `site_name` |
+| **Field** | `siteName` |
 | **Type** | String |
 | **Required** | No |
 | **Default** | "Zuora Workflow Manager" |
@@ -78,7 +78,7 @@ Application name shown in:
 
 | Property | Value |
 |-----------|--------|
-| **Field** | `site_description` |
+| **Field** | `siteDescription` |
 | **Type** | String |
 | **Required** | No |
 | **Default** | Null |
@@ -95,7 +95,7 @@ Application description shown in:
 
 | Property | Value |
 |-----------|--------|
-| **Field** | `oauth_enabled` |
+| **Field** | `oauthEnabled` |
 | **Type** | Boolean |
 | **Required** | No |
 | **Default** | `false` |
@@ -114,7 +114,7 @@ Disable OAuth if you don't want to allow Google-based access.
 
 | Property | Value |
 |-----------|--------|
-| **Field** | `oauth_allowed_domains` |
+| **Field** | `oauthAllowedDomains` |
 | **Type** | Array |
 | **Required** | If OAuth enabled |
 | **Default** | `[]` (empty array) |
@@ -141,7 +141,7 @@ If OAuth enabled but Allowed Domains is empty, OAuth access might be restricted.
 
 | Property | Value |
 |-----------|--------|
-| **Field** | `oauth_google_client_id` |
+| **Field** | `oauthGoogleClientId` |
 | **Type** | String |
 | **Required** | If OAuth enabled |
 | **Default** | Null |
@@ -162,7 +162,7 @@ Get Client ID from Google Cloud Console → APIs & Services → Credentials.
 
 | Property | Value |
 |-----------|--------|
-| **Field** | `oauth_google_client_secret` |
+| **Field** | `oauthGoogleClientSecret` |
 | **Type** | String (encrypted) |
 | **Required** | If OAuth enabled |
 | **Default** | Null |
@@ -208,7 +208,7 @@ admin@example.com
 
 | Property | Value |
 |-----------|--------|
-| **Field** | `maintenance_mode` |
+| **Field** | `maintenanceMode` |
 | **Type** | Boolean |
 | **Required** | No |
 | **Default** | `false` |
@@ -247,11 +247,11 @@ Settings configured via UI have **priority over environment variables**:
 // In config/services.php
 'google' => [
     'client_id' => env('OAUTH_GOOGLE_CLIENT_ID')
-        ?? app(GeneralSettings::class)->oauth_google_client_id,
+        ?? app(GeneralSettings::class)->oauthGoogleClientId,
     'client_secret' => env('OAUTH_GOOGLE_CLIENT_SECRET')
-        ?? app(GeneralSettings::class)->oauth_google_client_secret,
+        ?? app(GeneralSettings::class)->oauthGoogleClientSecret,
     'enabled' => env('OAUTH_ENABLED')
-        ?? app(GeneralSettings::class)->oauth_enabled,
+        ?? app(GeneralSettings::class)->oauthEnabled,
 ],
 ```
 
@@ -324,12 +324,12 @@ The cache lasts until explicitly cleared or server is restarted.
 $settings = app(GeneralSettings::class);
 
 // Access properties
-$siteName = $settings->site_name;
-$oauthEnabled = $settings->oauth_enabled;
-$allowedDomains = $settings->oauth_allowed_domains;
+$siteName = $settings->siteName;
+$oauthEnabled = $settings->oauthEnabled;
+$allowedDomains = $settings->oauthAllowedDomains;
 
 // Modify settings
-$settings->site_name = 'New Name';
+$settings->siteName = 'New Name';
 $settings->save(); // Saves to database and clears cache
 ```
 
@@ -337,13 +337,13 @@ $settings->save(); // Saves to database and clears cache
 
 ```blade
 {{-- Direct access --}}
-{{ app(App\Settings\GeneralSettings::class)->site_name }}
+{{ app(App\\Settings\\GeneralSettings::class)->siteName }}
 
 {{-- In variable --}}
 @php
-    $settings = app(App\Settings\GeneralSettings::class);
+    $settings = app(App\\Settings\\GeneralSettings::class);
 @endphp
-{{ $settings->site_description }}
+{{ $settings->siteDescription }}
 ```
 
 ### In CLI/Tinker
@@ -352,11 +352,11 @@ $settings->save(); // Saves to database and clears cache
 lando artisan tinker
 
 >>> $settings = app(GeneralSettings::class)
->>> $settings->site_name
+>>> $settings->siteName
 "Zuora Workflow Manager"
->>> $settings->oauth_enabled
+>>> $settings->oauthEnabled
 true
->>> $settings->oauth_allowed_domains
+>>> $settings->oauthAllowedDomains
 [
   "example.com",
   "company.org"
@@ -390,9 +390,9 @@ Default values are defined in `GeneralSettings.php`:
 ```php
 class GeneralSettings extends Settings
 {
-    public string $site_name = 'Zuora Workflow Manager';
-    public bool $oauth_enabled = false;
-    public array $oauth_allowed_domains = [];
+    public string $siteName = 'Zuora Workflow Manager';
+    public bool $oauthEnabled = false;
+    public array $oauthAllowedDomains = [];
     // ...
 }
 ```
@@ -543,25 +543,25 @@ See [OAuth Management](/features/oauth-management) for detailed troubleshooting.
 ```php
 class GeneralSettings extends Settings
 {
-    public string $site_name;
-    public string|null $site_description;
-    public bool $oauth_enabled;
-    public array $oauth_allowed_domains;
-    public string|null $oauth_google_client_id;
-    public string|null $oauth_google_client_secret;
-    public string|null $admin_email;
-    public bool $maintenance_mode;
+    public string $siteName;
+    public string|null $siteDescription;
+    public bool $oauthEnabled;
+    public array $oauthAllowedDomains;
+    public string|null $oauthGoogleClientId;
+    public string|null $oauthGoogleClientSecret;
+    public string|null $adminEmail;
+    public bool $maintenanceMode;
 
     // Helper methods can be added
     public function isOAuthEnabled(): bool
     {
-        return $this->oauth_enabled;
+        return $this->oauthEnabled;
     }
 
     public function isEmailDomainAllowed(string $email): bool
     {
         $domain = Str::after($email, '@');
-        return in_array($domain, $this->oauth_allowed_domains);
+        return in_array($domain, $this->oauthAllowedDomains);
     }
 }
 ```
@@ -573,8 +573,8 @@ class GeneralSettings extends Settings
 $settings = app(GeneralSettings::class);
 
 // Facade pattern (if defined)
-use App\Facades\Settings;
-$siteName = Settings::get('site_name');
+use App\\Facades\\Settings;
+$siteName = Settings::get('siteName');
 
 // Dependency Injection (in service)
 class MyService
@@ -585,7 +585,7 @@ class MyService
 
     public function doSomething(): void
     {
-        $enabled = $this->settings->oauth_enabled;
+        $enabled = $this->settings->oauthEnabled;
     }
 }
 ```

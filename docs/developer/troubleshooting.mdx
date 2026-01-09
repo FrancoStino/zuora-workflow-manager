@@ -353,8 +353,8 @@ lando artisan make:filament-user
 ```bash
 # Verify configuration
 lando artisan tinker
->>> app(GeneralSettings::class)->oauth_enabled
->>> app(GeneralSettings::class)->oauth_google_client_id
+>>> app(GeneralSettings::class)->oauthEnabled
+>>> app(GeneralSettings::class)->oauthGoogleClientId
 ```
 
 **Solutions**:

@@ -20,89 +20,115 @@ class WorkflowSyncService
      */
     public function syncCustomerWorkflows(Customer $customer): array
     {
-        $stats = [
+        $stats = $this->initializeStats();
+
+        if (! $this->validateCustomerCredentials($customer)) {
+            return $this->handleInvalidCredentials($customer, $stats);
+        }
+
+        try {
+            $zuoraIds = $this->fetchAndSyncAllWorkflows($customer, $stats);
+            $stats['deleted'] = $this->deleteStaleWorkflows($customer, $zuoraIds);
+
+            $this->logSyncSuccess($customer, $stats);
+        } catch (Exception $e) {
+            $this->handleSyncError($customer, $stats, $e);
+        }
+
+        return $stats;
+    }
+
+    private function initializeStats(): array
+    {
+        return [
             'created' => 0,
             'updated' => 0,
             'deleted' => 0,
             'total' => 0,
             'errors' => [],
         ];
+    }
 
-        // Validate credentials before attempting sync
-        if (! $this->validateCustomerCredentials($customer)) {
-            $errorMsg = 'Customer has invalid or missing Zuora credentials';
-            $stats['errors'][] = $errorMsg;
+    private function handleInvalidCredentials(Customer $customer, array &$stats): array
+    {
+        $errorMsg = 'Customer has invalid or missing Zuora credentials';
+        $stats['errors'][] = $errorMsg;
 
-            Log::error('Workflow sync aborted: Invalid credentials', [
-                'customer_id' => $customer->id,
-                'customer_name' => $customer->name,
-                'has_client_id' => ! empty($customer->zuora_client_id),
-                'has_client_secret' => ! empty($customer->zuora_client_secret),
-                'has_base_url' => ! empty($customer->zuora_base_url),
-                'base_url_valid' => filter_var($customer->zuora_base_url, FILTER_VALIDATE_URL) !== false,
-            ]);
-
-            return $stats;
-        }
-
-        try {
-            $zuoraIds = [];
-            $page = 1;
-            $hasMore = true;
-
-            while ($hasMore) {
-                $data = $this->zuoraService->listWorkflows(
-                    $customer->zuora_client_id,
-                    $customer->zuora_client_secret,
-                    $customer->zuora_base_url,
-                    $page,
-                    self::PAGE_SIZE
-                );
-
-                $workflows = $data['data'] ?? [];
-                if (empty($workflows)) {
-                    break;
-                }
-
-                // Salva/aggiorna ogni workflow e raccogli gli ID Zuora
-                foreach ($workflows as $workflowData) {
-                    $zuoraId = $workflowData['id'] ?? null;
-                    if (! $zuoraId) {
-                        continue;
-                    }
-
-                    $zuoraIds[] = $zuoraId;
-                    $result = $this->syncWorkflowRecord($customer, $workflowData);
-
-                    $stats['created'] += $result['created'] ? 1 : 0;
-                    $stats['updated'] += $result['updated'] ? 1 : 0;
-                }
-
-                $stats['total'] += count($workflows);
-
-                // Verifica se ci sono altre pagine
-                $pagination = $data['pagination'] ?? [];
-                $hasMore = isset($pagination['next_page']);
-                $page++;
-            }
-
-            // Elimina i workflow che non sono più in Zuora
-            $stats['deleted'] = $this->deleteStaleWorkflows($customer, $zuoraIds);
-
-            Log::info('Workflow sync completed', [
-                'customer_id' => $customer->id,
-                'stats' => $stats,
-            ]);
-
-        } catch (Exception $e) {
-            $stats['errors'][] = $e->getMessage();
-            Log::error('Workflow sync failed', [
-                'customer_id' => $customer->id,
-                'error' => $e->getMessage(),
-            ]);
-        }
+        Log::error('Workflow sync aborted: Invalid credentials', [
+            'customer_id' => $customer->id,
+            'customer_name' => $customer->name,
+            'has_client_id' => ! empty($customer->zuora_client_id),
+            'has_client_secret' => ! empty($customer->zuora_client_secret),
+            'has_base_url' => ! empty($customer->zuora_base_url),
+            'base_url_valid' => filter_var($customer->zuora_base_url, FILTER_VALIDATE_URL) !== false,
+        ]);
 
         return $stats;
+    }
+
+    private function fetchAndSyncAllWorkflows(Customer $customer, array &$stats): array
+    {
+        $zuoraIds = [];
+        $page = 1;
+        $hasMore = true;
+
+        while ($hasMore) {
+            $data = $this->zuoraService->listWorkflows(
+                $customer->zuora_client_id,
+                $customer->zuora_client_secret,
+                $customer->zuora_base_url,
+                $page,
+                self::PAGE_SIZE
+            );
+
+            $workflows = $data['data'] ?? [];
+            if (empty($workflows)) {
+                break;
+            }
+
+            $this->processWorkflowBatch($customer, $workflows, $zuoraIds, $stats);
+
+            $pagination = $data['pagination'] ?? [];
+            $hasMore = isset($pagination['next_page']);
+            $page++;
+        }
+
+        return $zuoraIds;
+    }
+
+    private function processWorkflowBatch(Customer $customer, array $workflows, array &$zuoraIds, array &$stats): void
+    {
+        foreach ($workflows as $workflowData) {
+            $zuoraId = $workflowData['id'] ?? null;
+            if (! $zuoraId) {
+                continue;
+            }
+
+            $zuoraIds[] = $zuoraId;
+            $result = $this->syncWorkflowRecord($customer, $workflowData);
+
+            $stats['created'] += $result['created'] ? 1 : 0;
+            $stats['updated'] += $result['updated'] ? 1 : 0;
+        }
+
+        $stats['total'] += count($workflows);
+    }
+
+    private function logSyncSuccess(Customer $customer, array $stats): void
+    {
+        Log::info('Workflow sync completed', [
+            'customer_id' => $customer->id,
+            'stats' => $stats,
+        ]);
+    }
+
+    private function handleSyncError(Customer $customer, array &$stats, Exception $e): void
+    {
+        $stats['errors'][] = $e->getMessage();
+        Log::error('Workflow sync failed', [
+            'customer_id' => $customer->id,
+            'error' => $e->getMessage(),
+        ]);
     }
 
     /**

@@ -10,6 +10,8 @@ use Filament\Support\Icons\Heroicon;
 
 trait HasTaskInfolist
 {
+    private const DATETIME_FORMAT = 'd/m/Y H:i';
+
     protected function getTaskInfolistSchema(): array
     {
         return [
@@ -31,7 +33,8 @@ trait HasTaskInfolist
                                 ->label('Action Type')
                                 ->icon(Heroicon::OutlinedBolt)
                                 ->badge()
-                                ->color(fn (string $state): string => match ($state) {
+                                ->color(fn (string $state,
+                                ): string => match ($state) {
                                     'Email', 'Query' => 'info',
                                     'Export' => 'success',
                                     'Iterate', 'WriteOff' => 'warning',
@@ -44,7 +47,8 @@ trait HasTaskInfolist
                                 ->label('Priority')
                                 ->icon(Heroicon::OutlinedFlag)
                                 ->badge()
-                                ->color(fn (string $state): string => match ($state) {
+                                ->color(fn (string $state,
+                                ): string => match ($state) {
                                     'High' => 'danger',
                                     'Medium' => 'warning',
                                     'Low' => 'success',
@@ -83,7 +87,8 @@ trait HasTaskInfolist
                                 ->label('State')
                                 ->icon(Heroicon::OutlinedSignal)
                                 ->badge()
-                                ->color(fn (?string $state): string => match ($state) {
+                                ->color(fn (?string $state,
+                                ): string => match ($state) {
                                     'completed' => 'success',
                                     'in_progress' => 'warning',
                                     default => 'gray',
@@ -128,7 +133,8 @@ trait HasTaskInfolist
                 ->icon(Heroicon::OutlinedTag)
                 ->collapsible()
                 ->collapsed()
-                ->visible(fn ($record) => ! empty($record->tags) || ! empty($record->assignment))
+                ->visible(fn ($record) => ! empty($record->tags)
+                    || ! empty($record->assignment))
                 ->schema([
                     TextEntry::make('tags')
                         ->label('Tags')
@@ -154,24 +160,24 @@ trait HasTaskInfolist
                             TextEntry::make('created_on')
                                 ->label('Created On')
                                 ->icon(Heroicon::OutlinedCalendar)
-                                ->dateTime('d/m/Y H:i')
+                                ->dateTime(self::DATETIME_FORMAT)
                                 ->placeholder('N/A'),
 
                             TextEntry::make('updated_on')
                                 ->label('Updated On')
                                 ->icon(Heroicon::OutlinedCalendar)
-                                ->dateTime('d/m/Y H:i')
+                                ->dateTime(self::DATETIME_FORMAT)
                                 ->placeholder('N/A'),
 
                             TextEntry::make('created_at')
                                 ->label('Created in DB')
                                 ->icon(Heroicon::OutlinedCalendarDays)
-                                ->dateTime('d/m/Y H:i'),
+                                ->dateTime(self::DATETIME_FORMAT),
 
                             TextEntry::make('updated_at')
                                 ->label('Updated in DB')
                                 ->icon(Heroicon::OutlinedCalendarDays)
-                                ->dateTime('d/m/Y H:i'),
+                                ->dateTime(self::DATETIME_FORMAT),
                         ]),
                 ]),
         ];

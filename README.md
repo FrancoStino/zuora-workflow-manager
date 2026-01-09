@@ -16,6 +16,18 @@ A powerful web application for synchronizing, viewing, and managing Zuora workfl
 dashboard](https://filamentphp.com/). Built with modern Laravel architecture featuring automated sync jobs, real-time
 dashboards, and comprehensive workflow management.
 
+## Screenshots
+
+<div align="center">
+  <img src="docs/images/login-screen.png" alt="Login Screen" width="45%">
+  <img src="docs/images/dashboard.png" alt="Dashboard" width="45%">
+</div>
+
+<div align="center">
+  <img src="docs/images/workflows-list.jpg" alt="Workflows List" width="45%">
+  <img src="docs/images/workflow-detail.jpg" alt="Workflow Detail" width="45%">
+</div>
+
 ## Table of Contents
 
 - [Features](#features)
@@ -456,7 +468,7 @@ CREATE TABLE settings
 - **Application Configuration**: Admin default email
 - **Maintenance**: Maintenance mode toggle
 
-**Security Note:** Sensitive fields (e.g., `oauth_google_client_secret`) are encrypted using Laravel's Crypt via custom
+**Security Note:** Sensitive fields (e.g., `oauthGoogleClientSecret`) are encrypted using Laravel's Crypt via custom
 `EncryptedCast`.
 
 ### Tasks Table

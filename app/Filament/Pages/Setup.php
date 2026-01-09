@@ -93,7 +93,7 @@ class Setup extends Page implements HasForms
                                 ->label('Surname')
                                 ->required()
                                 ->maxLength(255),
-                            TextInput::make('admin_default_email')
+                            TextInput::make('adminDefaultEmail')
                                 ->columnSpanFull()
                                 ->label('Admin Default Email')
                                 ->email()
@@ -157,7 +157,7 @@ class Setup extends Page implements HasForms
      */
     private function createAdminUser(array $data): User
     {
-        $user = User::where('email', $data['admin_default_email'])->first();
+        $user = User::where('email', $data['adminDefaultEmail'])->first();
 
         if ($user) {
             $user->update([
@@ -175,7 +175,7 @@ class Setup extends Page implements HasForms
         return User::create([
             'name' => $data['name'],
             'surname' => $data['surname'],
-            'email' => $data['admin_default_email'],
+            'email' => $data['adminDefaultEmail'],
             'password' => ! empty($data['admin_password']) ? bcrypt($data['admin_password']) : null,
         ]);
     }
@@ -263,17 +263,17 @@ class Setup extends Page implements HasForms
      */
     private function saveConfiguration(array $data, GeneralSettings $settings): void
     {
-        $settings->site_name = $data['site_name'] ?? $settings->site_name;
-        $settings->site_description = $data['site_description'] ?? $settings->site_description;
+        $settings->siteName = $data['siteName'] ?? $settings->siteName;
+        $settings->siteDescription = $data['siteDescription'] ?? $settings->siteDescription;
 
-        $settings->maintenance_mode = $data['maintenance_mode'] ?? $settings->maintenance_mode;
+        $settings->maintenanceMode = $data['maintenanceMode'] ?? $settings->maintenanceMode;
 
-        $settings->oauth_enabled = $data['oauth_enabled'] ?? $settings->oauth_enabled;
+        $settings->oauthEnabled = $data['oauthEnabled'] ?? $settings->oauthEnabled;
 
-        if ($settings->oauth_enabled) {
-            $settings->oauth_google_client_id = $data['oauth_google_client_id'] ?? $settings->oauth_google_client_id;
-            $settings->oauth_google_client_secret = $data['oauth_google_client_secret'] ?? $settings->oauth_google_client_secret;
-            $settings->oauth_allowed_domains = $data['oauth_allowed_domains'] ?? $settings->oauth_allowed_domains;
+        if ($settings->oauthEnabled) {
+            $settings->oauthGoogleClientId = $data['oauthGoogleClientId'] ?? $settings->oauthGoogleClientId;
+            $settings->oauthGoogleClientSecret = $data['oauthGoogleClientSecret'] ?? $settings->oauthGoogleClientSecret;
+            $settings->oauthAllowedDomains = $data['oauthAllowedDomains'] ?? $settings->oauthAllowedDomains;
         }
         $settings->save();
     }

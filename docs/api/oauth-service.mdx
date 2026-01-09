@@ -25,7 +25,7 @@ flowchart TD
     A[UI Settings<br/>GeneralSettings] -->|Highest priority| B[OAuth Configuration]
     C[Environment Variables<br/>.env] -->|Fallback| B
     D[Default Values] -->|Final fallback| B
-    
+
     style A fill:#4caf50,stroke:#333,stroke-width:2px
     style C fill:#ff9800,stroke:#333,stroke-width:2px
     style D fill:#9e9e9e,stroke:#333,stroke-width:2px
@@ -55,7 +55,7 @@ public static function getAllowedDomains(): array
 1. Attempts to retrieve from `GeneralSettings`:
    ```php
    $settings = app(GeneralSettings::class);
-   $domains = $settings->oauth_allowed_domains ?? [];
+   $domains = $settings->oauthAllowedDomains ?? [];
    ```
 
 2. If empty or error, fallback to config:
@@ -180,10 +180,10 @@ Settings configured via UI have the highest priority.
 ```php
 class GeneralSettings extends Settings
 {
-    public bool $oauth_enabled = false;
-    public array $oauth_allowed_domains = [];
-    public string|null $oauth_google_client_id = null;
-    public string|null $oauth_google_client_secret = null;
+    public bool $oauthEnabled = false;
+    public array $oauthAllowedDomains = [];
+    public string|null $oauthGoogleClientId = null;
+    public string|null $oauthGoogleClientSecret = null;
 }
 ```
 
@@ -192,15 +192,15 @@ class GeneralSettings extends Settings
 ```php
 'google' => [
     'client_id' => env('OAUTH_GOOGLE_CLIENT_ID')
-        ?? app(GeneralSettings::class)->oauth_google_client_id ?? null,
+        ?? app(GeneralSettings::class)->oauthGoogleClientId ?? null,
     'client_secret' => env('OAUTH_GOOGLE_CLIENT_SECRET')
-        ?? app(GeneralSettings::class)->oauth_google_client_secret ?? null,
+        ?? app(GeneralSettings::class)->oauthGoogleClientSecret ?? null,
     'redirect' => env('OAUTH_GOOGLE_REDIRECT')
         ?? url('/oauth/google/callback'),
     'enabled' => env('OAUTH_ENABLED')
-        ?? app(GeneralSettings::class)->oauth_enabled ?? false,
+        ?? app(GeneralSettings::class)->oauthEnabled ?? false,
     'allowed_domains' => env('OAUTH_ALLOWED_DOMAINS')
-        ?? app(GeneralSettings::class)->oauth_allowed_domains ?? [],
+        ?? app(GeneralSettings::class)->oauthAllowedDomains ?? [],
 ],
 ```
 
@@ -346,7 +346,7 @@ public function test_get_allowed_domains_from_settings()
 {
     // Arrange
     $settings = $this->mock(GeneralSettings::class);
-    $settings->oauth_allowed_domains = ['example.com'];
+    $settings->oauthAllowedDomains = ['example.com'];
     app()->instance(GeneralSettings::class, $settings);
 
     // Act
@@ -360,7 +360,7 @@ public function test_is_enabled_returns_true_when_enabled()
 {
     // Arrange
     $settings = $this->mock(GeneralSettings::class);
-    $settings->oauth_enabled = true;
+    $settings->oauthEnabled = true;
     app()->instance(GeneralSettings::class, $settings);
 
     // Act
@@ -392,9 +392,9 @@ public function test_oauth_login_enabled()
 {
     // Arrange
     $settings = app(GeneralSettings::class);
-    $settings->oauth_enabled = true;
-    $settings->oauth_google_client_id = 'test_client_id';
-    $settings->oauth_google_client_secret = 'test_secret';
+    $settings->oauthEnabled = true;
+    $settings->oauthGoogleClientId = 'test_client_id';
+    $settings->oauthGoogleClientSecret = 'test_secret';
     $settings->save();
 
     // Act
@@ -409,7 +409,7 @@ public function test_oauth_login_disabled()
 {
     // Arrange
     $settings = app(GeneralSettings::class);
-    $settings->oauth_enabled = false;
+    $settings->oauthEnabled = false;
     $settings->save();
 
     // Act
@@ -507,7 +507,7 @@ try {
 3. **Settings not saved correctly**:
    ```bash
    lando artisan tinker
-   >>> app(GeneralSettings::class)->oauth_enabled
+   >>> app(GeneralSettings::class)->oauthEnabled
    ```
 
 ### Domains Not Allowed
@@ -517,7 +517,7 @@ try {
 **Possible causes**:
 
 1. **Settings not saved**:
-   - Check `oauth_allowed_domains` in settings
+   - Check `oauthAllowedDomains` in settings
 
 2. **Misconfigured wildcards**:
    - `*.example.com` → OK

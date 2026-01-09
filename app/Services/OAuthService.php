@@ -15,12 +15,13 @@ class OAuthService
     {
         try {
             $settings = app(GeneralSettings::class);
-            $domains = $settings->oauth_allowed_domains ?? [];
+            $domains = $settings->oauthAllowedDomains ?? [];
 
             if (! empty($domains)) {
                 return $domains;
             }
-        } catch (Exception $e) {
+        } catch (Exception) {
+            // Settings not available, fallback to config
         }
 
         return config('services.oauth.allowed_domains', []);
@@ -35,11 +36,11 @@ class OAuthService
             $settings = app(GeneralSettings::class);
 
             return [
-                'client_id' => ! empty($settings->oauth_google_client_id) ? $settings->oauth_google_client_id : config('services.google.client_id'),
-                'client_secret' => ! empty($settings->oauth_google_client_secret) ? $settings->oauth_google_client_secret : config('services.google.client_secret'),
+                'client_id' => ! empty($settings->oauthGoogleClientId) ? $settings->oauthGoogleClientId : config('services.google.client_id'),
+                'client_secret' => ! empty($settings->oauthGoogleClientSecret) ? $settings->oauthGoogleClientSecret : config('services.google.client_secret'),
                 'redirect' => url('/oauth/callback/google'), // Always dynamic based on current domain
-                'enabled' => $settings->oauth_enabled ?? config('services.google.enabled', false),
-                'allowed_domains' => $settings->oauth_allowed_domains ?? config('services.oauth.allowed_domains', []),
+                'enabled' => $settings->oauthEnabled ?? config('services.google.enabled', false),
+                'allowed_domains' => $settings->oauthAllowedDomains ?? config('services.oauth.allowed_domains', []),
             ];
         } catch (Exception $e) {
             // Fallback to config only
@@ -55,7 +56,7 @@ class OAuthService
         try {
             $settings = app(GeneralSettings::class);
 
-            return $settings->oauth_enabled ?? config('services.google.enabled', false);
+            return $settings->oauthEnabled ?? config('services.google.enabled', false);
         } catch (Exception $e) {
             return config('services.google.enabled', false);
         }

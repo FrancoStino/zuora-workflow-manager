@@ -8,21 +8,21 @@ use Spatie\LaravelSettings\Settings;
 class GeneralSettings extends Settings
 {
     // Site Information
-    public string $site_name = 'Zuora Workflow';
+    public string $siteName = 'Zuora Workflow';
 
-    public string $site_description = 'Workflow management for Zuora integration';
+    public string $siteDescription = 'Workflow management for Zuora integration';
 
     // Maintenance
-    public bool $maintenance_mode = false;
+    public bool $maintenanceMode = false;
 
     // OAuth Configuration preset if empty
-    public array $oauth_allowed_domains = [];
+    public array $oauthAllowedDomains = [];
 
-    public bool $oauth_enabled = false;
+    public bool $oauthEnabled = false;
 
-    public string $oauth_google_client_id = '';
+    public string $oauthGoogleClientId = '';
 
-    public string $oauth_google_client_secret = '';
+    public string $oauthGoogleClientSecret = '';
 
     public static function group(): string
     {
@@ -32,7 +32,7 @@ class GeneralSettings extends Settings
     public static function casts(): array
     {
         return [
-            'oauth_google_client_secret' => EncryptedCastGoogleClientSecret::class,
+            'oauthGoogleClientSecret' => EncryptedCastGoogleClientSecret::class,
         ];
     }
 }

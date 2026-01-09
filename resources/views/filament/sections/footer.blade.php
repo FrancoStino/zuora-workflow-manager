@@ -1,5 +1,5 @@
 <footer>
-    <div class="flex flex-col lg:flex-row items-center justify-between gap-4 p-5">
+    <div class="flex flex-col md:flex-row items-center justify-between gap-4 p-5">
         {{-- Copyright notice --}}
         <div class="text-sm">
             © {{ date('Y') }}

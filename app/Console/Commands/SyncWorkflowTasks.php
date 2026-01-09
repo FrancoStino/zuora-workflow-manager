@@ -77,25 +77,26 @@ class SyncWorkflowTasks extends Command
      */
     private function getWorkflows()
     {
-        if ($workflowId = $this->option('workflow-id')) {
-            return Workflow::where('id', $workflowId)
-                ->whereNotNull('json_export')
-                ->get();
+        $workflowId = $this->option('workflow-id');
+        $allOption = $this->option('all');
+
+        if ($workflowId) {
+            return $this->getWorkflowById($workflowId);
         }
 
-        if ($this->option('all')) {
+        if ($allOption || $this->confirm('Do you want to sync all workflows?', true)) {
             return Workflow::whereNotNull('json_export')->get();
         }
 
-        // Interactive mode
-        if (! $this->confirm('Do you want to sync all workflows?', true)) {
-            $workflowId = $this->ask('Enter the ID of the workflow to sync');
+        $workflowId = $this->ask('Enter the ID of the workflow to sync');
 
-            return Workflow::where('id', $workflowId)
-                ->whereNotNull('json_export')
-                ->get();
-        }
+        return $this->getWorkflowById($workflowId);
+    }
 
-        return Workflow::whereNotNull('json_export')->get();
+    private function getWorkflowById(string|int $workflowId)
+    {
+        return Workflow::where('id', $workflowId)
+            ->whereNotNull('json_export')
+            ->get();
     }
 }

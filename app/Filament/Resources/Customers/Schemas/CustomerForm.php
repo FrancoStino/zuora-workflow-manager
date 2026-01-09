@@ -28,7 +28,13 @@ class CustomerForm
                     ->password()
                     ->revealable()
                     ->maxLength(255)
-                    ->dehydrateStateUsing(fn ($state, $record) => $state ?: ($record ? $record->zuora_client_secret : null))
+                    ->dehydrateStateUsing(function ($state, $record) {
+                        if ($state) {
+                            return $state;
+                        }
+
+                        return $record?->zuora_client_secret;
+                    })
                     ->placeholder(fn ($record) => $record ? '***** (già impostato)' : null),
 
                 Select::make('zuora_base_url')

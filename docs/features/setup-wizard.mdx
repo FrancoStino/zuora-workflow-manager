@@ -156,30 +156,30 @@ flowchart TD
     Start[Complete Setup] --> S1[1. Create/update User admin]
     S1 --> S1A[If email does not exist:<br/>create new]
     S1 --> S1B[If email exists:<br/>update name, surname, password]
-    
+
     S1 --> S2[2. Generate roles and permissions<br/>Filament Shield]
     S2 --> S2A[If roles do not exist:<br/>shield:generate]
     S2 --> S2B[Generate policies and permissions]
     S2 --> S2C[Assign super_admin to user]
-    
+
     S2 --> S3[3. Create workflow_user role<br/>if does not exist]
     S3 --> S3A[Create role]
     S3 --> S3B[Assign permissions:<br/>ViewAny:Workflow, View:Workflow<br/>ViewAny:Task, View:Task]
-    
+
     S3 --> S4[4. Save configuration in Settings]
     S4 --> S4A[Site name and description]
     S4 --> S4B[OAuth configuration if enabled]
     S4 --> S4C[Admin email]
     S4 --> S4D[Maintenance mode]
-    
+
     S4 --> S5[5. Mark setup as completed]
     S5 --> S5A[Update setup_completed table]
-    
+
     S5 --> S6[6. Automatic login]
     S6 --> S6A[Auth::login user]
-    
+
     S6 --> S7[7. Redirect to dashboard]
-    
+
     style Start fill:#4caf50,stroke:#2e7d32,stroke-width:3px
     style S7 fill:#4caf50,stroke:#2e7d32,stroke-width:3px
 ```
@@ -437,7 +437,7 @@ class Setup extends Page implements HasForms
                     ->schema([
                         TextInput::make('name'),
                         TextInput::make('surname'),
-                        TextInput::make('admin_default_email'),
+                        TextInput::make('adminDefaultEmail'),
                         TextInput::make('admin_password'),
                     ]),
             ])

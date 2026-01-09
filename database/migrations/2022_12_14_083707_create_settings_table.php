@@ -28,7 +28,7 @@ return new class extends Migration
         DB::table('settings')->insert([
             [
                 'group' => 'general',
-                'name' => 'site_name',
+                'name' => 'siteName',
                 'locked' => false,
                 'payload' => json_encode('Zuora Workflow'),
                 'created_at' => now(),
@@ -36,7 +36,7 @@ return new class extends Migration
             ],
             [
                 'group' => 'general',
-                'name' => 'site_description',
+                'name' => 'siteDescription',
                 'locked' => false,
                 'payload' => json_encode('Workflow management for Zuora integration'),
                 'created_at' => now(),
@@ -44,7 +44,7 @@ return new class extends Migration
             ],
             [
                 'group' => 'general',
-                'name' => 'maintenance_mode',
+                'name' => 'maintenanceMode',
                 'locked' => false,
                 'payload' => json_encode(false),
                 'created_at' => now(),
@@ -52,7 +52,7 @@ return new class extends Migration
             ],
             [
                 'group' => 'general',
-                'name' => 'oauth_allowed_domains',
+                'name' => 'oauthAllowedDomains',
                 'locked' => false,
                 'payload' => json_encode([]),
                 'created_at' => now(),
@@ -60,7 +60,7 @@ return new class extends Migration
             ],
             [
                 'group' => 'general',
-                'name' => 'oauth_enabled',
+                'name' => 'oauthEnabled',
                 'locked' => false,
                 'payload' => json_encode(false),
                 'created_at' => now(),
@@ -68,7 +68,7 @@ return new class extends Migration
             ],
             [
                 'group' => 'general',
-                'name' => 'oauth_google_client_id',
+                'name' => 'oauthGoogleClientId',
                 'locked' => false,
                 'payload' => json_encode(''),
                 'created_at' => now(),
@@ -76,7 +76,7 @@ return new class extends Migration
             ],
             [
                 'group' => 'general',
-                'name' => 'oauth_google_client_secret',
+                'name' => 'oauthGoogleClientSecret',
                 'locked' => false,
                 'payload' => json_encode(''),
                 'created_at' => now(),
@@ -84,7 +84,7 @@ return new class extends Migration
             ],
             [
                 'group' => 'general',
-                'name' => 'admin_default_email',
+                'name' => 'adminDefaultEmail',
                 'locked' => false,
                 'payload' => json_encode('admin@example.com'),
                 'created_at' => now(),
@@ -92,10 +92,10 @@ return new class extends Migration
             ],
         ]);
 
-        // Fix oauth_allowed_domains format if it exists and is corrupted
+        // Fix oauthAllowedDomains format if it exists and is corrupted
         $setting = DB::table('settings')
             ->where('group', 'general')
-            ->where('name', 'oauth_allowed_domains')
+            ->where('name', 'oauthAllowedDomains')
             ->first();
 
         if ($setting) {
@@ -114,7 +114,7 @@ return new class extends Migration
 
                 DB::table('settings')
                     ->where('group', 'general')
-                    ->where('name', 'oauth_allowed_domains')
+                    ->where('name', 'oauthAllowedDomains')
                     ->update([
                         'payload' => json_encode($newPayload),
                         'updated_at' => now(),

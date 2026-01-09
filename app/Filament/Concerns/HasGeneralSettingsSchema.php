@@ -33,13 +33,13 @@ trait HasGeneralSettingsSchema
     public function getOAuthFields(): array
     {
         return [
-            Toggle::make('oauth_enabled')
+            Toggle::make('oauthEnabled')
                 ->label('Enable OAuth')
                 ->helperText('Enable/disable OAuth authentication')
                 ->columnSpanFull()
                 ->live(),
 
-            TagsInput::make('oauth_allowed_domains')
+            TagsInput::make('oauthAllowedDomains')
                 ->columnSpanFull()
                 ->label('Allowed Email Domains')
                 ->placeholder('Add a domain...')
@@ -48,28 +48,32 @@ trait HasGeneralSettingsSchema
                 ->reorderable()
                 // Ensure it's always an array
                 ->dehydrateStateUsing(fn ($state) => is_array($state) ? $state : [])
-                ->visible(fn (Get $get) => $get('oauth_enabled')),
+                ->visible(fn (Get $get) => $get('oauthEnabled')),
 
-            TextInput::make('oauth_google_client_id')
+            TextInput::make('oauthGoogleClientId')
                 ->label('Google Client ID')
                 ->required()
                 ->placeholder('Enter Google OAuth Client ID or set GOOGLE_CLIENT_ID in .env')
                 ->helperText('Get this from Google Cloud Console. Leave empty to use .env GOOGLE_CLIENT_ID')
                 // Convert null to empty string on save
                 ->dehydrateStateUsing(fn ($state) => $state ?? '')
-                ->visible(fn (Get $get) => $get('oauth_enabled')),
+                ->visible(fn (Get $get) => $get('oauthEnabled')),
 
-            TextInput::make('oauth_google_client_secret')
+            TextInput::make('oauthGoogleClientSecret')
                 ->label('Google Client Secret')
                 ->required()
                 ->password()
                 ->revealable()
-                ->dehydrateStateUsing(fn ($state, $record) => $state ?: ($record ? $record->oauth_google_client_secret : null))
+                ->dehydrateStateUsing(function ($state, $record) {
+                    if ($state) {
+                        return $state;
+                    }
+
+                    return $record?->oauthGoogleClientSecret;
+                })
                 ->placeholder(fn ($record) => $record ? '***** (già impostato)' : null)
                 ->helperText('Get this from Google Cloud Console. Leave empty to use .env GOOGLE_CLIENT_SECRET')
-                // Convert null to empty string on save
-                ->dehydrateStateUsing(fn ($state) => $state ?? '')
-                ->visible(fn (Get $get) => $get('oauth_enabled')),
+                ->visible(fn (Get $get) => $get('oauthEnabled')),
         ];
     }
 
@@ -85,7 +89,7 @@ trait HasGeneralSettingsSchema
     public function getMaintenanceFields(): array
     {
         return [
-            Toggle::make('maintenance_mode')
+            Toggle::make('maintenanceMode')
                 ->columnSpanFull()
                 ->label('Maintenance Mode')
                 ->helperText('When enabled, only administrators can access to the site')
@@ -106,13 +110,13 @@ trait HasGeneralSettingsSchema
     public function getSiteInformationFields(): array
     {
         return [
-            TextInput::make('site_name')
+            TextInput::make('siteName')
                 ->label('Site Name')
                 ->required()
                 ->maxLength(255)
                 ->helperText('The name of the application shown in the interface'),
 
-            Textarea::make('site_description')
+            Textarea::make('siteDescription')
                 ->label('Site Description')
                 ->required()
                 ->rows(3)
