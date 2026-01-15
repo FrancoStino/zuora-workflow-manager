@@ -43,6 +43,43 @@ class ZuoraService
         return $data;
     }
 
+    /**
+     * Validate Zuora credentials by attempting authentication.
+     * Does NOT use cache - always makes a fresh request.
+     *
+     * @return array{valid: bool, error: string|null}
+     */
+    public function validateCredentials(string $clientId, string $clientSecret, string $baseUrl): array
+    {
+        try {
+            $response = Http::asForm()->post($baseUrl.'/oauth/token', [
+                'grant_type' => 'client_credentials',
+                'client_id' => $clientId,
+                'client_secret' => $clientSecret,
+            ]);
+
+            if ($response->failed()) {
+                $errorJson = $response->json() ?? [];
+                $errorMessage = $this->extractErrorMessage($errorJson, $response->body());
+
+                return [
+                    'valid' => false,
+                    'error' => $errorMessage,
+                ];
+            }
+
+            return [
+                'valid' => true,
+                'error' => null,
+            ];
+        } catch (\Exception $e) {
+            return [
+                'valid' => false,
+                'error' => $e->getMessage(),
+            ];
+        }
+    }
+
     public function getAccessToken(?string $clientId = null, ?string $clientSecret = null, ?string $baseUrl = null): string
     {
         if (! $clientId || ! $clientSecret) {
