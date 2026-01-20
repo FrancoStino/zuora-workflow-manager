@@ -74,20 +74,20 @@
         },
         {
             "name": "bezhansalleh/filament-plugin-essentials",
-            "version": "1.0.1",
+            "version": "1.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/bezhanSalleh/filament-plugin-essentials.git",
-                "reference": "c6a9df98b798edbb1857b899169dc8125a59b4e1"
+                "reference": "3bfdb276a8993ccd5acd9d6b43fd4763cf221d3a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/bezhanSalleh/filament-plugin-essentials/zipball/c6a9df98b798edbb1857b899169dc8125a59b4e1",
-                "reference": "c6a9df98b798edbb1857b899169dc8125a59b4e1",
+                "url": "https://api.github.com/repos/bezhanSalleh/filament-plugin-essentials/zipball/3bfdb276a8993ccd5acd9d6b43fd4763cf221d3a",
+                "reference": "3bfdb276a8993ccd5acd9d6b43fd4763cf221d3a",
                 "shasum": ""
             },
             "require": {
-                "filament/filament": "^4.0",
+                "filament/filament": "^4.0|^5.0",
                 "illuminate/contracts": "^11.28|^12.0",
                 "php": "^8.2",
                 "spatie/laravel-package-tools": "^1.9"
@@ -140,7 +140,7 @@
             ],
             "support": {
                 "issues": "https://github.com/bezhanSalleh/filament-plugin-essentials/issues",
-                "source": "https://github.com/bezhanSalleh/filament-plugin-essentials/tree/1.0.1"
+                "source": "https://github.com/bezhanSalleh/filament-plugin-essentials/tree/1.1.0"
             },
             "funding": [
                 {
@@ -148,25 +148,25 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-11-30T00:09:48+00:00"
+            "time": "2026-01-19T19:23:25+00:00"
         },
         {
             "name": "bezhansalleh/filament-shield",
-            "version": "4.0.4",
+            "version": "4.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/bezhanSalleh/filament-shield.git",
-                "reference": "9d67332c88d7363710dd9ca5ef077515b91e6996"
+                "reference": "bb5ac95b3c10f801e4c54bb289be8c055968726a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/bezhanSalleh/filament-shield/zipball/9d67332c88d7363710dd9ca5ef077515b91e6996",
-                "reference": "9d67332c88d7363710dd9ca5ef077515b91e6996",
+                "url": "https://api.github.com/repos/bezhanSalleh/filament-shield/zipball/bb5ac95b3c10f801e4c54bb289be8c055968726a",
+                "reference": "bb5ac95b3c10f801e4c54bb289be8c055968726a",
                 "shasum": ""
             },
             "require": {
                 "bezhansalleh/filament-plugin-essentials": "^1.0",
-                "filament/filament": "^4.0",
+                "filament/filament": "^4.0|^5.0",
                 "illuminate/contracts": "^11.28|^12.0",
                 "illuminate/support": "^11.28|^12.0",
                 "php": "^8.2",
@@ -235,7 +235,7 @@
             ],
             "support": {
                 "issues": "https://github.com/bezhanSalleh/filament-shield/issues",
-                "source": "https://github.com/bezhanSalleh/filament-shield/tree/4.0.4"
+                "source": "https://github.com/bezhanSalleh/filament-shield/tree/4.1.0"
             },
             "funding": [
                 {
@@ -243,7 +243,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-12-26T09:31:27+00:00"
+            "time": "2026-01-19T19:28:46+00:00"
         },
         {
             "name": "blade-ui-kit/blade-heroicons",
