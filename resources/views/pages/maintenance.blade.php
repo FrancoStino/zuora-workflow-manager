@@ -1,5 +1,5 @@
 <x-layouts.app :title="$message . ' - ' . config('app.name', 'Zuora Workflow Manager')">
-    <x-slot:head>
+    <x-slot:head title="Maintenance">
         <style>
             @keyframes pulse-slow {
                 0%, 100% {
