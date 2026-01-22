@@ -4,6 +4,7 @@ namespace App\Providers\Filament;
 
 use App\Filament\Resources\Workflows\Pages\ViewWorkflow;
 use App\Http\Middleware\AuthenticateWithSetupBypass;
+use App\Http\Middleware\CheckMaintenanceMode;
 use App\Services\OAuthService;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use CharrafiMed\GlobalSearchModal\GlobalSearchModalPlugin;
@@ -79,6 +80,7 @@ class AdminPanelProvider extends PanelProvider
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
                 AuthenticateWithSetupBypass::class,
+                CheckMaintenanceMode::class,
             ])
             ->authMiddleware([
                 //
