@@ -166,10 +166,10 @@
   resolved "https://registry.yarnpkg.com/@esbuild/win32-x64/-/win32-x64-0.27.1.tgz#5efe5a112938b1180e98c76685ff9185cfa4f16e"
   integrity sha512-d5X6RMYv6taIymSk8JBP+nxv8DQAMY6A51GPgusqLdK9wBz5wWIXy1KjTck6HnjE9hqJzJRdk+1p/t5soSbCtw==
 
-"@joint/core@^4.2.2", "@joint/core@~4.2.2":
-  version "4.2.2"
-  resolved "https://registry.npmjs.org/@joint/core/-/core-4.2.2.tgz"
-  integrity sha512-e4RjAKuFWSTxCWEC9/9Wmok/mwSccq0HOESU8YpsqgyK1u+E5nKr3yh6D0TrTh0ZWfhKe+Xt2/Ig1IsHJUgsiw==
+"@joint/core@^4.2.3", "@joint/core@~4.2.2":
+  version "4.2.3"
+  resolved "https://registry.yarnpkg.com/@joint/core/-/core-4.2.3.tgz#cd500c40e32d217a8afd696879eebf412cc1195c"
+  integrity sha512-q4tITQTJn1Jn1YWtealv7BS5uw4U2mDZlwtVvGzMk639JAu9rPrudLHyWNqeUgP9+2GkSjv8n3lk/LG7mz9MZA==
 
 "@joint/layout-directed-graph@^4.2.2":
   version "4.2.2"
