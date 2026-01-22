@@ -166,19 +166,19 @@
   resolved "https://registry.yarnpkg.com/@esbuild/win32-x64/-/win32-x64-0.27.1.tgz#5efe5a112938b1180e98c76685ff9185cfa4f16e"
   integrity sha512-d5X6RMYv6taIymSk8JBP+nxv8DQAMY6A51GPgusqLdK9wBz5wWIXy1KjTck6HnjE9hqJzJRdk+1p/t5soSbCtw==
 
-"@joint/core@^4.2.3", "@joint/core@~4.2.2":
+"@joint/core@^4.2.3", "@joint/core@~4.2.3":
   version "4.2.3"
   resolved "https://registry.yarnpkg.com/@joint/core/-/core-4.2.3.tgz#cd500c40e32d217a8afd696879eebf412cc1195c"
   integrity sha512-q4tITQTJn1Jn1YWtealv7BS5uw4U2mDZlwtVvGzMk639JAu9rPrudLHyWNqeUgP9+2GkSjv8n3lk/LG7mz9MZA==
 
-"@joint/layout-directed-graph@^4.2.2":
-  version "4.2.2"
-  resolved "https://registry.npmjs.org/@joint/layout-directed-graph/-/layout-directed-graph-4.2.2.tgz"
-  integrity sha512-UiHfkuKShFnifSTF2uCC+9GfkeF4n9gwTomByj+wleuqSgVWNcOrHvxZfFuz7OzKxJQzybdSg7nSm0vVa+ih3A==
+"@joint/layout-directed-graph@^4.2.3":
+  version "4.2.3"
+  resolved "https://registry.yarnpkg.com/@joint/layout-directed-graph/-/layout-directed-graph-4.2.3.tgz#0d2d8cfde0e55abe6c81f942bbe67a477e2b4586"
+  integrity sha512-LpwWzvGNH72ApISu8CWRP6aN1pu+n5gvgNUEs3/cV3tfwyyJAQ6Dfpi6pdAuZk0H7xZumyNn2S/FDdx+2pHxww==
   dependencies:
     "@dagrejs/dagre" "~1.1.4"
     "@dagrejs/graphlib" "~2.2.4"
-    "@joint/core" "~4.2.2"
+    "@joint/core" "~4.2.3"
 
 "@jridgewell/gen-mapping@^0.3.5":
   version "0.3.13"
