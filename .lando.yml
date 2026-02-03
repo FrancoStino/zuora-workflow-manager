@@ -30,6 +30,11 @@ services:
       - '24690:24690'
       - '24691:24691'
       - '24692:24692'
+    overrides:
+      environment:
+        PHP_MAX_EXECUTION_TIME: 600
+      volumes:
+        - ./config/nginx/timeout.conf:/etc/nginx/conf.d/timeout.conf:ro
 
 tooling:
   pint:
