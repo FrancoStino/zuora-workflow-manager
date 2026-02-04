@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "6cdd9d614147dec878f8f44e65cca45d",
+    "content-hash": "39d378dc22954aaf2d0bcd36bf4a0702",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -802,82 +802,6 @@
                 }
             ],
             "time": "2025-02-25T06:49:30+00:00"
-        },
-        {
-            "name": "codebar-ag/laravel-filament-json-field",
-            "version": "v13.0.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/codebar-ag/laravel-filament-json-field.git",
-                "reference": "2a8837f10b1cd93ace148ee2e27d88a4a6eb2631"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/codebar-ag/laravel-filament-json-field/zipball/2a8837f10b1cd93ace148ee2e27d88a4a6eb2631",
-                "reference": "2a8837f10b1cd93ace148ee2e27d88a4a6eb2631",
-                "shasum": ""
-            },
-            "require": {
-                "filament/forms": "^4.0",
-                "filament/infolists": "^4.0",
-                "filament/support": "^4.0",
-                "illuminate/contracts": "^12.0",
-                "livewire/livewire": "^3.6",
-                "php": "8.2.*|8.3.*|8.4.*",
-                "spatie/laravel-package-tools": "^1.19"
-            },
-            "require-dev": {
-                "larastan/larastan": "^v3.1",
-                "laravel/pint": "^1.21",
-                "orchestra/testbench": "^10.0",
-                "pestphp/pest": "^3.7",
-                "phpstan/extension-installer": "^1.4",
-                "phpstan/phpstan-deprecation-rules": "^2.0",
-                "phpstan/phpstan-phpunit": "^2.0",
-                "spatie/laravel-ray": "^1.39"
-            },
-            "type": "library",
-            "extra": {
-                "laravel": {
-                    "providers": [
-                        "CodebarAg\\FilamentJsonField\\FilamentJsonFieldServiceProvider"
-                    ]
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "CodebarAg\\FilamentJsonField\\": "src/",
-                    "CodebarAg\\FilamentJsonField\\Database\\Factories\\": "database/factories/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Sebastian Bürgin-Fix",
-                    "email": "sebastian.buergin@buergin.ch",
-                    "homepage": "https://www.codebar.ch",
-                    "role": "Sofware-Engineer"
-                },
-                {
-                    "name": "Rhys Lees",
-                    "role": "Software-Engineer"
-                }
-            ],
-            "description": "A Laravel Filament JSON Field integration with CodeMirror support",
-            "homepage": "https://github.com/codebar-ag/laravel-filament-json-field",
-            "keywords": [
-                "CodebarAg",
-                "laravel",
-                "laravel-filament-json-field"
-            ],
-            "support": {
-                "issues": "https://github.com/codebar-ag/laravel-filament-json-field/issues",
-                "source": "https://github.com/codebar-ag/laravel-filament-json-field/tree/v13.0.1"
-            },
-            "time": "2025-07-15T12:37:02+00:00"
         },
         {
             "name": "danharrin/date-format-converter",
@@ -2630,6 +2554,68 @@
                 }
             ],
             "time": "2025-08-22T14:27:06+00:00"
+        },
+        {
+            "name": "inspector-apm/inspector-php",
+            "version": "3.16.12",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/inspector-apm/inspector-php.git",
+                "reference": "34299cdaeded3b67737a83b840030e05d292ef1b"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/inspector-apm/inspector-php/zipball/34299cdaeded3b67737a83b840030e05d292ef1b",
+                "reference": "34299cdaeded3b67737a83b840030e05d292ef1b",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.1"
+            },
+            "require-dev": {
+                "ext-curl": "*",
+                "friendsofphp/php-cs-fixer": "^3.75",
+                "neuron-core/neuron-ai": "^2.8",
+                "phpstan/phpstan": "^2.1",
+                "phpunit/phpunit": "^9.0",
+                "rector/rector": "^2.2",
+                "tomasvotruba/type-coverage": "^2.0"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "3.16.x-dev",
+                    "dev-develop": "3.16.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Inspector\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Valerio Barbera",
+                    "email": "valerio@inspector.dev"
+                }
+            ],
+            "description": "Inspector monitoring for PHP applications.",
+            "keywords": [
+                "inspector",
+                "monitoring",
+                "observability",
+                "php",
+                "telemetry"
+            ],
+            "support": {
+                "issues": "https://github.com/inspector-apm/inspector-php/issues",
+                "source": "https://github.com/inspector-apm/inspector-php/tree/3.16.12"
+            },
+            "time": "2026-01-30T20:31:57+00:00"
         },
         {
             "name": "kirschbaum-development/eloquent-power-joins",
@@ -4870,6 +4856,82 @@
             "time": "2025-12-22T12:14:32+00:00"
         },
         {
+            "name": "neuron-core/neuron-ai",
+            "version": "2.11.5",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/neuron-core/neuron-ai.git",
+                "reference": "d4203a88ea9f2fe664b80fb1c99b869d33c577b2"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/neuron-core/neuron-ai/zipball/d4203a88ea9f2fe664b80fb1c99b869d33c577b2",
+                "reference": "d4203a88ea9f2fe664b80fb1c99b869d33c577b2",
+                "shasum": ""
+            },
+            "require": {
+                "guzzlehttp/guzzle": "^7.9",
+                "inspector-apm/inspector-php": "^3.15.10",
+                "php": "^8.1",
+                "psr/http-message": "^1.0|^2.0",
+                "psr/log": "^1.0|^2.0|^3.0"
+            },
+            "require-dev": {
+                "aws/aws-sdk-php": "^3.209",
+                "elasticsearch/elasticsearch": "^8.0",
+                "ext-pdo": "*",
+                "friendsofphp/php-cs-fixer": "^3.75",
+                "google/auth": "^1.49",
+                "html2text/html2text": "^4.3",
+                "illuminate/database": "^10.0|^11.0|^12.0",
+                "phpstan/phpstan": "^2.1",
+                "phpunit/phpunit": "^9.0",
+                "rector/rector": "^2.0",
+                "spatie/fork": "^1.2",
+                "tomasvotruba/type-coverage": "^2.0",
+                "typesense/typesense-php": "^5.0"
+            },
+            "suggest": {
+                "aws/aws-sdk-php": "^3.209",
+                "elasticsearch/elasticsearch": "^7.0|^8.0",
+                "php-http/curl-client": "^2.3",
+                "spatie/fork": "^1.2",
+                "symfony/process": "^4.0|^5.0|^6.0|^7.0",
+                "typesense/typesense-php": "^5.0"
+            },
+            "bin": [
+                "bin/neuron"
+            ],
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "NeuronAI\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Valerio Barbera",
+                    "email": "valerio@inspector.dev"
+                }
+            ],
+            "description": "The PHP Agentic Framework.",
+            "support": {
+                "issues": "https://github.com/neuron-core/neuron-ai/issues",
+                "source": "https://github.com/neuron-core/neuron-ai/tree/2.11.5"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/neuron-core",
+                    "type": "github"
+                }
+            ],
+            "time": "2026-02-02T13:25:04+00:00"
+        },
+        {
             "name": "nikic/php-parser",
             "version": "v5.7.0",
             "source": {
@@ -5365,6 +5427,77 @@
                 "source": "https://github.com/paragonie/random_compat"
             },
             "time": "2020-10-15T08:29:30+00:00"
+        },
+        {
+            "name": "phiki/phiki",
+            "version": "v2.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/phikiphp/phiki.git",
+                "reference": "b16020573e9f4ad3c9d230c17ed4c84c15356e28"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/phikiphp/phiki/zipball/b16020573e9f4ad3c9d230c17ed4c84c15356e28",
+                "reference": "b16020573e9f4ad3c9d230c17ed4c84c15356e28",
+                "shasum": ""
+            },
+            "require": {
+                "ext-mbstring": "*",
+                "league/commonmark": "^2.5.3",
+                "php": "^8.2",
+                "psr/simple-cache": "^3.0"
+            },
+            "require-dev": {
+                "illuminate/support": "^11.45",
+                "laravel/pint": "^1.18.1",
+                "orchestra/testbench": "^9.15",
+                "pestphp/pest": "^3.5.1",
+                "phpstan/extension-installer": "^1.4.3",
+                "phpstan/phpstan": "^2.0",
+                "symfony/var-dumper": "^7.1.6"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Phiki\\Adapters\\Laravel\\PhikiServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Phiki\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Ryan Chandler",
+                    "email": "support@ryangjchandler.co.uk",
+                    "homepage": "https://ryangjchandler.co.uk",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Syntax highlighting using TextMate grammars in PHP.",
+            "support": {
+                "issues": "https://github.com/phikiphp/phiki/issues",
+                "source": "https://github.com/phikiphp/phiki/tree/v2.1.0"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/sponsors/ryangjchandler",
+                    "type": "github"
+                },
+                {
+                    "url": "https://buymeacoffee.com/ryangjchandler",
+                    "type": "other"
+                }
+            ],
+            "time": "2026-01-20T21:26:48+00:00"
         },
         {
             "name": "phpdocumentor/reflection-common",
@@ -13756,12 +13889,12 @@
     "aliases": [],
     "minimum-stability": "beta",
     "stability-flags": {
-        "moox/jobs": 20,
+        "moox/jobs": 10,
         "roave/security-advisories": 20
     },
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {},
     "platform-dev": {},
-    "plugin-api-version": "2.6.0"
+    "plugin-api-version": "2.9.0"
 }
