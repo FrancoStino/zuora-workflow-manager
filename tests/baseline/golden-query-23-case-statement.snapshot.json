@@ -1,6 +1,6 @@
 {
     "query": "SELECT \n                    name,\n                    state,\n                    CASE \n                        WHEN state = \"Active\" THEN \"Running\"\n                        WHEN state = \"Draft\" THEN \"In Progress\"\n                        ELSE \"Other\"\n                    END as status_label\n                  FROM workflows",
-    "execution_time_ms": 0.16,
+    "execution_time_ms": 0.18,
     "results_count": 8,
     "sql_logged": {
         "query": "SELECT \n                    name,\n                    state,\n                    CASE \n                        WHEN state = \"Active\" THEN \"Running\"\n                        WHEN state = \"Draft\" THEN \"In Progress\"\n                        ELSE \"Other\"\n                    END as status_label\n                  FROM workflows",
@@ -8,5 +8,5 @@
         "time": 0.06,
         "readWriteType": "write"
     },
-    "timestamp": "2026-02-08T17:38:49+00:00"
+    "timestamp": "2026-02-08T18:59:16+00:00"
 }

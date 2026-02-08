@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::table('workflows', function (Blueprint $table) {
             // Drop the existing global unique constraint on zuora_id
             $table->dropUnique('workflows_zuora_id_unique');
-            
+
             // Add a composite unique constraint scoped by customer_id
             $table->unique(['customer_id', 'zuora_id'], 'workflows_customer_zuora_unique');
         });

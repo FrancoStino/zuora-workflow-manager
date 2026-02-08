@@ -82,93 +82,16 @@ class ModelsDevService
                             'status' => $response->status(),
                         ]);
 
-                    return $this->getFallbackData();
+                    return [];
                 } catch (Exception $e) {
                     Log::error('ModelsDevService: Exception fetching models.dev API',
                         [
                             'error' => $e->getMessage(),
                         ]);
 
-                    return $this->getFallbackData();
+                    return [];
                 }
             });
-    }
-
-    /**
-     * Fallback data when API is unavailable.
-     */
-    private function getFallbackData(): array
-    {
-        return [
-            'openai' => [
-                'id' => 'openai',
-                'name' => 'OpenAI',
-                'api' => 'https://api.openai.com/v1',
-                'models' => [
-                    'gpt-4o' => [
-                        'id' => 'gpt-4o',
-                        'name' => 'GPT-4o',
-                        'modalities' => [
-                            'input' => ['text'], 'output' => ['text'],
-                        ],
-                        'limit' => ['context' => 128000],
-                    ],
-                    'gpt-4o-mini' => [
-                        'id' => 'gpt-4o-mini',
-                        'name' => 'GPT-4o Mini',
-                        'modalities' => [
-                            'input' => ['text'], 'output' => ['text'],
-                        ],
-                        'limit' => ['context' => 128000],
-                    ],
-                ],
-            ],
-            'anthropic' => [
-                'id' => 'anthropic',
-                'name' => 'Anthropic',
-                'api' => 'https://api.anthropic.com/v1',
-                'models' => [
-                    'claude-sonnet-4-20250514' => [
-                        'id' => 'claude-sonnet-4-20250514',
-                        'name' => 'Claude Sonnet 4',
-                        'modalities' => [
-                            'input' => ['text'], 'output' => ['text'],
-                        ],
-                        'limit' => ['context' => 200000],
-                    ],
-                ],
-            ],
-            'google' => [
-                'id' => 'google',
-                'name' => 'Google',
-                'api' => 'https://generativelanguage.googleapis.com/v1beta/models',
-                'models' => [
-                    'gemini-2.0-flash-exp' => [
-                        'id' => 'gemini-2.0-flash-exp',
-                        'name' => 'Gemini 2.0 Flash',
-                        'modalities' => [
-                            'input' => ['text'], 'output' => ['text'],
-                        ],
-                        'limit' => ['context' => 1000000],
-                    ],
-                ],
-            ],
-            'groq' => [
-                'id' => 'groq',
-                'name' => 'Groq',
-                'api' => 'https://api.groq.com/openai/v1',
-                'models' => [
-                    'llama-3.3-70b-versatile' => [
-                        'id' => 'llama-3.3-70b-versatile',
-                        'name' => 'Llama 3.3 70B',
-                        'modalities' => [
-                            'input' => ['text'], 'output' => ['text'],
-                        ],
-                        'limit' => ['context' => 128000],
-                    ],
-                ],
-            ],
-        ];
     }
 
     /**

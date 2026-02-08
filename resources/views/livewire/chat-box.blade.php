@@ -8,7 +8,7 @@
             Ask questions about your workflows, tasks or customers and get AI-powered responses
         </x-slot>
 
-        <div class="flex flex-col h-[calc(100vh-16rem)]">
+        <div class="flex flex-col h-[calc(100vh-26rem)]">
             {{-- Chat Messages --}}
             <div
                 class="flex flex-col-reverse gap-4 flex-1 overflow-y-auto pr-2"
@@ -35,24 +35,46 @@
                     <div class="flex {{ $message->isUserMessage() ? 'justify-end' : 'justify-start' }}">
                         <div
                             class="w-3/4 rounded-xl px-4 py-3 {{ $message->isUserMessage() ? 'bg-primary-700 text-white' : 'bg-gray-100 dark:bg-white/5 text-gray-950 dark:text-white' }}">
-                            <div class="flex items-center gap-2 text-sm">
-                                @if($message->isUserMessage())
-                                    <x-filament::icon icon="heroicon-m-user" class="w-4 h-4"/>
-                                    <span class="font-medium">You</span>
-                                @else
-                                    <x-filament::icon icon="heroicon-m-cpu-chip" class="w-4 h-4"/>
-                                    <span class="font-medium">Assistant</span>
-                                    @if($message->hasQuery())
-                                        <x-filament::badge size="sm" color="info">
-                                            SQL Generated
-                                        </x-filament::badge>
+                            <div class="flex">
+                                <div class="flex items-center gap-2 ">
+                                    @if($message->isUserMessage())
+                                        <x-filament::icon icon="heroicon-m-user" class="w-4 h-4"/>
+                                        <span class="font-medium">You</span>
+                                    @else
+                                        <x-filament::icon icon="heroicon-m-cpu-chip" class="w-4 h-4"/>
+                                        <span class="font-medium">Assistant</span>
+                                        @if($message->hasQuery())
+                                            <x-filament::badge size="sm" color="info">
+                                                SQL Generated
+                                            </x-filament::badge>
+                                        @endif
                                     @endif
-                                @endif
-                                @if($message->created_at)
-                                    <span class="text-xs opacity-60">
+                                    @if($message->created_at)
+                                        <span class="text-xs opacity-60">
                                         {{ $message->created_at->diffForHumans() }}
                                     </span>
-                                @endif
+                                    @endif
+                                </div>
+                                <div>
+                                    <button
+                                        type="button"
+                                        class="rounded-md text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                        x-on:click="
+                                                navigator.clipboard.writeText($refs.content.innerText);
+                                                copied = true;
+                                                setTimeout(() => copied = false, 2000);
+                                            "
+                                        title="Copy to clipboard"
+                                    >
+                                        <template x-if="!copied">
+                                            <x-filament::icon icon="heroicon-o-clipboard" class="w-4 h-4"/>
+                                        </template>
+                                        <template x-if="copied">
+                                            <x-filament::icon icon="heroicon-o-check"
+                                                              class="w-4 h-4 text-green-500"/>
+                                        </template>
+                                    </button>
+                                </div>
                             </div>
 
                             @if($message->isUserMessage())
@@ -92,28 +114,8 @@
                                 <div
                                     class="mt-2 prose prose-sm dark:prose-invert max-w-none prose-table:w-full prose-table:border-collapse prose-thead:bg-gray-100 dark:prose-thead:bg-gray-800 prose-th:px-4 prose-th:py-3 prose-th:text-left prose-th:font-semibold prose-th:border-b prose-th:border-gray-300 dark:prose-th:border-gray-600 prose-td:px-4 prose-td:py-3 prose-td:border-b prose-td:border-gray-200 dark:prose-td:border-gray-700 prose-tr:even:bg-gray-50/50 dark:prose-tr:even:bg-gray-700/30"
                                     x-data="{ copied: false }">
-                                    <div class="relative">
-                                        <button
-                                            type="button"
-                                            class="absolute top-2 right-2 p-1.5 rounded-md text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                                            x-on:click="
-                                                navigator.clipboard.writeText($refs.content.innerText);
-                                                copied = true;
-                                                setTimeout(() => copied = false, 2000);
-                                            "
-                                            title="Copy to clipboard"
-                                        >
-                                            <template x-if="!copied">
-                                                <x-filament::icon icon="heroicon-o-clipboard" class="w-4 h-4"/>
-                                            </template>
-                                            <template x-if="copied">
-                                                <x-filament::icon icon="heroicon-o-check"
-                                                                  class="w-4 h-4 text-green-500"/>
-                                            </template>
-                                        </button>
-                                        <div x-ref="content">
-                                            {!! Str::markdown($mainContent) !!}
-                                        </div>
+                                    <div x-ref="content">
+                                        {!! Str::markdown($mainContent) !!}
                                     </div>
                                 </div>
 

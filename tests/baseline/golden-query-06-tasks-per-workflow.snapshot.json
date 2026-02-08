@@ -1,12 +1,12 @@
 {
     "query": "SELECT workflow_id, COUNT(*) as task_count \n                  FROM tasks \n                  GROUP BY workflow_id \n                  ORDER BY task_count DESC",
-    "execution_time_ms": 0.16,
+    "execution_time_ms": 0.24,
     "results_count": 8,
     "sql_logged": {
         "query": "SELECT workflow_id, COUNT(*) as task_count \n                  FROM tasks \n                  GROUP BY workflow_id \n                  ORDER BY task_count DESC",
         "bindings": [],
-        "time": 0.07,
+        "time": 0.09,
         "readWriteType": "write"
     },
-    "timestamp": "2026-02-08T17:38:47+00:00"
+    "timestamp": "2026-02-08T18:59:14+00:00"
 }

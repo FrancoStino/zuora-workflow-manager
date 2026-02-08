@@ -1,12 +1,12 @@
 {
     "query": "SELECT w.id, w.name, COUNT(t.id) as task_count\n                  FROM workflows w\n                  LEFT JOIN tasks t ON w.id = t.workflow_id\n                  GROUP BY w.id, w.name\n                  HAVING task_count > 2",
-    "execution_time_ms": 0.18,
-    "results_count": 6,
+    "execution_time_ms": 0.26,
+    "results_count": 8,
     "sql_logged": {
         "query": "SELECT w.id, w.name, COUNT(t.id) as task_count\n                  FROM workflows w\n                  LEFT JOIN tasks t ON w.id = t.workflow_id\n                  GROUP BY w.id, w.name\n                  HAVING task_count > 2",
         "bindings": [],
-        "time": 0.09,
+        "time": 0.13,
         "readWriteType": "write"
     },
-    "timestamp": "2026-02-08T17:38:48+00:00"
+    "timestamp": "2026-02-08T18:59:16+00:00"
 }

@@ -1,6 +1,6 @@
 {
     "query": "SELECT customer_id, COUNT(*) as workflow_count \n                  FROM workflows \n                  GROUP BY customer_id",
-    "execution_time_ms": 0.15,
+    "execution_time_ms": 0.17,
     "results_count": 1,
     "sql_logged": {
         "query": "SELECT customer_id, COUNT(*) as workflow_count \n                  FROM workflows \n                  GROUP BY customer_id",
@@ -8,5 +8,5 @@
         "time": 0.05,
         "readWriteType": "write"
     },
-    "timestamp": "2026-02-08T17:38:47+00:00"
+    "timestamp": "2026-02-08T18:59:14+00:00"
 }

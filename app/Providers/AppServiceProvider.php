@@ -8,8 +8,11 @@ use DutchCodingCompany\FilamentSocialite\Events\Login;
 use DutchCodingCompany\FilamentSocialite\Events\Registered;
 use Filament\Support\Facades\FilamentView;
 use Filament\View\PanelsRenderHook;
+use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,16 +22,18 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        // NOTE: Conditional ChatService binding will be implemented in Task 7
-        // after LaragentChatService is created. For now, NeuronChatService
-        // is automatically resolved by Laravel's container with its dependencies.
-        //
-        // Future implementation (Task 7):
-        // $this->app->singleton(ChatServiceInterface::class, function ($app) {
-        //     return config('app.ai_provider') === 'laragent'
-        //         ? $app->make(LaragentChatService::class)
-        //         : $app->make(NeuronChatService::class);
-        // });
+        // Conditional ChatService binding based on AI_PROVIDER feature flag
+        // Allows switching between neuron-ai and laragent implementations
+        $this->app->bind(\App\Services\NeuronChatService::class, function ($app) {
+            $provider = config('app.ai_provider', 'neuron');
+            $settings = $app->make(\App\Settings\GeneralSettings::class);
+            
+            if ($provider === 'laragent') {
+                return new \App\Services\LaragentChatService($settings);
+            }
+            
+            return new \App\Services\NeuronChatService($settings);
+        });
     }
 
     /**
@@ -44,5 +49,22 @@ class AppServiceProvider extends ServiceProvider
             PanelsRenderHook::USER_MENU_BEFORE,
             fn (): string => Blade::render('<livewire:documentation-button />'),
         );
+
+        DB::listen(function (QueryExecuted $query) {
+            $enableSecurityListener = config('app.enable_ai_security_listener', true);
+            
+            if (! $enableSecurityListener) {
+                return;
+            }
+
+            if (preg_match('/\b(INSERT|UPDATE|DELETE)\b/i', $query->sql)) {
+                Log::critical('SECURITY BREACH: AI attempted write', [
+                    'sql' => $query->sql,
+                    'bindings' => $query->bindings,
+                ]);
+
+                throw new \RuntimeException('AI write operations forbidden');
+            }
+        });
     }
 }

@@ -1,12 +1,12 @@
 {
     "query": "SELECT t.id, t.name, t.action_type, w.name as workflow_name \n                  FROM tasks t \n                  INNER JOIN workflows w ON t.workflow_id = w.id \n                  LIMIT 20",
-    "execution_time_ms": 0.17,
+    "execution_time_ms": 0.25,
     "results_count": 20,
     "sql_logged": {
         "query": "SELECT t.id, t.name, t.action_type, w.name as workflow_name \n                  FROM tasks t \n                  INNER JOIN workflows w ON t.workflow_id = w.id \n                  LIMIT 20",
         "bindings": [],
-        "time": 0.07,
+        "time": 0.09,
         "readWriteType": "write"
     },
-    "timestamp": "2026-02-08T17:38:47+00:00"
+    "timestamp": "2026-02-08T18:59:14+00:00"
 }

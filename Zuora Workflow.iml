@@ -182,6 +182,13 @@
       <excludeFolder url="file://$MODULE_DIR$/vendor/laravel/roster" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/_laravel_idea" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/phiki/phiki" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/lucianotonet/groq-php" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/maestroerror/laragent" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/mozex/anthropic-php" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/openai-php/client" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/php-http/discovery" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/php-http/multipart-stream-builder" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/redberry/mcp-client-laravel" />
     </content>
     <orderEntry type="sourceFolder" forTests="false" />
   </component>

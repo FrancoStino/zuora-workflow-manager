@@ -7,6 +7,21 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (DB::getDriverName() === 'sqlite') {
+            $queries = [];
+            $tables = ['workflows', 'tasks', 'customers', 'chat_threads', 'chat_messages'];
+            foreach ($tables as $table) {
+                $queries[] = "SELECT '$table' as table_name, name as column_name, type as data_type, 
+                             case when \"notnull\" = 1 then 'NO' else 'YES' end as is_nullable,
+                             case when pk = 1 then 'PRI' else '' end as column_key
+                             FROM pragma_table_info('$table')";
+            }
+            $finalQuery = implode(' UNION ALL ', $queries);
+            DB::statement("CREATE VIEW ai_accessible_schema AS $finalQuery");
+
+            return;
+        }
+
         DB::statement("
             CREATE VIEW ai_accessible_schema AS
             SELECT 
@@ -24,6 +39,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        DB::statement("DROP VIEW IF EXISTS ai_accessible_schema;");
+        DB::statement('DROP VIEW IF EXISTS ai_accessible_schema;');
     }
 };

@@ -62,6 +62,9 @@ dashboards, and comprehensive workflow management.
 - 📋 **Tasks Filters**: Advanced filtering by action_type, priority, and state
 - 📥 **JSON Operations**: Copy and download workflow JSON directly from UI
 - 🖼️ **Tasks Relation Manager**: View workflow tasks in dedicated tab with sortable columns
+- 🤖 **AI-Powered Chat**: LarAgent-based DataAnalystAgent for natural language database queries with streaming responses
+- 🛡️ **AI Security**: Hybrid security layer (hooks + events) preventing write operations from AI agents
+- 📊 **AI Monitoring**: Dedicated log channel with tool execution tracking and observability
 
 ---
 
@@ -358,6 +361,18 @@ lando composer run dev                              # Full dev stack
 - **Encrypted Storage**: Custom `EncryptedCast` for securing sensitive data (OAuth secrets)
 - **Multi-section Schema**: Site info, OAuth config, application settings, maintenance
 - **Role-based Access**: Settings page restricted to super_admin role only
+
+### AI Chat System (LarAgent)
+
+- **`LaragentChatService`**: AI chat service with streaming SSE support, metadata tracking
+- **`DataAnalystAgentLaragent`**: Natural language database query agent with MySQL tools
+- **`EloquentThreadChatHistory`**: Custom adapter preserving existing chat_threads/chat_messages schema
+- **Security Layer**: 
+  - Layer 1: `beforeToolExecution` hook (agent-level validation)
+  - Layer 2: `DB::listen` event (application-level fallback)
+  - Blocks: INSERT, UPDATE, DELETE operations from AI
+- **Monitoring**: Dedicated log channel (`storage/logs/laragent.log`) with tool execution tracking
+- **Feature Flag**: `AI_PROVIDER` env variable for instant rollback capability
 
 ### Queue Processing Flow
 

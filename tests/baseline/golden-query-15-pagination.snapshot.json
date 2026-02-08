@@ -1,12 +1,12 @@
 {
     "query": "SELECT * FROM workflows ORDER BY created_at DESC LIMIT 5 OFFSET 0",
-    "execution_time_ms": 0.16,
+    "execution_time_ms": 0.18,
     "results_count": 5,
     "sql_logged": {
         "query": "SELECT * FROM workflows ORDER BY created_at DESC LIMIT 5 OFFSET 0",
         "bindings": [],
-        "time": 0.07,
+        "time": 0.08,
         "readWriteType": "write"
     },
-    "timestamp": "2026-02-08T17:38:48+00:00"
+    "timestamp": "2026-02-08T18:59:15+00:00"
 }

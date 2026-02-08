@@ -1,12 +1,12 @@
 {
     "query": "SELECT t.name as task_name, w.name as workflow_name, c.name as customer_name\n                  FROM tasks t\n                  INNER JOIN workflows w ON t.workflow_id = w.id\n                  INNER JOIN customers c ON w.customer_id = c.id\n                  LIMIT 15",
-    "execution_time_ms": 0.16,
+    "execution_time_ms": 0.18,
     "results_count": 15,
     "sql_logged": {
         "query": "SELECT t.name as task_name, w.name as workflow_name, c.name as customer_name\n                  FROM tasks t\n                  INNER JOIN workflows w ON t.workflow_id = w.id\n                  INNER JOIN customers c ON w.customer_id = c.id\n                  LIMIT 15",
         "bindings": [],
-        "time": 0.06,
+        "time": 0.07,
         "readWriteType": "write"
     },
-    "timestamp": "2026-02-08T17:38:47+00:00"
+    "timestamp": "2026-02-08T18:59:15+00:00"
 }

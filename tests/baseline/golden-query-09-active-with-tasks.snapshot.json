@@ -1,6 +1,6 @@
 {
     "query": "SELECT w.* FROM workflows w \n                  WHERE w.state = 'Active' \n                  AND EXISTS (SELECT 1 FROM tasks t WHERE t.workflow_id = w.id)",
-    "execution_time_ms": 0.16,
+    "execution_time_ms": 0.19,
     "results_count": 5,
     "sql_logged": {
         "query": "SELECT w.* FROM workflows w \n                  WHERE w.state = 'Active' \n                  AND EXISTS (SELECT 1 FROM tasks t WHERE t.workflow_id = w.id)",
@@ -8,5 +8,5 @@
         "time": 0.08,
         "readWriteType": "write"
     },
-    "timestamp": "2026-02-08T17:38:47+00:00"
+    "timestamp": "2026-02-08T18:59:14+00:00"
 }

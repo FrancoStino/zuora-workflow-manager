@@ -4,9 +4,11 @@ namespace Tests\Feature;
 
 use App\Models\ChatThread;
 use App\Models\User;
+use App\Services\LaragentChatService;
 use App\Services\NeuronChatService;
 use App\Settings\GeneralSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Config;
 use ReflectionMethod;
 use Tests\TestCase;
 
@@ -34,8 +36,10 @@ class StreamingChatTest extends TestCase
         $this->settings->save();
     }
 
-    public function test_askStream_returns_a_generator(): void
+    public function test_askStream_returns_a_generator_with_neuron_provider(): void
     {
+        Config::set('app.ai_provider', 'neuron');
+        
         $service = app(NeuronChatService::class);
 
         $result = $service->askStream($this->thread, 'Test question');
@@ -43,8 +47,21 @@ class StreamingChatTest extends TestCase
         $this->assertInstanceOf(\Generator::class, $result);
     }
 
-    public function test_askStream_throws_exception_when_ai_chat_is_disabled(): void
+    public function test_askStream_returns_a_generator_with_laragent_provider(): void
     {
+        Config::set('app.ai_provider', 'laragent');
+        
+        $service = app(NeuronChatService::class); // Container returns LaragentChatService
+
+        $result = $service->askStream($this->thread, 'Test question');
+
+        $this->assertInstanceOf(\Generator::class, $result);
+    }
+
+    public function test_askStream_throws_exception_when_ai_chat_is_disabled_neuron(): void
+    {
+        Config::set('app.ai_provider', 'neuron');
+        
         $settings = app(GeneralSettings::class);
         $settings->aiChatEnabled = false;
         $settings->save();
@@ -59,7 +76,25 @@ class StreamingChatTest extends TestCase
         }
     }
 
-    public function test_askStream_has_anti_buffering_headers_configured(): void
+    public function test_askStream_throws_exception_when_ai_chat_is_disabled_laragent(): void
+    {
+        Config::set('app.ai_provider', 'laragent');
+        
+        $settings = app(GeneralSettings::class);
+        $settings->aiChatEnabled = false;
+        $settings->save();
+
+        $service = new LaragentChatService($settings);
+
+        try {
+            $service->askStream($this->thread, 'Test question')->current();
+            $this->fail('Expected RuntimeException was not thrown');
+        } catch (\RuntimeException $e) {
+            $this->assertEquals('AI chat is not enabled', $e->getMessage());
+        }
+    }
+
+    public function test_askStream_has_anti_buffering_headers_configured_neuron(): void
     {
         $reflection = new ReflectionMethod(NeuronChatService::class, 'askStream');
         
@@ -71,5 +106,36 @@ class StreamingChatTest extends TestCase
         $this->assertStringContainsString("header('X-Accel-Buffering: no')", $methodCode);
         $this->assertStringContainsString("header('Cache-Control: no-cache')", $methodCode);
         $this->assertStringContainsString("header('Content-Type: text/event-stream')", $methodCode);
+    }
+
+    public function test_askStream_has_anti_buffering_headers_configured_laragent(): void
+    {
+        $reflection = new ReflectionMethod(LaragentChatService::class, 'askStream');
+        
+        $methodStart = $reflection->getStartLine();
+        $methodEnd = $reflection->getEndLine();
+        $lines = array_slice(file($reflection->getFileName()), $methodStart - 1, $methodEnd - $methodStart + 1);
+        $methodCode = implode('', $lines);
+
+        $this->assertStringContainsString("header('X-Accel-Buffering: no')", $methodCode);
+        $this->assertStringContainsString("header('Cache-Control: no-cache')", $methodCode);
+        $this->assertStringContainsString("header('Content-Type: text/event-stream')", $methodCode);
+    }
+
+    public function test_container_binding_switches_service_based_on_provider(): void
+    {
+        // Test neuron provider
+        Config::set('app.ai_provider', 'neuron');
+        app()->forgetInstance(NeuronChatService::class);
+        
+        $service = app(NeuronChatService::class);
+        $this->assertInstanceOf(NeuronChatService::class, $service);
+
+        // Test laragent provider
+        Config::set('app.ai_provider', 'laragent');
+        app()->forgetInstance(NeuronChatService::class);
+        
+        $service = app(NeuronChatService::class);
+        $this->assertInstanceOf(LaragentChatService::class, $service);
     }
 }

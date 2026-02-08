@@ -1,0 +1,27 @@
+Xdebug: [Log Files] File '/tmp/xdebug.log' could not be opened.
+Xdebug: [Log Files] File '/tmp/xdebug.log' could not be opened.
+
+   FAIL  Tests\Feature\ChatServicePerformanceTest
+  ⨯ neuron service latency                                               0.63s  
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\ChatServicePerformanceTest > neur…  RuntimeException   
+  AI chat is not enabled
+
+  at app/Services/NeuronChatService.php:24
+     20▕ 
+     21▕     public function ask(ChatThread $thread, string $question): ChatMessage
+     22▕     {
+     23▕         if (! $this->settings->aiChatEnabled) {
+  ➜  24▕             throw new \RuntimeException('AI chat is not enabled');
+     25▕         }
+     26▕ 
+     27▕         $this->pdo = $this->createLoggedPdo();
+     28▕         $agent = $this->getAgent();
+
+  1   app/Services/NeuronChatService.php:24
+  2   tests/Feature/ChatServicePerformanceTest.php:34
+
+
+  Tests:    1 failed (0 assertions)
+  Duration: 0.80s
+

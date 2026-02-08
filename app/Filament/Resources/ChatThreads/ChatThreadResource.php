@@ -37,7 +37,7 @@ class ChatThreadResource extends Resource
     {
         return [
             'Messages' => $record->messages()->count(),
-            'Created'  => $record->created_at->format('d/m/Y H:i'),
+            'Created' => $record->created_at->format('d/m/Y H:i'),
         ];
     }
 
@@ -45,7 +45,7 @@ class ChatThreadResource extends Resource
     {
         return [
             'index' => Pages\ListChatThreads::route('/'),
-            'view'  => Pages\ViewChatThread::route('/{record}'),
+            'view' => Pages\ViewChatThread::route('/{record}'),
         ];
     }
 

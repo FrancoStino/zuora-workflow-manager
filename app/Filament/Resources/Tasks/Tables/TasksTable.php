@@ -13,6 +13,11 @@ class TasksTable
     {
         return $table
             ->columns([
+                TextColumn::make('workflow.customer.name')
+                    ->label('Customer')
+                    ->searchable()
+                    ->sortable(),
+
                 TextColumn::make('task_id')
                     ->label('Task ID')
                     ->sortable()
@@ -33,7 +38,7 @@ class TasksTable
 
                 TextColumn::make('action_type')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn(string $state): string => match ($state) {
                         'Email' => 'info',
                         'Export' => 'success',
                         'Iterate' => 'warning',
@@ -48,11 +53,11 @@ class TasksTable
                 TextColumn::make('object')
                     ->searchable()
                     ->limit(30)
-                    ->tooltip(fn ($record) => $record->object),
+                    ->tooltip(fn($record) => $record->object),
 
                 TextColumn::make('priority')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn(string $state): string => match ($state) {
                         'High' => 'danger',
                         'Medium' => 'warning',
                         'Low' => 'success',
@@ -66,7 +71,7 @@ class TasksTable
 
                 TextColumn::make('state')
                     ->badge()
-                    ->color(fn (?string $state): string => match ($state) {
+                    ->color(fn(?string $state): string => match ($state) {
                         'completed' => 'success',
                         'in_progress' => 'warning',
                         'pending' => 'gray',
@@ -87,6 +92,11 @@ class TasksTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
+                SelectFilter::make('customer')
+                    ->relationship('workflow.customer', 'name')
+                    ->searchable()
+                    ->preload(),
+
                 SelectFilter::make('workflow')
                     ->relationship('workflow', 'name')
                     ->searchable()
@@ -94,28 +104,28 @@ class TasksTable
 
                 SelectFilter::make('action_type')
                     ->options([
-                        'Email' => 'Email',
-                        'Export' => 'Export',
-                        'Import' => 'Import',
-                        'SOAP' => 'SOAP',
-                        'Query' => 'Query',
-                        'Iterate' => 'Iterate',
-                        'Cancel' => 'Cancel',
+                        'Email'    => 'Email',
+                        'Export'   => 'Export',
+                        'Import'   => 'Import',
+                        'SOAP'     => 'SOAP',
+                        'Query'    => 'Query',
+                        'Iterate'  => 'Iterate',
+                        'Cancel'   => 'Cancel',
                         'WriteOff' => 'WriteOff',
                     ]),
 
                 SelectFilter::make('priority')
                     ->options([
-                        'High' => 'High',
+                        'High'   => 'High',
                         'Medium' => 'Medium',
-                        'Low' => 'Low',
+                        'Low'    => 'Low',
                     ]),
 
                 SelectFilter::make('state')
                     ->options([
-                        'pending' => 'Pending',
+                        'pending'     => 'Pending',
                         'in_progress' => 'In Progress',
-                        'completed' => 'Completed',
+                        'completed'   => 'Completed',
                     ]),
             ])
             ->recordActions([

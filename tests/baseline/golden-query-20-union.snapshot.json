@@ -1,12 +1,12 @@
 {
     "query": "SELECT 'workflow' as type, name, created_at FROM workflows\n                  UNION ALL\n                  SELECT 'task' as type, name, created_at FROM tasks\n                  ORDER BY created_at DESC\n                  LIMIT 20",
-    "execution_time_ms": 0.19,
+    "execution_time_ms": 0.2,
     "results_count": 20,
     "sql_logged": {
         "query": "SELECT 'workflow' as type, name, created_at FROM workflows\n                  UNION ALL\n                  SELECT 'task' as type, name, created_at FROM tasks\n                  ORDER BY created_at DESC\n                  LIMIT 20",
         "bindings": [],
-        "time": 0.1,
+        "time": 0.09,
         "readWriteType": "write"
     },
-    "timestamp": "2026-02-08T17:38:49+00:00"
+    "timestamp": "2026-02-08T18:59:16+00:00"
 }

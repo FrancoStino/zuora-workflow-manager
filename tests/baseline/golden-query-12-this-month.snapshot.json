@@ -1,12 +1,12 @@
 {
     "query": "SELECT * FROM workflows \n                  WHERE strftime('%Y-%m', created_at) = strftime('%Y-%m', 'now')",
-    "execution_time_ms": 0.19,
+    "execution_time_ms": 0.2,
     "results_count": 8,
     "sql_logged": {
         "query": "SELECT * FROM workflows \n                  WHERE strftime('%Y-%m', created_at) = strftime('%Y-%m', 'now')",
         "bindings": [],
-        "time": 0.08,
+        "time": 0.09,
         "readWriteType": "write"
     },
-    "timestamp": "2026-02-08T17:38:48+00:00"
+    "timestamp": "2026-02-08T18:59:15+00:00"
 }

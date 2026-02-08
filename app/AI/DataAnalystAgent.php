@@ -23,9 +23,18 @@ class DataAnalystAgent extends Agent
         $this->pdo ??= DB::connection()->getPdo();
     }
 
+    public function instructions(): string
+    {
+        return (string) new SystemPrompt(
+            background: [
+                'You are a data analyst. Analyze database queries and provide insights.',
+            ],
+        );
+    }
+
     protected function provider(): AIProviderInterface
     {
-        $settings = app(GeneralSettings::class);
+        $settings      = app(GeneralSettings::class);
         $modelsService = app(ModelsDevService::class);
 
         $baseUri = $modelsService->getApiEndpoint($settings->aiProvider);
@@ -34,22 +43,13 @@ class DataAnalystAgent extends Agent
             baseUri: $baseUri,
             key: $settings->aiApiKey,
             model: $settings->aiModel,
-            options: new HttpClientOptions(timeout: 120),
+            httpOptions: new HttpClientOptions(timeout: 120),
         );
     }
 
     protected function chatHistory(): ChatHistoryInterface
     {
         return new InMemoryChatHistory(contextWindow: 200000);
-    }
-
-    public function instructions(): string
-    {
-        return (string) new SystemPrompt(
-            background: [
-                'You are a data analyst. Analyze database queries and provide insights.',
-            ]
-        );
     }
 
     protected function tools(): array

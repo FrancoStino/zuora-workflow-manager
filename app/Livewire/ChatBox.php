@@ -116,6 +116,8 @@ class ChatBox extends Component implements HasActions, HasSchemas
     public function generateResponse(string $question): void
     {
         try {
+            // Use container to get ChatService based on AI_PROVIDER config
+            // This supports both neuron-ai and laragent seamlessly
             $chatService = app(NeuronChatService::class);
 
             // Streaming

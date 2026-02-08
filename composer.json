@@ -20,6 +20,7 @@
     "filament/spatie-laravel-settings-plugin": "^4.0",
     "laravel/framework": "^12.0",
     "laravel/tinker": "^2.10.1",
+    "maestroerror/laragent": "^1.2",
     "moox/jobs": "^4.0.0-beta.3",
     "neuron-core/neuron-ai": "^2.11",
     "njxqlus/filament-relation-manager-component": "^2.1",

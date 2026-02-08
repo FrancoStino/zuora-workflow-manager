@@ -1,12 +1,12 @@
 {
     "query": "SELECT COUNT(*) as count FROM workflows",
-    "execution_time_ms": 0.14,
+    "execution_time_ms": 0.15,
     "results_count": 1,
     "sql_logged": {
         "query": "SELECT COUNT(*) as count FROM workflows",
         "bindings": [],
-        "time": 0.04,
+        "time": 0.03,
         "readWriteType": "write"
     },
-    "timestamp": "2026-02-08T17:38:46+00:00"
+    "timestamp": "2026-02-08T18:59:13+00:00"
 }

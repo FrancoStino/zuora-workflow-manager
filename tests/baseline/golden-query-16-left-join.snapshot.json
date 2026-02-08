@@ -1,6 +1,6 @@
 {
     "query": "SELECT w.id, w.name, COUNT(t.id) as task_count\n                  FROM workflows w\n                  LEFT JOIN tasks t ON w.id = t.workflow_id\n                  GROUP BY w.id, w.name",
-    "execution_time_ms": 0.19,
+    "execution_time_ms": 0.21,
     "results_count": 8,
     "sql_logged": {
         "query": "SELECT w.id, w.name, COUNT(t.id) as task_count\n                  FROM workflows w\n                  LEFT JOIN tasks t ON w.id = t.workflow_id\n                  GROUP BY w.id, w.name",
@@ -8,5 +8,5 @@
         "time": 0.1,
         "readWriteType": "write"
     },
-    "timestamp": "2026-02-08T17:38:48+00:00"
+    "timestamp": "2026-02-08T18:59:15+00:00"
 }

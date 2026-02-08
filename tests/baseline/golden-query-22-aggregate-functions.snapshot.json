@@ -1,12 +1,12 @@
 {
     "query": "SELECT \n                    customer_id,\n                    COUNT(*) as total_workflows,\n                    AVG(LENGTH(name)) as avg_name_length,\n                    SUM(CASE WHEN state = \"Active\" THEN 1 ELSE 0 END) as active_count\n                  FROM workflows\n                  GROUP BY customer_id",
-    "execution_time_ms": 0.17,
+    "execution_time_ms": 0.21,
     "results_count": 1,
     "sql_logged": {
         "query": "SELECT \n                    customer_id,\n                    COUNT(*) as total_workflows,\n                    AVG(LENGTH(name)) as avg_name_length,\n                    SUM(CASE WHEN state = \"Active\" THEN 1 ELSE 0 END) as active_count\n                  FROM workflows\n                  GROUP BY customer_id",
         "bindings": [],
-        "time": 0.07,
+        "time": 0.08,
         "readWriteType": "write"
     },
-    "timestamp": "2026-02-08T17:38:49+00:00"
+    "timestamp": "2026-02-08T18:59:16+00:00"
 }
