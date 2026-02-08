@@ -123,4 +123,17 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | AI Provider Configuration
+    |--------------------------------------------------------------------------
+    |
+    | This value determines which AI provider to use for the chat service.
+    | Supported values: 'neuron' (neuron-ai), 'laragent' (laragent)
+    | Default: 'neuron' (legacy system)
+    |
+    */
+
+    'ai_provider' => env('AI_PROVIDER', 'neuron'),
+
 ];

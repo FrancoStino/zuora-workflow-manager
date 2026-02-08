@@ -19,7 +19,16 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        // NOTE: Conditional ChatService binding will be implemented in Task 7
+        // after LaragentChatService is created. For now, NeuronChatService
+        // is automatically resolved by Laravel's container with its dependencies.
         //
+        // Future implementation (Task 7):
+        // $this->app->singleton(ChatServiceInterface::class, function ($app) {
+        //     return config('app.ai_provider') === 'laragent'
+        //         ? $app->make(LaragentChatService::class)
+        //         : $app->make(NeuronChatService::class);
+        // });
     }
 
     /**
