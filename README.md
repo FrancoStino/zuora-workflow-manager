@@ -372,7 +372,6 @@ lando composer run dev                              # Full dev stack
   - Layer 2: `DB::listen` event (application-level fallback)
   - Blocks: INSERT, UPDATE, DELETE operations from AI
 - **Monitoring**: Dedicated log channel (`storage/logs/laragent.log`) with tool execution tracking
-- **Feature Flag**: `AI_PROVIDER` env variable for instant rollback capability
 
 ### Queue Processing Flow
 

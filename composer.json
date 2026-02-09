@@ -22,7 +22,6 @@
     "laravel/tinker": "^2.10.1",
     "maestroerror/laragent": "^1.2",
     "moox/jobs": "^4.0.0-beta.3",
-    "neuron-core/neuron-ai": "^2.11",
     "njxqlus/filament-relation-manager-component": "^2.1",
     "owenvoke/blade-fontawesome": "^3.0",
     "phiki/phiki": "^2.1",

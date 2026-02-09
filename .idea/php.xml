@@ -187,8 +187,6 @@
       <path value="$PROJECT_DIR$/vendor/php-debugbar/symfony-bridge" />
       <path value="$PROJECT_DIR$/vendor/_laravel_idea" />
       <path value="$PROJECT_DIR$/vendor/phiki/phiki" />
-      <path value="$PROJECT_DIR$/vendor/inspector-apm/inspector-php" />
-      <path value="$PROJECT_DIR$/vendor/neuron-core/neuron-ai" />
       <path value="$PROJECT_DIR$/vendor/redberry/mcp-client-laravel" />
       <path value="$PROJECT_DIR$/vendor/maestroerror/laragent" />
       <path value="$PROJECT_DIR$/vendor/mozex/anthropic-php" />

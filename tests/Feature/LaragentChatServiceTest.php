@@ -119,7 +119,7 @@ class LaragentChatServiceTest extends TestCase
 
         $this->settings->aiChatEnabled = true;
 
-        $this->mock(DataAnalystAgent::class)
+        $this->mock(DataAnalystAgentLaragent::class)
             ->shouldReceive('respond')
             ->andThrow(new \Exception('Test error'));
 
@@ -129,7 +129,7 @@ class LaragentChatServiceTest extends TestCase
             $this->assertStringContainsString('Error:', $message->content);
             $this->assertTrue($message->metadata['error'] ?? false);
         } catch (\Exception $e) {
-            $this->markTestIncomplete('Mocking DataAnalystAgent static methods is complex, test needs revision');
+            $this->markTestIncomplete('Mocking DataAnalystAgentLaragent static methods is complex, test needs revision');
         }
     }
 
