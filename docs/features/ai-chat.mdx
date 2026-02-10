@@ -1,0 +1,67 @@
+---
+title: 'AI Chat System'
+description: 'Natural language database analysis and insights powered by LarAgent'
+icon: 'message-bot'
+---
+
+## Overview
+
+The Zuora Workflow Manager includes a powerful AI-powered chat system that acts as a Data Analyst. It allows users to query the database using natural language, providing insights into workflows, tasks, and other system data.
+
+<img
+  className="block dark:hidden"
+  src="/images/ai-chat-light.png"
+  alt="AI Chat Interface"
+/>
+<img
+  className="hidden dark:block"
+  src="/images/ai-chat-dark.png"
+  alt="AI Chat Interface"
+/>
+
+## Architecture
+
+The AI system is built on **LarAgent**, a Laravel package for building AI agents. It leverages a modern, event-driven architecture to provide fast, streaming responses while maintaining strict security and context awareness.
+
+### Core Components
+
+- **`LaragentChatService`**: The main service layer that handles chat interaction, context management, and response streaming.
+- **`DataAnalystAgentLaragent`**: The specific agent implementation configured to understand the application's database schema and execute safe queries.
+- **`DatabaseSchemaService`**: A dedicated service that provides the agent with an up-to-date, cached representation of the database schema (tables, columns, relationships).
+
+## Capabilities
+
+The Data Analyst Agent is capable of:
+
+1.  **Natural Language to SQL**: converting user questions (e.g., "How many workflows are in 'Draft' state?") into optimized SQL queries.
+2.  **Schema Awareness**: Understanding the relationships between `workflows`, `tasks`, `customers`, and `settings` tables.
+3.  **Context Retention**: Remembering details from previous messages in the conversation (e.g., "Filter that list by customer X").
+4.  **Streaming Responses**: Delivering tokens in real-time as they are generated, providing an immediate feedback loop to the user.
+
+## Context Management
+
+To handle long conversations without hitting the token limits of the underlying LLM (e.g., GPT-4o), the system implements a smart **Summarization Strategy**.
+
+*   **Mechanism**: `SummarizationStrategy`
+*   **Behavior**: When the conversation history exceeds a certain token threshold, the system automatically takes the oldest chunk of messages (e.g., 10 messages) and asks the AI to summarize them into a single "memory" message.
+*   **Benefit**: This allows the conversation to effectively continue indefinitely while retaining key facts (like user names, specific entities discussed, or analysis goals) without crashing the context window.
+
+## Security
+
+Security is a primary design constraint of the AI system. It implements a defense-in-depth strategy:
+
+### 1. Software-Level Blocking
+The `DataAnalystAgentLaragent` class includes a strict pre-execution hook that analyzes every generated SQL query before it runs.
+*   **Regex Filtering**: It strictly blocks keywords associated with data modification: `INSERT`, `UPDATE`, `DELETE`, `DROP`, `ALTER`, `TRUNCATE`.
+*   **Whitelist**: Only `SELECT`, `SHOW`, `DESCRIBE`, `EXPLAIN`, and `WITH` statements are allowed.
+
+### 2. Driver Enforcement
+For external AI providers (like NVIDIA or OpenRouter), the system enforces the `OpenAiCompatible` driver to ensure consistent behavior and security protocols are applied regardless of the underlying model.
+
+### 3. Read-Only Database Connection (Recommended)
+For production environments, the system is configured to use a dedicated `ai_chat_readonly` database connection (if configured in `config/database.php`). This connection should be credentialed with a user that **only** has `SELECT` permissions at the database server level, providing a hard stop against any potential injection attacks.
+
+## Performance
+
+*   **Schema Caching**: The `DatabaseSchemaService` caches the complex schema map for **1 hour**. This prevents expensive `INFORMATION_SCHEMA` queries on every interaction, significantly reducing latency.
+*   **Generators**: The chat service uses PHP Generators to stream responses efficiently to the frontend without buffering the entire output.

@@ -123,4 +123,18 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | AI Security Listener
+    |--------------------------------------------------------------------------
+    |
+    | This value determines if the global DB listener for AI security should
+    | be enabled. When enabled, it blocks all write operations (INSERT, UPDATE,
+    | DELETE) at the database level as a fallback security layer.
+    | Disabled by default in testing environment.
+    |
+    */
+
+    'enable_ai_security_listener' => env('ENABLE_AI_SECURITY_LISTENER', env('APP_ENV') !== 'testing'),
+
 ];

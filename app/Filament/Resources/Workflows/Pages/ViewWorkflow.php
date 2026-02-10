@@ -5,8 +5,8 @@ namespace App\Filament\Resources\Workflows\Pages;
 use App\Filament\Concerns\HasWorkflowDownloadAction;
 use App\Filament\Resources\Workflows\RelationManagers\TasksRelationManager;
 use App\Filament\Resources\Workflows\WorkflowResource;
-use CodebarAg\FilamentJsonField\Infolists\Components\JsonEntry;
 use Filament\Actions\Action;
+use Filament\Infolists\Components\CodeEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Components\ViewEntry;
 use Filament\Resources\Pages\ViewRecord;
@@ -64,7 +64,8 @@ class ViewWorkflow extends ViewRecord
                                         'Inactive' => Heroicon::XCircle,
                                         default => Heroicon::QuestionMarkCircle,
                                     })
-                                    ->color(fn (string $state): string => match ($state) {
+                                    ->color(fn (string $state,
+                                    ): string => match ($state) {
                                         'Active' => 'success',
                                         'Inactive' => 'danger',
                                         default => 'gray',
@@ -88,9 +89,11 @@ class ViewWorkflow extends ViewRecord
                                             return 'Never';
                                         }
 
-                                        $daysSince = $this->calculateDaysSinceSync($state);
+                                        $daysSince
+                                            = $this->calculateDaysSinceSync($state);
 
-                                        return $daysSince === 0 ? 'Today' : "$daysSince days ago";
+                                        return $daysSince === 0 ? 'Today'
+                                            : "$daysSince days ago";
                                     }),
                                 TextEntry::make('customer.name')
                                     ->label('Customer Name')
@@ -117,24 +120,33 @@ class ViewWorkflow extends ViewRecord
                         Tab::make('Workflow JSON')
                             ->icon('json')
                             ->schema([
-                                ViewEntry::make('copy_json_button')
-                                    ->hiddenLabel()
-                                    ->view('filament.components.copy-json-button', [
-                                        'jsonData' => $this->record->json_export,
+                                Section::make()
+                                    ->schema([
+                                        ViewEntry::make('copy_json_button')
+                                            ->view('filament.components.copy-json-button',
+                                                [
+                                                    'jsonData' => $this->record->json_export,
+                                                ]),
+                                        CodeEntry::make('json_export')
+                                            ->hiddenLabel()
+                                            ->copyable(),
+                                        ViewEntry::make('copy_json_button')
+                                            ->view('filament.components.copy-json-button',
+                                                [
+                                                    'jsonData' => $this->record->json_export,
+                                                ]),
                                     ]),
-
-                                JsonEntry::make('json_export')
-                                    ->hiddenLabel()
-                                    ->darkTheme(),
-
                             ]),
                         Tab::make('Graphical View')
                             ->icon('workflow-square')
                             ->schema([
-                                ViewEntry::make('workflow_graph')
-                                    ->hiddenLabel()
-                                    ->view('filament.components.workflow-graph', [
-                                        'workflowData' => $this->record->json_export,
+                                Section::make()
+                                    ->schema([
+                                        ViewEntry::make('workflow_graph')
+                                            ->view('filament.components.workflow-graph',
+                                                [
+                                                    'workflowData' => $this->record->json_export,
+                                                ]),
                                     ]),
                             ]),
                     ]),

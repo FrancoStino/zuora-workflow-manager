@@ -8,8 +8,11 @@ use DutchCodingCompany\FilamentSocialite\Events\Login;
 use DutchCodingCompany\FilamentSocialite\Events\Registered;
 use Filament\Support\Facades\FilamentView;
 use Filament\View\PanelsRenderHook;
+use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,7 +22,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // LaragentChatService is the primary chat service
+        // No feature flag needed - using LarAgent only
     }
 
     /**
@@ -35,5 +39,22 @@ class AppServiceProvider extends ServiceProvider
             PanelsRenderHook::USER_MENU_BEFORE,
             fn (): string => Blade::render('<livewire:documentation-button />'),
         );
+
+        DB::listen(function (QueryExecuted $query) {
+            $enableSecurityListener = config('app.enable_ai_security_listener', true);
+
+            if (! $enableSecurityListener) {
+                return;
+            }
+
+            if (preg_match('/\b(INSERT|UPDATE|DELETE)\b/i', $query->sql)) {
+                Log::critical('SECURITY BREACH: AI attempted write', [
+                    'sql' => $query->sql,
+                    'bindings' => $query->bindings,
+                ]);
+
+                throw new \RuntimeException('AI write operations forbidden');
+            }
+        });
     }
 }

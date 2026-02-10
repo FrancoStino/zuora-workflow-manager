@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\ChatBenchmarkController;
 use App\Services\ZuoraService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -31,4 +32,9 @@ Route::get('/zuora/download/{workflowId}', function ($workflowId, Request $reque
     } catch (Exception $e) {
         return response()->json(['error' => $e->getMessage()], 500);
     }
+});
+
+Route::prefix('chat')->group(function () {
+    Route::get('/threads', [ChatBenchmarkController::class, 'threads']);
+    Route::post('/threads/{thread}/messages', [ChatBenchmarkController::class, 'messages']);
 });

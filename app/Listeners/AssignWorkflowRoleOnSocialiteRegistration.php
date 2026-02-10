@@ -9,17 +9,41 @@ class AssignWorkflowRoleOnSocialiteRegistration
 {
     /**
      * Handle the event when a user registers via Socialite.
-     * Assigns the existing workflow_user role to the newly registered user.
+     * Creates the workflow_user role if it doesn't exist and assigns it to the user.
+     * Also creates all necessary workflow permissions.
      */
     public function handle(Registered $event): void
     {
         $user = $event->socialiteUser->getUser();
 
-        // Retrieve the workflow_user role (created during setup)
-        $role = Role::where('name', 'workflow_user')->where('guard_name', 'web')->first();
+        // Create or retrieve the workflow_user role
+        $role = Role::firstOrCreate(
+            ['name' => 'workflow_user', 'guard_name' => 'web']
+        );
 
-        if ($role) {
-            $user->assignRole($role);
+        // Create workflow permissions if they don't exist
+        $permissions = [
+            'ViewAny:Workflow',
+            'View:Workflow',
+            'Create:Workflow',
+            'Update:Workflow',
+            'Delete:Workflow',
+            'Restore:Workflow',
+            'ForceDelete:Workflow',
+            'ForceDeleteAny:Workflow',
+            'RestoreAny:Workflow',
+            'Replicate:Workflow',
+            'Reorder:Workflow',
+        ];
+
+        foreach ($permissions as $permissionName) {
+            $permission = \Spatie\Permission\Models\Permission::firstOrCreate(
+                ['name' => $permissionName, 'guard_name' => 'web']
+            );
+            $role->givePermissionTo($permission);
         }
+
+        // Assign role to user
+        $user->assignRole($role);
     }
 }

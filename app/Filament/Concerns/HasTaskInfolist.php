@@ -2,7 +2,7 @@
 
 namespace App\Filament\Concerns;
 
-use CodebarAg\FilamentJsonField\Infolists\Components\JsonEntry;
+use Filament\Infolists\Components\CodeEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
@@ -105,9 +105,10 @@ trait HasTaskInfolist
                 ->collapsible()
                 ->collapsed()
                 ->schema([
-                    JsonEntry::make('parameters')
+                    CodeEntry::make('parameters')
                         ->hiddenLabel()
-                        ->darkTheme(),
+                        ->copyable()
+                        ->copyMessage('Copied!'),
                 ]),
 
             Section::make('CSS Position')
@@ -143,9 +144,10 @@ trait HasTaskInfolist
                         ->visible(fn ($record) => ! empty($record->tags))
                         ->placeholder('No tags'),
 
-                    JsonEntry::make('assignment')
+                    CodeEntry::make('assignment')
                         ->label('Assignments')
-                        ->darkTheme()
+                        ->copyable()
+                        ->copyMessage('Copied!')
                         ->visible(fn ($record) => ! empty($record->assignment)),
                 ]),
 

@@ -2,6 +2,8 @@
 
 namespace App\Filament\Concerns;
 
+use App\Services\ModelsDevService;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -17,6 +19,7 @@ trait HasGeneralSettingsSchema
         return [
             //            $this->getSiteInformationSection(),
             $this->getOAuthSection(),
+            $this->getAiSection(),
             $this->getMaintenanceSection(),
         ];
     }
@@ -47,7 +50,8 @@ trait HasGeneralSettingsSchema
                 ->separator(',')
                 ->reorderable()
                 // Ensure it's always an array
-                ->dehydrateStateUsing(fn ($state) => is_array($state) ? $state : [])
+                ->dehydrateStateUsing(fn ($state) => is_array($state) ? $state
+                    : [])
                 ->visible(fn (Get $get) => $get('oauthEnabled')),
 
             TextInput::make('oauthGoogleClientId')
@@ -71,9 +75,76 @@ trait HasGeneralSettingsSchema
 
                     return $record?->oauthGoogleClientSecret;
                 })
-                ->placeholder(fn ($record) => $record ? '***** (già impostato)' : null)
+                ->placeholder(fn ($record) => $record ? '***** (già impostato)'
+                    : null)
                 ->helperText('Get this from Google Cloud Console. Leave empty to use .env GOOGLE_CLIENT_SECRET')
                 ->visible(fn (Get $get) => $get('oauthEnabled')),
+        ];
+    }
+
+    public function getAiSection(): Section
+    {
+        return Section::make('AI Chat Configuration')
+            ->description('Configure AI provider settings for the database chat feature')
+            ->icon(Heroicon::OutlinedChatBubbleLeftRight)
+            ->columnSpanFull()
+            ->schema($this->getAiFields());
+    }
+
+    public function getAiFields(): array
+    {
+        $modelsService = app(ModelsDevService::class);
+
+        return [
+            Toggle::make('aiChatEnabled')
+                ->label('Enable AI Chat')
+                ->helperText('Enable/disable AI-powered database chat')
+                ->columnSpanFull()
+                ->live(),
+
+            Select::make('aiProvider')
+                ->label('AI Provider')
+                ->options(fn () => $modelsService->getProviderOptions())
+                ->default('openai')
+                ->loadingMessage('Loading AI providers and models...')
+                ->helperText('Select the AI provider to use for chat. Models are loaded from models.dev.')
+                ->live()
+                ->afterStateUpdated(function ($state, callable $set) use (
+                    $modelsService,
+                ) {
+                    // Reset model when provider changes
+                    $models = $modelsService->getModelOptions($state ??
+                        'openai');
+                    $firstModel = array_key_first($models);
+                    $set('aiModel', $firstModel);
+                })
+                ->visible(fn (Get $get) => $get('aiChatEnabled')),
+
+            TextInput::make('aiApiKey')
+                ->label('API Key')
+                ->password()
+                ->revealable()
+                ->dehydrateStateUsing(function ($state, $record) {
+                    if ($state) {
+                        return $state;
+                    }
+
+                    return $record?->aiApiKey;
+                })
+                ->placeholder(fn ($record) => $record?->aiApiKey
+                    ? '***** (already set)' : 'Enter your API key...')
+                ->helperText('Get this from your selected provider\'s dashboard')
+                ->visible(fn (Get $get) => $get('aiChatEnabled')),
+
+            Select::make('aiModel')
+                ->label('AI Model')
+                ->options(fn (Get $get,
+                ) => $modelsService->getModelOptions($get('aiProvider') ??
+                    'openai'))
+                ->default('gpt-4o-mini')
+                ->helperText('Select the model to use. Shows context window size.')
+                ->searchable()
+                ->visible(fn (Get $get) => $get('aiChatEnabled')),
         ];
     }
 

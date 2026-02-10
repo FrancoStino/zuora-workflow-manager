@@ -7,12 +7,13 @@ use Tests\TestCase;
 class ExampleTest extends TestCase
 {
     /**
-     * A basic test example.
+     * Test that the application root redirects to Filament login.
      */
     public function test_the_application_returns_a_successful_response(): void
     {
         $response = $this->get('/');
 
-        $response->assertStatus(200);
+        // Filament redirects unauthenticated users to login page
+        $response->assertRedirect();
     }
 }

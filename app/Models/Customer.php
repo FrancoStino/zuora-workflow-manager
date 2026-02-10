@@ -3,11 +3,14 @@
 namespace App\Models;
 
 use App\Casts\EncryptedCastZuoraClientSecret;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Customer extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'name',
         'zuora_client_id',

@@ -13,6 +13,11 @@ class TasksTable
     {
         return $table
             ->columns([
+                TextColumn::make('workflow.customer.name')
+                    ->label('Customer')
+                    ->searchable()
+                    ->sortable(),
+
                 TextColumn::make('task_id')
                     ->label('Task ID')
                     ->sortable()
@@ -87,6 +92,11 @@ class TasksTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
+                SelectFilter::make('customer')
+                    ->relationship('workflow.customer', 'name')
+                    ->searchable()
+                    ->preload(),
+
                 SelectFilter::make('workflow')
                     ->relationship('workflow', 'name')
                     ->searchable()

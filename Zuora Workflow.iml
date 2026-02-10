@@ -159,7 +159,6 @@
       <excludeFolder url="file://$MODULE_DIR$/vendor/ueberdosis/tiptap-php" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/vlucas/phpdotenv" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/voku/portable-ascii" />
-      <excludeFolder url="file://$MODULE_DIR$/vendor/_laravel_idea" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/bezhansalleh/filament-plugin-essentials" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/bezhansalleh/filament-shield" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/spatie/laravel-permission" />
@@ -168,7 +167,6 @@
       <excludeFolder url="file://$MODULE_DIR$/vendor/charrafimed/global-search-modal" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/barryvdh/laravel-debugbar" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/php-debugbar/php-debugbar" />
-      <excludeFolder url="file://$MODULE_DIR$/vendor/codebar-ag/laravel-filament-json-field" />
       <excludeFolder url="file://$MODULE_DIR$/storage/debugbar" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/njxqlus/filament-relation-manager-component" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/watheqalshowaiter/filament-sticky-table-header" />
@@ -182,6 +180,16 @@
       <excludeFolder url="file://$MODULE_DIR$/vendor/laravel/boost" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/laravel/mcp" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/laravel/roster" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/_laravel_idea" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/phiki/phiki" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/lucianotonet/groq-php" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/maestroerror/laragent" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/mozex/anthropic-php" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/openai-php/client" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/php-http/discovery" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/php-http/multipart-stream-builder" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/redberry/mcp-client-laravel" />
+      <excludeFolder url="file://$MODULE_DIR$/storage/backups" />
     </content>
     <orderEntry type="sourceFolder" forTests="false" />
   </component>

@@ -1,0 +1,62 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - main [ref=e2]:
+    - generic [ref=e4]:
+      - heading "404" [level=1] [ref=e5]
+      - generic [ref=e6]: Not Found
+  - generic [ref=e7]:
+    - generic [ref=e9]:
+      - generic [ref=e11]:
+        - generic [ref=e12] [cursor=pointer]:
+          - generic: Request
+          - generic [ref=e13]: "404"
+        - generic [ref=e14] [cursor=pointer]:
+          - generic: Exceptions
+          - generic [ref=e15]: "1"
+        - generic [ref=e16] [cursor=pointer]:
+          - generic: Timeline
+        - generic [ref=e17] [cursor=pointer]:
+          - generic: Views
+          - generic [ref=e18]: "2"
+        - generic [ref=e19] [cursor=pointer]:
+          - generic: Queries
+          - generic [ref=e20]: "2"
+        - generic [ref=e21] [cursor=pointer]:
+          - generic: Models
+          - generic [ref=e22]: "12"
+      - generic [ref=e23]:
+        - generic [ref=e31] [cursor=pointer]: GET /admin/login
+        - generic [ref=e32] [cursor=pointer]:
+          - generic: 1.43s
+        - generic [ref=e34] [cursor=pointer]:
+          - generic: 92MB
+        - generic [ref=e36] [cursor=pointer]:
+          - generic: 12.x
+    - generic [ref=e38]:
+      - generic [ref=e40]:
+        - generic:
+          - list
+      - generic [ref=e42]:
+        - list [ref=e43]
+        - textbox "Search" [ref=e46]
+      - generic [ref=e47]:
+        - list
+      - generic [ref=e49]:
+        - list
+      - list [ref=e54]
+      - generic [ref=e57]:
+        - list
+      - generic [ref=e59]:
+        - generic:
+          - list
+      - generic [ref=e61]:
+        - list [ref=e62]
+        - textbox "Search" [ref=e65]
+      - generic [ref=e66]:
+        - list
+      - generic [ref=e68]:
+        - generic:
+          - list
+```

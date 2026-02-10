@@ -2,20 +2,18 @@
 
 namespace App\Settings;
 
+use App\Settings\Casts\EncryptedCastAiApiKey;
 use App\Settings\Casts\EncryptedCastGoogleClientSecret;
 use Spatie\LaravelSettings\Settings;
 
 class GeneralSettings extends Settings
 {
-    // Site Information
     public string $siteName = 'Zuora Workflow';
 
     public string $siteDescription = 'Workflow management for Zuora integration';
 
-    // Maintenance
     public bool $maintenanceMode = false;
 
-    // OAuth Configuration preset if empty
     public array $oauthAllowedDomains = [];
 
     public bool $oauthEnabled = false;
@@ -23,6 +21,14 @@ class GeneralSettings extends Settings
     public string $oauthGoogleClientId = '';
 
     public string $oauthGoogleClientSecret = '';
+
+    public bool $aiChatEnabled = false;
+
+    public string $aiProvider = 'openai';
+
+    public string $aiApiKey = '';
+
+    public string $aiModel = 'gpt-4o-mini';
 
     public static function group(): string
     {
@@ -33,6 +39,7 @@ class GeneralSettings extends Settings
     {
         return [
             'oauthGoogleClientSecret' => EncryptedCastGoogleClientSecret::class,
+            'aiApiKey' => EncryptedCastAiApiKey::class,
         ];
     }
 }
