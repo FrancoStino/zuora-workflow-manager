@@ -35,7 +35,8 @@ class CustomerForm
 
                         return $record?->zuora_client_secret;
                     })
-                    ->placeholder(fn ($record) => $record ? '***** (già impostato)' : null),
+                    ->placeholder(fn ($record) => $record ? '***** (already set)'
+                        : null),
 
                 Select::make('zuora_base_url')
                     ->label('Base URL')
