@@ -75,7 +75,7 @@ trait HasGeneralSettingsSchema
 
                     return $record?->oauthGoogleClientSecret;
                 })
-                ->placeholder(fn ($record) => $record ? '***** (già impostato)'
+                ->placeholder(fn ($record) => $record ? '***** (already set)'
                     : null)
                 ->helperText('Get this from Google Cloud Console. Leave empty to use .env GOOGLE_CLIENT_SECRET')
                 ->visible(fn (Get $get) => $get('oauthEnabled')),
