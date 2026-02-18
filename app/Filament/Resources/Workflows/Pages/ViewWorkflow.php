@@ -28,6 +28,16 @@ class ViewWorkflow extends ViewRecord
 
     protected static string $resource = WorkflowResource::class;
 
+    /**
+     * Builds and returns the infolist schema for the current workflow record.
+     *
+     * Ensures the related customer is loaded, binds the record to the provided
+     * schema, and configures sections for general information, associated tasks,
+     * and tabs for a JSON export and graphical workflow view.
+     *
+     * @param Schema $schema The base infolist schema to configure and bind the record to.
+     * @return Schema The configured infolist schema bound to the current workflow record.
+     */
     public function infolist(Schema $schema): Schema
     {
         $this->record->loadMissing(['customer']);

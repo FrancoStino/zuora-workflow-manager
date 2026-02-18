@@ -5,6 +5,16 @@ use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
+    /**
+     * Create the `ai_accessible_schema` view exposing column metadata for the application's tables.
+     *
+     * The view contains table_name, column_name, data_type, is_nullable, and column_key for
+     * the tables: workflows, tasks, customers, chat_threads, and chat_messages.
+     * For SQLite, the view is built from `pragma_table_info`; for other drivers, it is built
+     * from `information_schema.COLUMNS`.
+     *
+     * @return void
+     */
     public function up(): void
     {
         if (DB::getDriverName() === 'sqlite') {
@@ -37,6 +47,9 @@ return new class extends Migration
         ");
     }
 
+    /**
+     * Remove the ai_accessible_schema view from the database if it exists.
+     */
     public function down(): void
     {
         DB::statement('DROP VIEW IF EXISTS ai_accessible_schema;');

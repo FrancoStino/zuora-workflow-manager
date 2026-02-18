@@ -10,6 +10,21 @@ class WorkflowFactory extends Factory
 {
     protected $model = Workflow::class;
 
+    /**
+     * Provide default attribute values for creating a Workflow model instance.
+     *
+     * The returned array includes keys:
+     * - `customer_id`: a related Customer factory,
+     * - `zuora_id`: a UUID string,
+     * - `name`: three random words suffixed with " Workflow",
+     * - `description`: a random sentence,
+     * - `state`: one of "Active", "Draft", or "Inactive",
+     * - `created_on`: a datetime within the last year,
+     * - `updated_on`: a datetime within the last month,
+     * - `last_synced_at`: the current timestamp.
+     *
+     * @return array<string,mixed> Associative array of Workflow attributes for factory creation.
+     */
     public function definition(): array
     {
         return [

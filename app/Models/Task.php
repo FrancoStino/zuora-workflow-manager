@@ -46,6 +46,11 @@ class Task extends Model
             'zuora_org_ids' => 'array',
         ];
 
+    /**
+     * Get the workflow this task belongs to.
+     *
+     * @return BelongsTo The associated Workflow model relationship.
+     */
     public function workflow(): BelongsTo
     {
         return $this->belongsTo(Workflow::class);

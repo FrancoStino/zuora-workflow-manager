@@ -12,6 +12,15 @@ trait HasTaskInfolist
 {
     private const DATETIME_FORMAT = 'd/m/Y H:i';
 
+    /**
+     * Builds the Filament infolist schema used to render a task record's information sections.
+     *
+     * The returned array contains Section configurations (General Information, Parameters, CSS Position,
+     * Tags & Assignments, Timestamps). Several sections are conditionally visible based on the record's
+     * data (parameters, css, tags, assignment). Date/time entries use self::DATETIME_FORMAT for display.
+     *
+     * @return array An array of Filament Infolist Section schemas for a task record.
+     */
     protected function getTaskInfolistSchema(): array
     {
         return [

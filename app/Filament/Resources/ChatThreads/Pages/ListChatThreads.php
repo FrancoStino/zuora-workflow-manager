@@ -14,11 +14,24 @@ class ListChatThreads extends ListRecords
 {
     protected static string $resource = ChatThreadResource::class;
 
+    /**
+     * Get the page title displayed in the Filament header.
+     *
+     * @return string The page title.
+     */
     public function getTitle(): string
     {
         return 'AI Chat (Beta)';
     }
 
+    /**
+     * Builds header actions for the page, including a "New Chat" action that starts a chat thread or warns when AI Chat is disabled.
+     *
+     * The "New Chat" action is disabled when GeneralSettings->aiChatEnabled is false. When triggered while enabled,
+     * it creates a new ChatThread for the current user and redirects to the thread's view; when disabled it sends a warning notification.
+     *
+     * @return array<int, \Filament\Actions\Action> Header actions for the page.
+     */
     protected function getHeaderActions(): array
     {
         $settings = app(GeneralSettings::class);

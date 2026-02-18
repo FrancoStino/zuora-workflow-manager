@@ -7,7 +7,19 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Run the migrations.
+     * Create the chat_messages database table with its columns, foreign key constraint, and index.
+     *
+     * The table includes:
+     * - id primary key
+     * - chat_thread_id foreign key constrained to chat_threads with cascade on delete
+     * - role (string; e.g., "user", "assistant", "system")
+     * - content (text)
+     * - query_generated (text, nullable)
+     * - query_results (json, nullable)
+     * - metadata (json, nullable)
+     * - created_at and updated_at timestamps
+     *
+     * Adds a composite index on (chat_thread_id, created_at).
      */
     public function up(): void
     {
@@ -26,7 +38,7 @@ return new class extends Migration
     }
 
     /**
-     * Reverse the migrations.
+     * Drop the chat_messages table if it exists.
      */
     public function down(): void
     {

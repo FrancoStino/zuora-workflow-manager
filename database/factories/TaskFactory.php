@@ -10,6 +10,21 @@ class TaskFactory extends Factory
 {
     protected $model = Task::class;
 
+    /**
+     * Provide the default attribute set used to create a Task model instance.
+     *
+     * The returned array contains keys and their generated values for seeding:
+     * - `workflow_id`: a Workflow factory instance to associate a workflow.
+     * - `task_id`: a UUID string.
+     * - `name`: a two-word name with the suffix " Task".
+     * - `description`: a sentence describing the task.
+     * - `state`: one of `pending`, `running`, `completed`, or `failed`.
+     * - `action_type`: one of `Email`, `Export`, `SOAP`, or `Callout`.
+     * - `object`: one of `Account`, `Subscription`, or `Invoice`.
+     * - `priority`: one of `High`, `Medium`, or `Low`.
+     *
+     * @return array<string, mixed> Associative array of default Task attributes.
+     */
     public function definition(): array
     {
         return [

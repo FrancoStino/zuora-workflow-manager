@@ -10,11 +10,20 @@ class DatabaseSchemaService
 {
     protected PDO $pdo;
 
+    /**
+     * Initialize the service's PDO instance from the application's default database connection.
+     */
     public function __construct()
     {
         $this->pdo = DB::connection()->getPdo();
     }
 
+    /**
+     * Get the database schema formatted for LLM consumption, using the cached value when available.
+     *
+     * @param bool $forceRefresh If true, clear the cached schema before regenerating.
+     * @return string A Markdown-like string summarizing tables, columns, relationships, indexes, and constraints for LLM input.
+     */
     public function getSchema(bool $forceRefresh = false): string
     {
         if ($forceRefresh) {
@@ -33,6 +42,30 @@ class DatabaseSchemaService
         });
     }
 
+    /**
+     * Retrieve table and column metadata for every base table in the current database.
+     *
+     * Returns an associative array keyed by table name. Each table entry contains:
+     * - name: table name
+     * - engine: storage engine
+     * - estimated_rows: estimated row count
+     * - comment: table comment
+     * - columns: list of column metadata objects with fields:
+     *     - name
+     *     - type
+     *     - full_type
+     *     - nullable
+     *     - default
+     *     - auto_increment
+     *     - comment
+     *     - max_length (present when applicable)
+     *     - precision and scale (present when applicable)
+     * - primary_key: array of column names that form the primary key
+     * - unique_keys: array of column names marked unique
+     * - indexes: array of column names participating in non-unique/multi-column indexes
+     *
+     * @return array Associative array of table metadata keyed by table name.
+     */
     protected function getTables(): array
     {
         $stmt = $this->pdo->prepare("
@@ -114,6 +147,14 @@ class DatabaseSchemaService
         return $tables;
     }
 
+    /**
+     * Retrieve foreign key relationships for the current database as associative rows.
+     *
+     * Each array entry describes one foreign key mapping and contains the following keys:
+     * `CONSTRAINT_NAME`, `source_table`, `source_column`, `target_table`, `target_column`, `UPDATE_RULE`, `DELETE_RULE`.
+     *
+     * @return array<int, array{CONSTRAINT_NAME: string, source_table: string, source_column: string, target_table: string, target_column: string, UPDATE_RULE: string, DELETE_RULE: string}> Numeric array of associative relationship rows.
+     */
     protected function getRelationships(): array
     {
         $stmt = $this->pdo->prepare('
@@ -138,6 +179,16 @@ class DatabaseSchemaService
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    /**
+     * Collects metadata for all non-primary indexes in the current database.
+     *
+     * @return array<int, array{table:string, name:string, unique:bool, type:string, columns:string[]}> An array of index descriptions; each entry contains:
+     *  - `table`: the table name,
+     *  - `name`: the index name,
+     *  - `unique`: `true` if the index is unique, `false` otherwise,
+     *  - `type`: the index type (e.g., BTREE),
+     *  - `columns`: ordered list of column names that form the index.
+     */
     protected function getIndexes(): array
     {
         $stmt = $this->pdo->prepare("
@@ -176,6 +227,11 @@ class DatabaseSchemaService
         return array_values($indexes);
     }
 
+    /**
+     * Retrieve unique constraints defined in the current database from INFORMATION_SCHEMA.
+     *
+     * @return array<int, array{CONSTRAINT_NAME: string, TABLE_NAME: string, CONSTRAINT_TYPE: string}> An array of associative arrays, each containing `CONSTRAINT_NAME`, `TABLE_NAME`, and `CONSTRAINT_TYPE` for a unique constraint.
+     */
     protected function getConstraints(): array
     {
         $stmt = $this->pdo->prepare("
@@ -192,6 +248,27 @@ class DatabaseSchemaService
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    /**
+     * Build a Markdown-like, human-readable analysis of a database schema for LLM consumption.
+     *
+     * Accepts a structured schema (as produced by the service's helpers) and returns a formatted
+     * textual representation that includes a tables overview, detailed table structures (columns,
+     * primary and unique keys), foreign key relationships, available indexes, and query-generation
+     * guidelines.
+     *
+     * @param array $structure Associative array describing the database schema. Expected top-level keys:
+     *                         - 'tables': array of tables where each table contains keys like
+     *                           'name', 'engine', 'estimated_rows', 'comment', 'columns' (array of
+     *                           columns with 'name', 'full_type', 'nullable', 'default', 'auto_increment',
+     *                           'comment', etc.), 'primary_key', and 'unique_keys'.
+     *                         - 'relationships': array of foreign key relationships with keys such as
+     *                           'source_table', 'source_column', 'target_table', 'target_column',
+     *                           'UPDATE_RULE', 'DELETE_RULE'.
+     *                         - 'indexes': array of index metadata with keys like 'table', 'name',
+     *                           'unique', 'type', and 'columns'.
+     *                         - 'constraints': (optional) array of constraint metadata.
+     * @return string A Markdown-formatted string summarizing the schema suitable for LLM input or human review.
+     */
     protected function formatSchemaForLLM(array $structure): string
     {
         $output = "# MySQL Database Schema Analysis\n\n";

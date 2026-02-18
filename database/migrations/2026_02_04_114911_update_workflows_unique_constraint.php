@@ -7,7 +7,9 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Run the migrations.
+     * Replace the global unique constraint on `zuora_id` with a composite unique constraint scoped by `customer_id`.
+     *
+     * Drops the unique index named `workflows_zuora_id_unique` on the `workflows` table and adds a composite unique index on (`customer_id`, `zuora_id`) named `workflows_customer_zuora_unique`.
      */
     public function up(): void
     {
@@ -21,7 +23,11 @@ return new class extends Migration
     }
 
     /**
-     * Reverse the migrations.
+     * Reverts the unique-constraint changes on the workflows table.
+     *
+     * Drops the composite unique constraint on (customer_id, zuora_id) named
+     * workflows_customer_zuora_unique and restores the unique constraint on zuora_id
+     * named workflows_zuora_id_unique.
      */
     public function down(): void
     {

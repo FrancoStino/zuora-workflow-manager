@@ -17,9 +17,9 @@ class UserFactory extends Factory
     protected static ?string $password = null;
 
     /**
-     * Define the model's default state.
+     * Provide the default attribute values for a new User model instance.
      *
-     * @return array<string, mixed>
+     * @return array<string, mixed> An associative array mapping user attribute names to their default values.
      */
     public function definition(): array
     {

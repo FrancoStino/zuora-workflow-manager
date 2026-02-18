@@ -17,21 +17,44 @@ class ChatThread extends Model
         'title',
     ];
 
+    /**
+     * Get the user that owns the chat thread.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo The associated User model relationship.
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * Get chat messages for this thread ordered by creation time ascending.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany HasMany relation of ChatMessage models ordered by `created_at` ascending.
+     */
     public function messages(): HasMany
     {
         return $this->hasMany(ChatMessage::class)->orderBy('created_at', 'asc');
     }
 
+    /**
+     * Get the latest related chat message for this thread.
+     *
+     * Defines a HasMany relationship limited to the most recently created ChatMessage.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany The relationship containing the most recent ChatMessage.
+     */
     public function latestMessage(): HasMany
     {
         return $this->hasMany(ChatMessage::class)->latestOfMany();
     }
 
+    /**
+     * Set the thread title from the first user message when no title is present.
+     *
+     * If the chat thread has no title, finds the first related message with role "user"
+     * and updates the thread's title to that message's content truncated to 50 characters.
+     */
     public function generateTitleFromFirstMessage(): void
     {
         if ($this->title) {

@@ -4,6 +4,15 @@ use Spatie\LaravelSettings\Migrations\SettingsMigration;
 
 return new class extends SettingsMigration
 {
+    /**
+     * Ensures consolidated AI-related general settings exist and creates them with defaults if missing.
+     *
+     * Adds the following settings only when they are not already present:
+     * - `general.aiChatEnabled` => `false`
+     * - `general.aiProvider` => `'openai'`
+     * - `general.aiApiKey` => `''` (empty string)
+     * - `general.aiModel` => `'gpt-4o-mini'`
+     */
     public function up(): void
     {
         // Add final consolidated settings if they don't exist
