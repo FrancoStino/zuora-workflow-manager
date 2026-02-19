@@ -19,10 +19,13 @@ use Illuminate\Http\Request;
 class ChatBenchmarkController extends Controller
 {
     /**
-     * List chat threads (paginated)
+     * Return a paginated list of chat threads including each thread's user.
      *
-     * Endpoint: GET /api/chat/threads
-     * Purpose: Apache Bench baseline for thread listing performance
+     * Responds with a JSON object containing a `success` flag, `data` with the paginated
+     * threads (50 per page, ordered by latest), and a `meta` object with `provider` set
+     * to "laragent" and an ISO8601 `timestamp`.
+     *
+     * @return \Illuminate\Http\JsonResponse JSON response with the paginated threads and metadata.
      */
     public function threads(): JsonResponse
     {
@@ -41,15 +44,11 @@ class ChatBenchmarkController extends Controller
     }
 
     /**
-     * Send message and get AI response
+     * Send a message to a chat thread and return the AI-generated response while measuring processing latency.
      *
-     * Endpoint: POST /api/chat/threads/{thread}/messages
-     * Purpose: Apache Bench test for message processing latency
-     *
-     * Request body:
-     * {
-     *   "message": "Your question here"
-     * }
+     * @param Request $request HTTP request containing 'message' (required string, maximum 5000 characters).
+     * @param ChatThread $thread The target chat thread.
+     * @return JsonResponse On success: JSON with `success: true`, `data` containing `message` (AI response) and `thread_id`, and `meta` with `provider`, `latency_ms` (milliseconds, rounded to 2 decimals), and `timestamp`. On error: JSON with `success: false`, `error` (exception message), `meta` as above, and HTTP status 500.
      */
     public function messages(Request $request, ChatThread $thread): JsonResponse
     {

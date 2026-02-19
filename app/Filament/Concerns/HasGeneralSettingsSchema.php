@@ -14,6 +14,11 @@ use Filament\Support\Icons\Heroicon;
 
 trait HasGeneralSettingsSchema
 {
+    /**
+     * Builds the form schema for general settings by composing sections for OAuth, AI chat, and maintenance.
+     *
+     * @return Section[] An ordered array of Section objects for the general settings form.
+     */
     public function getGeneralSettingsSchema(): array
     {
         return [
@@ -33,6 +38,14 @@ trait HasGeneralSettingsSchema
             ->schema($this->getOAuthFields());
     }
 
+    /**
+     * Builds the Filament form field definitions for OAuth configuration.
+     *
+     * The returned schema includes controls to enable/disable OAuth, constrain allowed email
+     * domains, and configure Google OAuth client ID and secret.
+     *
+     * @return array An array of Filament form components comprising the OAuth settings fields.
+     */
     public function getOAuthFields(): array
     {
         return [
@@ -82,6 +95,13 @@ trait HasGeneralSettingsSchema
         ];
     }
 
+    /**
+     * Builds the "AI Chat Configuration" settings section for the general settings form.
+     *
+     * This section contains fields for enabling AI chat, selecting a provider and model, and configuring the provider API key.
+     *
+     * @return \Filament\Forms\Components\Section The configured Filament Section for AI chat settings.
+     */
     public function getAiSection(): Section
     {
         return Section::make('AI Chat Configuration')
@@ -91,6 +111,15 @@ trait HasGeneralSettingsSchema
             ->schema($this->getAiFields());
     }
 
+    /**
+     * Build and return the form fields for configuring AI chat settings.
+     *
+     * The returned schema includes an enable toggle, provider selector (options loaded from ModelsDevService),
+     * API key input (preserves existing stored value when left blank), and model selector (options loaded
+     * based on the selected provider). Visibility and defaults are configured so fields appear only when AI chat is enabled.
+     *
+     * @return array Array of Filament form components comprising the AI chat configuration fields.
+     */
     public function getAiFields(): array
     {
         $modelsService = app(ModelsDevService::class);
@@ -148,6 +177,11 @@ trait HasGeneralSettingsSchema
         ];
     }
 
+    /**
+     * Create the "Maintenance" settings section used to control access to the application during maintenance.
+     *
+     * @return Section The configured maintenance Section instance.
+     */
     public function getMaintenanceSection(): Section
     {
         return Section::make('Maintenance')

@@ -7,7 +7,14 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Run the migrations.
+     * Create the chat_threads table.
+     *
+     * The table contains:
+     * - `id` primary key
+     * - `user_id` foreign key referencing `users(id)` with cascade on delete
+     * - `title` nullable string
+     * - `created_at` and `updated_at` timestamps
+     * An index is added on `user_id`.
      */
     public function up(): void
     {
@@ -22,7 +29,9 @@ return new class extends Migration
     }
 
     /**
-     * Reverse the migrations.
+     * Drop the `chat_threads` table if it exists.
+     *
+     * Reverses the migration by removing the `chat_threads` table and its indexes/constraints.
      */
     public function down(): void
     {

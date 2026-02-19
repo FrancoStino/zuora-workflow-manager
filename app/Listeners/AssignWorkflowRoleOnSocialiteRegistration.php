@@ -8,9 +8,12 @@ use Spatie\Permission\Models\Role;
 class AssignWorkflowRoleOnSocialiteRegistration
 {
     /**
-     * Handle the event when a user registers via Socialite.
-     * Creates the workflow_user role if it doesn't exist and assigns it to the user.
-     * Also creates all necessary workflow permissions.
+     * Assigns a workflow role and its permissions to a newly registered Socialite user.
+     *
+     * Ensures the 'workflow_user' role and the required Workflow permissions exist (guard 'web'),
+     * then attaches those permissions to the role and assigns the role to the user carried by the event.
+     *
+     * @param Registered $event The Socialite registration event containing the created user.
      */
     public function handle(Registered $event): void
     {

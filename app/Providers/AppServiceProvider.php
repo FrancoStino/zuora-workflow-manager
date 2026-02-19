@@ -18,7 +18,9 @@ use Illuminate\Support\ServiceProvider;
 class AppServiceProvider extends ServiceProvider
 {
     /**
-     * Register any application services.
+     * Configure and register application-wide services.
+     *
+     * Notes that the LaragentChatService is the primary chat service and no feature flag is required.
      */
     public function register(): void
     {
@@ -27,7 +29,11 @@ class AppServiceProvider extends ServiceProvider
     }
 
     /**
-     * Bootstrap any application services.
+     * Bootstraps application services: registers authentication event listeners, a Filament user-menu render hook, and a database query listener that enforces AI write-operation protection.
+     *
+     * When the configuration key `app.enable_ai_security_listener` is enabled (defaults to true), the database listener detects INSERT, UPDATE, or DELETE SQL statements, logs a critical security event, and prevents the operation.
+     *
+     * @throws \RuntimeException If a database write statement is detected while the AI security listener is enabled.
      */
     public function boot(): void
     {

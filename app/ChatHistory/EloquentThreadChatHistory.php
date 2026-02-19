@@ -20,6 +20,20 @@ class EloquentThreadChatHistory implements ChatHistory
 
     protected string $identifier;
 
+    /**
+     * Create and initialize an EloquentThreadChatHistory instance by resolving or creating the associated ChatThread.
+     *
+     * The constructor accepts multiple identifier patterns:
+     * - SessionIdentityContract: derives a thread name and user id from the session identity.
+     * - null: generates a unique thread identifier and requires the current authenticated user.
+     * - numeric string: treats the identifier as an existing ChatThread ID and loads that thread (errors if not found).
+     * - string: uses the string as a thread identifier and resolves the user id from an explicit integer argument, a config array (ignored, falling back to the authenticated user), or the current authenticated user.
+     *
+     * @param string|SessionIdentityContract|null $identifier Session identity, existing thread ID, thread title, or null to generate a new identifier.
+     * @param mixed $userIdOrConfig Optional explicit user ID (int) or config array (ignored); when omitted the authenticated user id is used.
+     *
+     * @throws \RuntimeException If a required authenticated user id is not available or when a numeric thread id does not correspond to an existing ChatThread.
+     */
     public function __construct(string|SessionIdentityContract|null $identifier = null, mixed $userIdOrConfig = null)
     {
         // Pattern 1: SessionIdentity object (LarAgent internal)
@@ -71,6 +85,16 @@ class EloquentThreadChatHistory implements ChatHistory
         }
     }
 
+    /**
+     * Finds an existing chat thread for the given user and identifier, or creates a new one.
+     *
+     * The `$identifier` may be a numeric thread ID or a thread title. If numeric, the method first
+     * attempts to find a thread by ID and user; otherwise it searches by user and title before creating.
+     *
+     * @param string $identifier Thread title or numeric thread ID.
+     * @param int $userId ID of the user that owns the thread.
+     * @return ChatThread The found or newly created ChatThread instance.
+     */
     protected function findOrCreateThread(string $identifier, int $userId): ChatThread
     {
         if (is_numeric($identifier)) {
@@ -97,6 +121,16 @@ class EloquentThreadChatHistory implements ChatHistory
         ]);
     }
 
+    /**
+     * Persist a message to the current chat thread and update in-memory state.
+     *
+     * Saves the provided MessageInterface to the thread's persistent store, clears the message cache,
+     * and, if the thread has no user-defined title (or its title starts with "thread-"), generates a title
+     * from the first message. If the message metadata contains `query_generated` or `query_results`,
+     * those keys are promoted to top-level columns on the stored record.
+     *
+     * @param MessageInterface $message The message to persist.
+     */
     public function addMessage(MessageInterface $message): void
     {
         $metadata = $message->getMetadata();
@@ -129,6 +163,13 @@ class EloquentThreadChatHistory implements ChatHistory
         }
     }
 
+    /**
+     * Retrieve all messages for the current thread, converting stored ChatMessage records into a MessageArray and caching the result.
+     *
+     * The method converts each database ChatMessage into a LarAgent MessageInterface (ignoring messages with unsupported roles), stores the resulting collection in an in-memory cache, and returns that cached MessageArray on subsequent calls.
+     *
+     * @return MessageArray The converted messages for this thread; empty if the thread has no convertible messages.
+     */
     public function getMessages(): MessageArray
     {
         if ($this->messagesCache !== null) {
@@ -150,6 +191,14 @@ class EloquentThreadChatHistory implements ChatHistory
         return $this->messagesCache;
     }
 
+    /**
+     * Convert a stored ChatMessage model into a LarAgent message and enrich it with DB metadata.
+     *
+     * Merges the ChatMessage's metadata with additional fields (`db_id`, ISO8601 `created_at`) and, when present, `query_generated` and `query_results`, then returns a `UserMessage` for role `user`, an `AssistantMessage` for role `assistant`, or `null` for any other role.
+     *
+     * @param ChatMessage $dbMessage The database chat message to convert.
+     * @return MessageInterface|null `UserMessage` for role `user`, `AssistantMessage` for role `assistant`, or `null` otherwise.
+     */
     protected function convertToLarAgentMessage(ChatMessage $dbMessage): ?MessageInterface
     {
         $metadata = $dbMessage->metadata ?? [];
@@ -172,11 +221,21 @@ class EloquentThreadChatHistory implements ChatHistory
         };
     }
 
+    /**
+     * Get the thread identifier for this chat history.
+     *
+     * @return string The thread identifier.
+     */
     public function getIdentifier(): string
     {
         return $this->identifier;
     }
 
+    /**
+     * Get the most recent message from the thread.
+     *
+     * @return MessageInterface|null The most recently created message for the thread, or null if no messages exist.
+     */
     public function getLastMessage(): ?MessageInterface
     {
         $dbMessage = $this->thread->messages()
@@ -190,48 +249,96 @@ class EloquentThreadChatHistory implements ChatHistory
         return $this->convertToLarAgentMessage($dbMessage);
     }
 
+    /**
+     * Remove all messages for the current thread and clear the in-memory messages cache.
+     *
+     * This deletes persisted ChatMessage records belonging to the thread and resets the internal
+     * MessageArray cache so subsequent reads will reload from storage.
+     */
     public function clear(): void
     {
         $this->thread->messages()->delete();
         $this->messagesCache = null;
     }
 
+    /**
+     * Get the number of messages in the current thread.
+     *
+     * @return int The total number of messages in the thread.
+     */
     public function count(): int
     {
         return $this->thread->messages()->count();
     }
 
+    /**
+     * Get all chat messages for this thread as an array.
+     *
+     * @return array The thread's messages, where each element is a message represented as an associative array.
+     */
     public function toArray(): array
     {
         return $this->getMessages()->toArray();
     }
 
+    /**
+     * Clears the in-memory messages cache and reloads messages from persistent storage.
+     *
+     * This forces the history to discard any cached MessageArray and repopulate it by fetching
+     * messages from the associated chat thread.
+     */
     public function readFromMemory(): void
     {
         $this->messagesCache = null;
         $this->getMessages();
     }
 
+    /**
+     * Intentionally performs no action; chat history is persisted immediately and not buffered in memory.
+     */
     public function writeToMemory(): void
     {
         // No-op: saves immediately in addMessage()
     }
 
+    /**
+     * Retrieve the ChatThread associated with this chat history.
+     *
+     * @return ChatThread The associated ChatThread model.
+     */
     public function getThread(): ChatThread
     {
         return $this->thread;
     }
 
+    /**
+     * Get the ID of the associated chat thread.
+     *
+     * @return int The primary key ID of the associated ChatThread.
+     */
     public function getThreadId(): int
     {
         return $this->thread->id;
     }
 
+    /**
+     * Create a chat history instance bound to a specific user and thread identifier.
+     *
+     * @param string $identifier The thread identifier or title to use for the chat history.
+     * @param int $userId The ID of the user who owns the thread.
+     * @return static A new instance associated with the given user and identifier.
+     */
     public static function forUser(string $identifier, int $userId): static
     {
         return new static($identifier, $userId);
     }
 
+    /**
+     * Create a chat history instance for the given thread identifier.
+     *
+     * @param string $identifier Thread identifier — may be a numeric thread ID, a thread title, or a session identifier.
+     * @return static A new instance of EloquentThreadChatHistory for the specified identifier.
+     */
     public static function for(string $identifier): static
     {
         return new static($identifier);

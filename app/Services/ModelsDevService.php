@@ -17,8 +17,10 @@ class ModelsDevService
     private const string CACHE_KEY = 'models_dev_api';
 
     /**
-     * Get provider options for Filament Select.
-     */
+         * Provide provider options keyed by provider ID for select inputs.
+         *
+         * @return array<string, string> Map of provider ID => provider display name suitable for Filament Select.
+         */
     public function getProviderOptions(): array
     {
         return $this
@@ -28,8 +30,21 @@ class ModelsDevService
     }
 
     /**
-     * Get all providers with their models dynamically from models.dev API.
-     */
+         * Retrieve providers from models.dev that include at least one chat-capable model.
+         *
+         * Each returned provider is an associative array with the keys:
+         * - `id`: provider identifier
+         * - `name`: provider display name (falls back to the id)
+         * - `api`: provider API endpoint (if available)
+         * - `doc`: provider documentation URL (if available)
+         * - `env`: provider environment variables map (if any)
+         * - `models`: array of models filtered to include only chat-capable models
+         *
+         * Providers without models or without any chat-capable models are excluded. The
+         * resulting collection is sorted by provider `name`.
+         *
+         * @return Collection<array> The collection of provider arrays described above.
+         */
     public function getProviders(): Collection
     {
         $data = $this->fetchData();
@@ -64,7 +79,12 @@ class ModelsDevService
     }
 
     /**
-     * Fetch and cache API data.
+     * Retrieve models.dev API data and cache it under CACHE_KEY for CACHE_TTL_HOURS.
+     *
+     * Attempts an HTTP GET to API_URL; on success returns the decoded JSON as an associative array.
+     * On non-successful responses or exceptions returns an empty array.
+     *
+     * @return array The decoded API data as an associative array, or an empty array if the request failed or returned no JSON.
      */
     private function fetchData(): array
     {
@@ -95,8 +115,16 @@ class ModelsDevService
     }
 
     /**
-     * Filter models to only include chat-capable models.
-     */
+         * Filter a list of models to those suitable for text chat usage.
+         *
+         * Filters out models that do not support text input and output, models whose
+         * family indicates embeddings, and models whose id indicates audio/image-only
+         * variants (for example whisper, tts, or dall-e). The resulting models are
+         * sorted by `release_date` descending.
+         *
+         * @param array $models Array of model records as returned by the models.dev API.
+         * @return array Zero-based array of models that support text chat, sorted by `release_date` descending.
+         */
     private function filterChatModels(array $models): array
     {
         return collect($models)
@@ -133,8 +161,11 @@ class ModelsDevService
     }
 
     /**
-     * Get model options for Filament Select.
-     */
+         * Build an option map of model IDs to display labels for a given provider.
+         *
+         * @param string $providerId Provider identifier used to look up models.
+         * @return array<string,string> Map where keys are model IDs and values are display labels (model name, with " (NK context)" appended when a context limit is present, e.g. "8K context").
+         */
     public function getModelOptions(string $providerId): array
     {
         return $this
@@ -154,8 +185,11 @@ class ModelsDevService
     }
 
     /**
-     * Get models for a specific provider.
-     */
+         * Retrieve the models registered for a given provider.
+         *
+         * @param string $providerId The provider identifier.
+         * @return \Illuminate\Support\Collection A collection of the provider's models; an empty collection if the provider is not found.
+         */
     public function getModelsForProvider(string $providerId): Collection
     {
         $provider = $this->getProvider($providerId);
@@ -168,7 +202,10 @@ class ModelsDevService
     }
 
     /**
-     * Get a specific provider's data.
+     * Retrieve data for the provider identified by the given ID.
+     *
+     * @param string $providerId The provider identifier to look up.
+     * @return array|null The provider's data array if found, or `null` if no provider matches.
      */
     public function getProvider(string $providerId): ?array
     {
@@ -178,7 +215,10 @@ class ModelsDevService
     }
 
     /**
-     * Get the API endpoint for a provider.
+     * Retrieve the API endpoint URL for the given provider.
+     *
+     * @param string $providerId The provider identifier.
+     * @return string|null The provider's API endpoint URL, or null if not found.
      */
     public function getApiEndpoint(string $providerId): ?string
     {
@@ -188,7 +228,7 @@ class ModelsDevService
     }
 
     /**
-     * Clear the cache.
+     * Clears the cached models.dev API data stored under the service cache key.
      */
     public function clearCache(): void
     {
