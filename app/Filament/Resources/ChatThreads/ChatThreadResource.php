@@ -50,7 +50,7 @@ class ChatThreadResource extends Resource
     public static function getGlobalSearchResultDetails(Model $record): array
     {
         return [
-            'Messages' => $record->messages()->count(),
+            'Messages' => $record->messages_count ?? $record->messages()->count(),
             'Created' => $record->created_at->format('d/m/Y H:i'),
         ];
     }
@@ -98,7 +98,8 @@ class ChatThreadResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->where('user_id', auth()->id());
+            ->where('user_id', auth()->id())
+            ->withCount('messages');
     }
 
     /**

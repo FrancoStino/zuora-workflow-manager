@@ -88,14 +88,12 @@ class ModelsDevService
      */
     private function fetchData(): array
     {
-        return Cache::remember(self::CACHE_KEY,
+        $data = Cache::remember(self::CACHE_KEY,
             now()->addHours(self::CACHE_TTL_HOURS), function () {
                 try {
                     $response = Http::timeout(30)->get(self::API_URL);
-
                     if ($response->successful()) {
                         $data = $response->json() ?? [];
-
                         // Only cache non-empty successful responses
                         if (empty($data)) {
                             return null;
@@ -103,7 +101,6 @@ class ModelsDevService
 
                         return $data;
                     }
-
                     Log::warning('ModelsDevService: Failed to fetch models.dev API',
                         [
                             'status' => $response->status(),
@@ -118,7 +115,13 @@ class ModelsDevService
 
                     return null;
                 }
-            }) ?? [];
+            });
+        // Don't cache failures — forget the key so next call retries immediately
+        if ($data === null) {
+            Cache::forget(self::CACHE_KEY);
+        }
+
+        return $data;
     }
 
     /**

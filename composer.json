@@ -13,6 +13,7 @@
     ],
     "license": "MIT",
     "require": {
+        "ext-pdo": "*",
         "bezhansalleh/filament-shield": "^4.0",
         "charrafimed/global-search-modal": "^5.0",
         "dutchcodingcompany/filament-socialite": "^3.0",
@@ -20,13 +21,13 @@
         "filament/spatie-laravel-settings-plugin": "^4.0",
         "laravel/framework": "^12.0",
         "laravel/tinker": "^2.10.1",
+        "livewire/blaze": "^1.0",
         "maestroerror/laragent": "^1.2",
         "moox/jobs": "^4.0.0-beta.3",
         "njxqlus/filament-relation-manager-component": "^2.1",
         "owenvoke/blade-fontawesome": "^3.0",
         "phiki/phiki": "^2.1",
-        "watheqalshowaiter/filament-sticky-table-header": "^1.3",
-        "ext-pdo": "*"
+        "watheqalshowaiter/filament-sticky-table-header": "^1.3"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^4.0",

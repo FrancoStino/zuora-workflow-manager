@@ -47,6 +47,7 @@ class ViewChatThread extends ViewRecord
         return $schema
             ->components([
                 Livewire::make(ChatBox::class, ['thread' => $this->record])
+                    ->id('chat-box-wrapper')
                     ->key('chat-box-'.$this->record->id),
             ]);
     }

@@ -120,20 +120,6 @@ class ChatBox extends Component implements HasActions, HasSchemas
     }
 
     /**
-     * Escape a string for safe embedding in JavaScript string literals.
-     *
-     * Converts carriage returns and newlines to the literal `\r` and `\n`
-     * sequences and adds backslashes before quotes and backslashes.
-     *
-     * @param  string  $value  The input string to escape for JavaScript.
-     * @return string The escaped string suitable for inclusion in a JS string literal.
-     */
-    private function escapeJs(string $value): string
-    {
-        return addslashes(str_replace(["\r", "\n"], ['\\r', '\\n'], $value));
-    }
-
-    /**
      * Handles the current form message: stores it as a user message, resets input state, and initiates assistant response generation.
      *
      * Trims and ignores empty messages. When a valid message is present, clears the form input, clears error state, records the message as the last question, persists the message on the thread with role `user`, triggers title generation from the first message, marks the component as loading, and schedules a JavaScript call to start generating the assistant response.

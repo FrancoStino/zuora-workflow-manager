@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
+use Livewire\Blaze\Blaze;
+use RuntimeException;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -34,13 +36,19 @@ class AppServiceProvider extends ServiceProvider
      *
      * When the configuration key `app.enable_ai_security_listener` is enabled (defaults to true), the database listener detects INSERT, UPDATE, or DELETE SQL statements, logs a critical security event, and prevents the operation.
      *
-     * @throws \RuntimeException If a database write statement is detected while the AI security listener is enabled.
+     * @throws RuntimeException If a database write statement is detected while the AI security listener is enabled.
      */
     public function boot(): void
     {
+        Blaze::optimize()
+            ->in(resource_path('views'), fold: true, memo: true)
+            ->in(resource_path('views/livewire'), compile: false);
+
         Event::listen(Login::class, UpdateUserAvatarOnSocialiteLogin::class);
-        Event::listen(Registered::class, UpdateUserAvatarOnSocialiteLogin::class);
-        Event::listen(Registered::class, AssignWorkflowRoleOnSocialiteRegistration::class);
+        Event::listen(Registered::class,
+            UpdateUserAvatarOnSocialiteLogin::class);
+        Event::listen(Registered::class,
+            AssignWorkflowRoleOnSocialiteRegistration::class);
 
         FilamentView::registerRenderHook(
             PanelsRenderHook::USER_MENU_BEFORE,
@@ -53,7 +61,8 @@ class AppServiceProvider extends ServiceProvider
                 return;
             }
 
-            $enableSecurityListener = config('app.enable_ai_security_listener', true);
+            $enableSecurityListener = config('app.enable_ai_security_listener',
+                true);
 
             if (! $enableSecurityListener) {
                 return;
@@ -65,7 +74,7 @@ class AppServiceProvider extends ServiceProvider
                     'bindings' => $query->bindings,
                 ]);
 
-                throw new \RuntimeException('AI write operations forbidden');
+                throw new RuntimeException('AI write operations forbidden');
             }
         });
     }

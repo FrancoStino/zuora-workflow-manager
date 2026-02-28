@@ -190,6 +190,7 @@
       <excludeFolder url="file://$MODULE_DIR$/vendor/php-http/multipart-stream-builder" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/redberry/mcp-client-laravel" />
       <excludeFolder url="file://$MODULE_DIR$/storage/backups" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/livewire/blaze" />
     </content>
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
