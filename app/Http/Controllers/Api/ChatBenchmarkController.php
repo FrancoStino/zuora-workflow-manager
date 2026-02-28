@@ -7,6 +7,7 @@ use App\Models\ChatThread;
 use App\Services\LaragentChatService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 /**
  * ChatBenchmarkController
@@ -27,9 +28,10 @@ class ChatBenchmarkController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse JSON response with the paginated threads and metadata.
      */
-    public function threads(): JsonResponse
+    public function threads(Request $request): JsonResponse
     {
         $threads = ChatThread::with('user')
+            ->where('user_id', $request->user()->id)
             ->latest()
             ->paginate(50);
 
@@ -46,8 +48,8 @@ class ChatBenchmarkController extends Controller
     /**
      * Send a message to a chat thread and return the AI-generated response while measuring processing latency.
      *
-     * @param Request $request HTTP request containing 'message' (required string, maximum 5000 characters).
-     * @param ChatThread $thread The target chat thread.
+     * @param  Request  $request  HTTP request containing 'message' (required string, maximum 5000 characters).
+     * @param  ChatThread  $thread  The target chat thread.
      * @return JsonResponse On success: JSON with `success: true`, `data` containing `message` (AI response) and `thread_id`, and `meta` with `provider`, `latency_ms` (milliseconds, rounded to 2 decimals), and `timestamp`. On error: JSON with `success: false`, `error` (exception message), `meta` as above, and HTTP status 500.
      */
     public function messages(Request $request, ChatThread $thread): JsonResponse
@@ -76,11 +78,17 @@ class ChatBenchmarkController extends Controller
                 ],
             ]);
         } catch (\Exception $e) {
+            Log::error('ChatBenchmark message error', [
+                'thread_id' => $thread->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
             $latency = (microtime(true) - $startTime) * 1000;
 
             return response()->json([
                 'success' => false,
-                'error' => $e->getMessage(),
+                'error' => 'Internal server error',
                 'meta' => [
                     'provider' => 'laragent',
                     'latency_ms' => round($latency, 2),

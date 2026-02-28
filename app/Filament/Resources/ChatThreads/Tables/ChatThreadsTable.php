@@ -14,7 +14,7 @@ class ChatThreadsTable
     /**
      * Configure the Filament table for chat threads with columns, row actions, sorting, pagination, and session-persisted search.
      *
-     * @param Table $table The Table instance to configure.
+     * @param  Table  $table  The Table instance to configure.
      * @return Table The configured Table instance ready for rendering (includes title, messages count, created/updated columns, actions, default sort, pagination, and search persistence).
      */
     public static function configure(Table $table): Table

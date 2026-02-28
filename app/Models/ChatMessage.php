@@ -45,8 +45,8 @@ class ChatMessage extends Model
     /**
      * Scope a query to messages matching the given role.
      *
-     * @param \Illuminate\Database\Eloquent\Builder $query The query builder instance.
-     * @param string $role Role to filter by (for example, 'user' or 'assistant').
+     * @param  \Illuminate\Database\Eloquent\Builder  $query  The query builder instance.
+     * @param  string  $role  Role to filter by (for example, 'user' or 'assistant').
      * @return \Illuminate\Database\Eloquent\Builder The modified query builder.
      */
     public function scopeRole($query, string $role)
@@ -57,7 +57,7 @@ class ChatMessage extends Model
     /**
      * Constrains the query to messages with role 'user'.
      *
-     * @param \Illuminate\Database\Eloquent\Builder $query The query builder instance.
+     * @param  \Illuminate\Database\Eloquent\Builder  $query  The query builder instance.
      * @return \Illuminate\Database\Eloquent\Builder The modified query builder.
      */
     public function scopeUser($query)
@@ -68,7 +68,7 @@ class ChatMessage extends Model
     /**
      * Filter the query to only include messages with the 'assistant' role.
      *
-     * @param \Illuminate\Database\Eloquent\Builder $query The query builder instance.
+     * @param  \Illuminate\Database\Eloquent\Builder  $query  The query builder instance.
      * @return \Illuminate\Database\Eloquent\Builder The query builder filtered to assistant messages.
      */
     public function scopeAssistant($query)

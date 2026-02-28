@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Agents\DataAnalystAgentLaragent;
 use App\Listeners\AssignWorkflowRoleOnSocialiteRegistration;
 use App\Listeners\UpdateUserAvatarOnSocialiteLogin;
 use DutchCodingCompany\FilamentSocialite\Events\Login;
@@ -47,6 +48,11 @@ class AppServiceProvider extends ServiceProvider
         );
 
         DB::listen(function (QueryExecuted $query) {
+            // Only enforce on queries executed by the AI agent
+            if (! DataAnalystAgentLaragent::$isExecutingQuery) {
+                return;
+            }
+
             $enableSecurityListener = config('app.enable_ai_security_listener', true);
 
             if (! $enableSecurityListener) {

@@ -34,7 +34,7 @@ Route::get('/zuora/download/{workflowId}', function ($workflowId, Request $reque
     }
 });
 
-Route::prefix('chat')->group(function () {
+Route::middleware('auth:sanctum')->prefix('chat')->group(function () {
     Route::get('/threads', [ChatBenchmarkController::class, 'threads']);
     Route::post('/threads/{thread}/messages', [ChatBenchmarkController::class, 'messages']);
 });

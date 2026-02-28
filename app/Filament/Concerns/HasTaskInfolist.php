@@ -7,6 +7,7 @@ use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Support\Icons\Heroicon;
+use Phiki\Grammar\Grammar;
 
 trait HasTaskInfolist
 {
@@ -117,7 +118,9 @@ trait HasTaskInfolist
                     CodeEntry::make('parameters')
                         ->hiddenLabel()
                         ->copyable()
-                        ->copyMessage('Copied!'),
+                        ->copyMessage('Copied!')
+                        ->grammar(Grammar::Json)
+                        ->formatStateUsing(fn ($state) => is_array($state) ? json_encode($state, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) : $state),
                 ]),
 
             Section::make('CSS Position')
@@ -157,6 +160,8 @@ trait HasTaskInfolist
                         ->label('Assignments')
                         ->copyable()
                         ->copyMessage('Copied!')
+                        ->grammar(Grammar::Json)
+                        ->formatStateUsing(fn ($state) => is_array($state) ? json_encode($state, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) : $state)
                         ->visible(fn ($record) => ! empty($record->assignment)),
                 ]),
 

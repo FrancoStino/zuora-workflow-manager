@@ -20,6 +20,7 @@ use Filament\Support\Enums\FontWeight;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Contracts\Support\Htmlable;
 use Njxqlus\Filament\Components\Infolists\RelationManager;
+use Phiki\Grammar\Grammar;
 
 class ViewWorkflow extends ViewRecord
 {
@@ -35,7 +36,7 @@ class ViewWorkflow extends ViewRecord
      * schema, and configures sections for general information, associated tasks,
      * and tabs for a JSON export and graphical workflow view.
      *
-     * @param Schema $schema The base infolist schema to configure and bind the record to.
+     * @param  Schema  $schema  The base infolist schema to configure and bind the record to.
      * @return Schema The configured infolist schema bound to the current workflow record.
      */
     public function infolist(Schema $schema): Schema
@@ -132,15 +133,17 @@ class ViewWorkflow extends ViewRecord
                             ->schema([
                                 Section::make()
                                     ->schema([
-                                        ViewEntry::make('copy_json_button')
+                                        ViewEntry::make('copy_json_button_top')
                                             ->view('filament.components.copy-json-button',
                                                 [
                                                     'jsonData' => $this->record->json_export,
                                                 ]),
                                         CodeEntry::make('json_export')
                                             ->hiddenLabel()
-                                            ->copyable(),
-                                        ViewEntry::make('copy_json_button')
+                                            ->copyable()
+                                            ->grammar(Grammar::Json)
+                                            ->formatStateUsing(fn ($state) => is_array($state) ? json_encode($state, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) : $state),
+                                        ViewEntry::make('copy_json_button_bottom')
                                             ->view('filament.components.copy-json-button',
                                                 [
                                                     'jsonData' => $this->record->json_export,

@@ -2,8 +2,7 @@
 
 namespace App\Settings;
 
-use App\Settings\Casts\EncryptedCastAiApiKey;
-use App\Settings\Casts\EncryptedCastGoogleClientSecret;
+use App\Settings\Casts\EncryptedSettingsCast;
 use Spatie\LaravelSettings\Settings;
 
 class GeneralSettings extends Settings
@@ -48,8 +47,8 @@ class GeneralSettings extends Settings
     public static function casts(): array
     {
         return [
-            'oauthGoogleClientSecret' => EncryptedCastGoogleClientSecret::class,
-            'aiApiKey' => EncryptedCastAiApiKey::class,
+            'oauthGoogleClientSecret' => EncryptedSettingsCast::class,
+            'aiApiKey' => EncryptedSettingsCast::class,
         ];
     }
 }

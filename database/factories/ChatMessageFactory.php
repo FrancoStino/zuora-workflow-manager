@@ -15,7 +15,7 @@ class ChatMessageFactory extends Factory
      *
      * Provides default values used when creating a ChatMessage: an associated chat thread via ChatThread::factory(), a role chosen from 'user' or 'assistant', generated paragraph content, and null defaults for `query_generated`, `query_results`, and `metadata`.
      *
-     * @return array The attribute map to seed a ChatMessage model. 
+     * @return array The attribute map to seed a ChatMessage model.
      */
     public function definition(): array
     {
@@ -36,7 +36,7 @@ class ChatMessageFactory extends Factory
      */
     public function user(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $_attributes) => [
             'role' => 'user',
         ]);
     }
@@ -48,7 +48,7 @@ class ChatMessageFactory extends Factory
      */
     public function assistant(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $_attributes) => [
             'role' => 'assistant',
         ]);
     }
@@ -56,13 +56,13 @@ class ChatMessageFactory extends Factory
     /**
      * Attach a query and its results to the factory state for the generated ChatMessage.
      *
-     * @param string $query The query string to set on `query_generated`.
-     * @param array|null $results Optional array of result records to set on `query_results`. If null, a default two-item sample array is used.
+     * @param  string  $query  The query string to set on `query_generated`.
+     * @param  array|null  $results  Optional array of result records to set on `query_results`. If null, a default two-item sample array is used.
      * @return static The factory instance with the query-related state applied.
      */
     public function withQuery(string $query, ?array $results = null): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $_attributes) => [
             'query_generated' => $query,
             'query_results' => $results ?? [
                 ['id' => 1, 'name' => 'Test Workflow'],

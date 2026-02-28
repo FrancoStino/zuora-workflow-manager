@@ -12,7 +12,7 @@ class TasksTable
     /**
      * Configure a Filament Table for tasks by registering columns, filters, record actions, and default sorting.
      *
-     * @param Table $table The Table instance to configure.
+     * @param  Table  $table  The Table instance to configure.
      * @return Table The configured Table instance.
      */
     public static function configure(Table $table): Table

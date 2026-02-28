@@ -53,10 +53,18 @@ class ListChatThreads extends ListRecords
                         return;
                     }
 
+                    if (! auth()->user()->can('create', ChatThread::class)) {
+                        Notification::make()
+                            ->title('Unauthorized')
+                            ->body('You do not have permission to create chat threads.')
+                            ->danger()
+                            ->send();
+
+                        return;
+                    }
                     $thread = ChatThread::create([
                         'user_id' => auth()->id(),
                     ]);
-
                     $this->redirect(ChatThreadResource::getUrl('view',
                         ['record' => $thread]));
                 }),

@@ -32,7 +32,7 @@ class ChatBox extends Component implements HasActions, HasSchemas
     /**
      * Initialize the component with the given chat thread and prepare the form state.
      *
-     * @param ChatThread $thread The chat thread instance this component will manage.
+     * @param  ChatThread  $thread  The chat thread instance this component will manage.
      */
     public function mount(ChatThread $thread): void
     {
@@ -47,7 +47,7 @@ class ChatBox extends Component implements HasActions, HasSchemas
      * Enter-to-send behaviour, and disabled while loading) and sets the schema's
      * state path to `data`.
      *
-     * @param Schema $schema The form schema builder to configure.
+     * @param  Schema  $schema  The form schema builder to configure.
      * @return Schema The configured schema containing the chat message textarea.
      */
     public function form(Schema $schema): Schema
@@ -115,7 +115,8 @@ class ChatBox extends Component implements HasActions, HasSchemas
         $this->hasError = false;
         $this->isLoading = true;
 
-        $this->js("setTimeout(() => \$wire.generateResponse('{$this->escapeJs($this->lastQuestion)}'), 50)");
+        $escapedQuestion = json_encode($this->lastQuestion);
+        $this->js("setTimeout(() => \$wire.generateResponse({$escapedQuestion}), 50)");
     }
 
     /**
@@ -124,7 +125,7 @@ class ChatBox extends Component implements HasActions, HasSchemas
      * Converts carriage returns and newlines to the literal `\r` and `\n`
      * sequences and adds backslashes before quotes and backslashes.
      *
-     * @param string $value The input string to escape for JavaScript.
+     * @param  string  $value  The input string to escape for JavaScript.
      * @return string The escaped string suitable for inclusion in a JS string literal.
      */
     private function escapeJs(string $value): string
@@ -158,7 +159,8 @@ class ChatBox extends Component implements HasActions, HasSchemas
 
         $this->isLoading = true;
 
-        $this->js("setTimeout(() => \$wire.generateResponse('{$this->escapeJs($message)}'), 50)");
+        $escapedMessage = json_encode($message);
+        $this->js("setTimeout(() => \$wire.generateResponse({$escapedMessage}), 50)");
     }
 
     /**
@@ -169,7 +171,7 @@ class ChatBox extends Component implements HasActions, HasSchemas
      * - clears `lastQuestion` on success,
      * - sets `hasError` when streaming and fallback attempts fail or the fallback response reports an error.
      *
-     * @param string $question The user's question to send to the chat service.
+     * @param  string  $question  The user's question to send to the chat service.
      */
     public function generateResponse(string $question): void
     {

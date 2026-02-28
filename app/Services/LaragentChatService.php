@@ -10,12 +10,10 @@ use Illuminate\Support\Facades\Log;
 
 class LaragentChatService
 {
-    private array $queryLog = [];
-
     /**
      * Create a LaragentChatService configured with application general settings.
      *
-     * @param GeneralSettings $settings Application-level settings used to control AI chat behavior (e.g., enabled flag, provider, model).
+     * @param  GeneralSettings  $settings  Application-level settings used to control AI chat behavior (e.g., enabled flag, provider, model).
      */
     public function __construct(
         private readonly GeneralSettings $settings,
@@ -24,10 +22,11 @@ class LaragentChatService
     /**
      * Send a question to the thread's AI agent, persist the assistant's response as a ChatMessage, and return that message.
      *
-     * @param ChatThread $thread The chat thread to send the question in.
-     * @param string $question The user's question to send to the AI agent.
-     * @throws \RuntimeException If AI chat is disabled in settings.
+     * @param  ChatThread  $thread  The chat thread to send the question in.
+     * @param  string  $question  The user's question to send to the AI agent.
      * @return ChatMessage The persisted assistant ChatMessage. On failure the returned message's content contains the error text and its metadata includes an `error` flag and `error_message`.
+     *
+     * @throws \RuntimeException If AI chat is disabled in settings.
      */
     public function ask(ChatThread $thread, string $question): ChatMessage
     {
@@ -39,7 +38,7 @@ class LaragentChatService
             $agent = $this->getAgent($thread);
             $response = $agent->respond($question);
 
-            $queryGenerated = $this->extractQueryFromThread($thread);
+            $queryGenerated = $agent->getLastExecutedQuery();
 
             return $thread->messages()->create([
                 'role' => 'assistant',
@@ -77,9 +76,10 @@ class LaragentChatService
      *
      * Yields successive string deltas of the assistant's streamed response as they arrive; after streaming completes the full response is stored on the thread with metadata (provider, model, streaming flag) and the thread's last assistant-generated query is recorded.
      *
-     * @param ChatThread $thread The chat thread to which the response belongs.
-     * @param string $question The user question to send to the agent.
+     * @param  ChatThread  $thread  The chat thread to which the response belongs.
+     * @param  string  $question  The user question to send to the agent.
      * @return \Generator Yields string chunks of the assistant response as they arrive; completes after persisting the assembled full response.
+     *
      * @throws \RuntimeException If AI chat is disabled in settings.
      * @throws \Exception If an error occurs during streaming or when persisting the final message.
      */
@@ -108,8 +108,8 @@ class LaragentChatService
                 }
             }
 
-            // Salva messaggio completo alla fine
-            $queryGenerated = $this->extractQueryFromThread($thread);
+            // Save complete message at the end
+            $queryGenerated = $agent->getLastExecutedQuery();
 
             $thread->messages()->create([
                 'role' => 'assistant',
@@ -128,14 +128,14 @@ class LaragentChatService
                 'error' => $e->getMessage(),
             ]);
 
-            throw $e; // Re-throw per permettere fallback nel componente Livewire
+            throw $e; // Re-throw to allow fallback in Livewire component
         }
     }
 
     /**
      * Retrieve an agent instance scoped to the given chat thread's session.
      *
-     * @param ChatThread $thread The chat thread whose ID is used as the agent's per-thread session key.
+     * @param  ChatThread  $thread  The chat thread whose ID is used as the agent's per-thread session key.
      * @return DataAnalystAgentLaragent An agent instance bound to the thread's ID so it preserves that thread's conversation context.
      */
     protected function getAgent(ChatThread $thread): DataAnalystAgentLaragent
@@ -143,43 +143,5 @@ class LaragentChatService
         // Use thread ID as the chat session key to maintain per-thread context
         // This ensures each conversation has its own history
         return DataAnalystAgentLaragent::forUserId((string) $thread->id);
-    }
-
-    /**
-     * Retrieve the recorded query log for this service.
-     *
-     * @return array An array of logged query entries; empty if no queries are recorded.
-     */
-    public function getQueryLog(): array
-    {
-        return $this->queryLog;
-    }
-
-    /**
-     * Reset the service's stored query log to an empty array.
-     */
-    public function clearQueryLog(): void
-    {
-        $this->queryLog = [];
-    }
-
-    /**
-     * Retrieve the most recent assistant message's `query_generated` value from the thread.
-     *
-     * @param ChatThread $thread The chat thread to inspect.
-     * @return string|null The `query_generated` value of the most recent assistant message, or `null` if no assistant message exists.
-     */
-    private function extractQueryFromThread(ChatThread $thread): ?string
-    {
-        $lastAssistantMessage = $thread->messages()
-            ->where('role', 'assistant')
-            ->orderBy('created_at', 'desc')
-            ->first();
-
-        if (! $lastAssistantMessage) {
-            return null;
-        }
-
-        return $lastAssistantMessage->query_generated;
     }
 }

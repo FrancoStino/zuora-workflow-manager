@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Facades\Crypt;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Customer>
@@ -25,7 +26,7 @@ class CustomerFactory extends Factory
         return [
             'name' => fake()->company(),
             'zuora_client_id' => 'test_client_'.fake()->uuid(),
-            'zuora_client_secret' => 'test_secret_'.fake()->uuid(),
+            'zuora_client_secret' => Crypt::encryptString('test_secret_'.fake()->uuid()),
             'zuora_base_url' => 'https://rest.zuora.com',
         ];
     }

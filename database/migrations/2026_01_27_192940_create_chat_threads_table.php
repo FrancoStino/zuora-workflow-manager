@@ -23,8 +23,6 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->string('title')->nullable();
             $table->timestamps();
-
-            $table->index('user_id');
         });
     }
 

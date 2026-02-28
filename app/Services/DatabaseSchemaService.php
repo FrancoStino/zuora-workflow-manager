@@ -21,7 +21,7 @@ class DatabaseSchemaService
     /**
      * Get the database schema formatted for LLM consumption, using the cached value when available.
      *
-     * @param bool $forceRefresh If true, clear the cached schema before regenerating.
+     * @param  bool  $forceRefresh  If true, clear the cached schema before regenerating.
      * @return string A Markdown-like string summarizing tables, columns, relationships, indexes, and constraints for LLM input.
      */
     public function getSchema(bool $forceRefresh = false): string
@@ -183,11 +183,11 @@ class DatabaseSchemaService
      * Collects metadata for all non-primary indexes in the current database.
      *
      * @return array<int, array{table:string, name:string, unique:bool, type:string, columns:string[]}> An array of index descriptions; each entry contains:
-     *  - `table`: the table name,
-     *  - `name`: the index name,
-     *  - `unique`: `true` if the index is unique, `false` otherwise,
-     *  - `type`: the index type (e.g., BTREE),
-     *  - `columns`: ordered list of column names that form the index.
+     *                                                                                                  - `table`: the table name,
+     *                                                                                                  - `name`: the index name,
+     *                                                                                                  - `unique`: `true` if the index is unique, `false` otherwise,
+     *                                                                                                  - `type`: the index type (e.g., BTREE),
+     *                                                                                                  - `columns`: ordered list of column names that form the index.
      */
     protected function getIndexes(): array
     {
@@ -256,17 +256,17 @@ class DatabaseSchemaService
      * primary and unique keys), foreign key relationships, available indexes, and query-generation
      * guidelines.
      *
-     * @param array $structure Associative array describing the database schema. Expected top-level keys:
-     *                         - 'tables': array of tables where each table contains keys like
-     *                           'name', 'engine', 'estimated_rows', 'comment', 'columns' (array of
-     *                           columns with 'name', 'full_type', 'nullable', 'default', 'auto_increment',
-     *                           'comment', etc.), 'primary_key', and 'unique_keys'.
-     *                         - 'relationships': array of foreign key relationships with keys such as
-     *                           'source_table', 'source_column', 'target_table', 'target_column',
-     *                           'UPDATE_RULE', 'DELETE_RULE'.
-     *                         - 'indexes': array of index metadata with keys like 'table', 'name',
-     *                           'unique', 'type', and 'columns'.
-     *                         - 'constraints': (optional) array of constraint metadata.
+     * @param  array  $structure  Associative array describing the database schema. Expected top-level keys:
+     *                            - 'tables': array of tables where each table contains keys like
+     *                            'name', 'engine', 'estimated_rows', 'comment', 'columns' (array of
+     *                            columns with 'name', 'full_type', 'nullable', 'default', 'auto_increment',
+     *                            'comment', etc.), 'primary_key', and 'unique_keys'.
+     *                            - 'relationships': array of foreign key relationships with keys such as
+     *                            'source_table', 'source_column', 'target_table', 'target_column',
+     *                            'UPDATE_RULE', 'DELETE_RULE'.
+     *                            - 'indexes': array of index metadata with keys like 'table', 'name',
+     *                            'unique', 'type', and 'columns'.
+     *                            - 'constraints': (optional) array of constraint metadata.
      * @return string A Markdown-formatted string summarizing the schema suitable for LLM input or human review.
      */
     protected function formatSchemaForLLM(array $structure): string

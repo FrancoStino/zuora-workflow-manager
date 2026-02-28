@@ -23,7 +23,7 @@ class ViewChatThread extends ViewRecord
      */
     public function getTitle(): string
     {
-        return $title = $this->record->title ?? 'AI Chat';
+        return $this->record->title ?? 'AI Chat';
     }
 
     /**
@@ -39,7 +39,7 @@ class ViewChatThread extends ViewRecord
     /**
      * Builds the page content schema by embedding a ChatBox Livewire component scoped to the current thread.
      *
-     * @param Schema $schema The base content schema to extend.
+     * @param  Schema  $schema  The base content schema to extend.
      * @return Schema The schema containing the ChatBox component keyed to the current record.
      */
     public function content(Schema $schema): Schema
@@ -59,7 +59,7 @@ class ViewChatThread extends ViewRecord
         $this->record->messages()->delete();
         $this->record->title = null;
         $this->record->save();
-
+        $this->dispatch('chat-history-cleared');
         Notification::make()
             ->title('Chat history cleared')
             ->success()

@@ -17,10 +17,10 @@ class ModelsDevService
     private const string CACHE_KEY = 'models_dev_api';
 
     /**
-         * Provide provider options keyed by provider ID for select inputs.
-         *
-         * @return array<string, string> Map of provider ID => provider display name suitable for Filament Select.
-         */
+     * Provide provider options keyed by provider ID for select inputs.
+     *
+     * @return array<string, string> Map of provider ID => provider display name suitable for Filament Select.
+     */
     public function getProviderOptions(): array
     {
         return $this
@@ -30,21 +30,21 @@ class ModelsDevService
     }
 
     /**
-         * Retrieve providers from models.dev that include at least one chat-capable model.
-         *
-         * Each returned provider is an associative array with the keys:
-         * - `id`: provider identifier
-         * - `name`: provider display name (falls back to the id)
-         * - `api`: provider API endpoint (if available)
-         * - `doc`: provider documentation URL (if available)
-         * - `env`: provider environment variables map (if any)
-         * - `models`: array of models filtered to include only chat-capable models
-         *
-         * Providers without models or without any chat-capable models are excluded. The
-         * resulting collection is sorted by provider `name`.
-         *
-         * @return Collection<array> The collection of provider arrays described above.
-         */
+     * Retrieve providers from models.dev that include at least one chat-capable model.
+     *
+     * Each returned provider is an associative array with the keys:
+     * - `id`: provider identifier
+     * - `name`: provider display name (falls back to the id)
+     * - `api`: provider API endpoint (if available)
+     * - `doc`: provider documentation URL (if available)
+     * - `env`: provider environment variables map (if any)
+     * - `models`: array of models filtered to include only chat-capable models
+     *
+     * Providers without models or without any chat-capable models are excluded. The
+     * resulting collection is sorted by provider `name`.
+     *
+     * @return Collection<array> The collection of provider arrays described above.
+     */
     public function getProviders(): Collection
     {
         $data = $this->fetchData();
@@ -94,7 +94,14 @@ class ModelsDevService
                     $response = Http::timeout(30)->get(self::API_URL);
 
                     if ($response->successful()) {
-                        return $response->json() ?? [];
+                        $data = $response->json() ?? [];
+
+                        // Only cache non-empty successful responses
+                        if (empty($data)) {
+                            return null;
+                        }
+
+                        return $data;
                     }
 
                     Log::warning('ModelsDevService: Failed to fetch models.dev API',
@@ -102,29 +109,29 @@ class ModelsDevService
                             'status' => $response->status(),
                         ]);
 
-                    return [];
+                    return null;
                 } catch (Exception $e) {
                     Log::error('ModelsDevService: Exception fetching models.dev API',
                         [
                             'error' => $e->getMessage(),
                         ]);
 
-                    return [];
+                    return null;
                 }
-            });
+            }) ?? [];
     }
 
     /**
-         * Filter a list of models to those suitable for text chat usage.
-         *
-         * Filters out models that do not support text input and output, models whose
-         * family indicates embeddings, and models whose id indicates audio/image-only
-         * variants (for example whisper, tts, or dall-e). The resulting models are
-         * sorted by `release_date` descending.
-         *
-         * @param array $models Array of model records as returned by the models.dev API.
-         * @return array Zero-based array of models that support text chat, sorted by `release_date` descending.
-         */
+     * Filter a list of models to those suitable for text chat usage.
+     *
+     * Filters out models that do not support text input and output, models whose
+     * family indicates embeddings, and models whose id indicates audio/image-only
+     * variants (for example whisper, tts, or dall-e). The resulting models are
+     * sorted by `release_date` descending.
+     *
+     * @param  array  $models  Array of model records as returned by the models.dev API.
+     * @return array Zero-based array of models that support text chat, sorted by `release_date` descending.
+     */
     private function filterChatModels(array $models): array
     {
         return collect($models)
@@ -161,11 +168,11 @@ class ModelsDevService
     }
 
     /**
-         * Build an option map of model IDs to display labels for a given provider.
-         *
-         * @param string $providerId Provider identifier used to look up models.
-         * @return array<string,string> Map where keys are model IDs and values are display labels (model name, with " (NK context)" appended when a context limit is present, e.g. "8K context").
-         */
+     * Build an option map of model IDs to display labels for a given provider.
+     *
+     * @param  string  $providerId  Provider identifier used to look up models.
+     * @return array<string,string> Map where keys are model IDs and values are display labels (model name, with " (NK context)" appended when a context limit is present, e.g. "8K context").
+     */
     public function getModelOptions(string $providerId): array
     {
         return $this
@@ -185,11 +192,11 @@ class ModelsDevService
     }
 
     /**
-         * Retrieve the models registered for a given provider.
-         *
-         * @param string $providerId The provider identifier.
-         * @return \Illuminate\Support\Collection A collection of the provider's models; an empty collection if the provider is not found.
-         */
+     * Retrieve the models registered for a given provider.
+     *
+     * @param  string  $providerId  The provider identifier.
+     * @return \Illuminate\Support\Collection A collection of the provider's models; an empty collection if the provider is not found.
+     */
     public function getModelsForProvider(string $providerId): Collection
     {
         $provider = $this->getProvider($providerId);
@@ -204,7 +211,7 @@ class ModelsDevService
     /**
      * Retrieve data for the provider identified by the given ID.
      *
-     * @param string $providerId The provider identifier to look up.
+     * @param  string  $providerId  The provider identifier to look up.
      * @return array|null The provider's data array if found, or `null` if no provider matches.
      */
     public function getProvider(string $providerId): ?array
@@ -217,7 +224,7 @@ class ModelsDevService
     /**
      * Retrieve the API endpoint URL for the given provider.
      *
-     * @param string $providerId The provider identifier.
+     * @param  string  $providerId  The provider identifier.
      * @return string|null The provider's API endpoint URL, or null if not found.
      */
     public function getApiEndpoint(string $providerId): ?string

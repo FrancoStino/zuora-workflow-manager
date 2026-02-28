@@ -16,15 +16,16 @@ class LoggedPDO extends PDO
     /**
      * Prepares a SQL statement after verifying it contains no disallowed write operations and logs the query with a timestamp.
      *
-     * @param string $query The SQL query to prepare.
-     * @param array $options Options passed to PDO::prepare.
+     * @param  string  $query  The SQL query to prepare.
+     * @param  array  $options  Options passed to PDO::prepare.
      * @return PDOStatement|false PDOStatement on success, `false` on failure.
+     *
      * @throws \App\Exceptions\SecurityException If the query contains a prohibited write operation (e.g., INSERT, UPDATE, DELETE, DROP, TRUNCATE, ALTER, CREATE).
      */
     public function prepare(string $query, array $options = []): PDOStatement|false
     {
-        $this->guardAgainstWriteOperations($query);
         $this->log[] = '['.date('Y-m-d H:i:s').'] [PREPARE] '.$query;
+        $this->guardAgainstWriteOperations($query);
 
         return parent::prepare($query, $options);
     }
@@ -35,13 +36,14 @@ class LoggedPDO extends PDO
      * This method records the query with a `[QUERY]` tag, invokes a security guard that blocks write operations,
      * and then delegates execution to the parent PDO::query implementation.
      *
-     * @throws App\Exceptions\SecurityException If the query contains a prohibited write operation.
      * @return PDOStatement|false The resulting PDOStatement on success, or `false` on failure.
+     *
+     * @throws App\Exceptions\SecurityException If the query contains a prohibited write operation.
      */
     public function query(string $query, ?int $fetchMode = null, mixed ...$fetchModeArgs): PDOStatement|false
     {
-        $this->guardAgainstWriteOperations($query);
         $this->log[] = '['.date('Y-m-d H:i:s').'] [QUERY] '.$query;
+        $this->guardAgainstWriteOperations($query);
 
         return parent::query($query, $fetchMode, ...$fetchModeArgs);
     }
@@ -49,7 +51,8 @@ class LoggedPDO extends PDO
     /**
      * Prevent execution of SQL write operations by detecting write-operation keywords.
      *
-     * @param string $query The SQL query to inspect for potentially dangerous write statements.
+     * @param  string  $query  The SQL query to inspect for potentially dangerous write statements.
+     *
      * @throws \App\Exceptions\SecurityException If the query contains `INSERT`, `UPDATE`, `DELETE`, `DROP`, `TRUNCATE`, `ALTER`, or `CREATE`.
      */
     protected function guardAgainstWriteOperations(string $query): void
@@ -83,7 +86,7 @@ class LoggedPDO extends PDO
      *
      * Each log entry is written on its own line and a trailing newline is added.
      *
-     * @param string $path Filesystem path to the file where log entries will be appended.
+     * @param  string  $path  Filesystem path to the file where log entries will be appended.
      */
     public function saveLogToFile(string $path): void
     {

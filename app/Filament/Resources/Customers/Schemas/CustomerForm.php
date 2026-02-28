@@ -17,7 +17,7 @@ class CustomerForm
      * - `zuora_client_secret` (password, revealable, max 255; required only on create; preserves existing secret when not provided; placeholder shows "***** (already set)" when a record exists)
      * - `zuora_base_url` (grouped select of Zuora endpoints, required)
      *
-     * @param Schema $schema The base schema to configure.
+     * @param  Schema  $schema  The base schema to configure.
      * @return Schema The schema instance populated with the customer form components.
      */
     public static function configure(Schema $schema): Schema

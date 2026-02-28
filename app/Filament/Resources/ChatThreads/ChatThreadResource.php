@@ -31,7 +31,7 @@ class ChatThreadResource extends Resource
     /**
      * Get the display title for a global search result from the given record.
      *
-     * @param Model $record The model instance to obtain the title from.
+     * @param  Model  $record  The model instance to obtain the title from.
      * @return string The record's title if present, otherwise 'New Chat'.
      */
     public static function getGlobalSearchResultTitle(Model $record): string
@@ -42,10 +42,10 @@ class ChatThreadResource extends Resource
     /**
      * Provide label/value pairs used to display a chat thread in global search results.
      *
-     * @param \Illuminate\Database\Eloquent\Model $record The chat thread record to extract details from.
+     * @param  \Illuminate\Database\Eloquent\Model  $record  The chat thread record to extract details from.
      * @return array<string, int|string> An associative array with:
-     *                                  - 'Messages' => the number of related messages,
-     *                                  - 'Created'  => the creation timestamp formatted as 'd/m/Y H:i'.
+     *                                   - 'Messages' => the number of related messages,
+     *                                   - 'Created'  => the creation timestamp formatted as 'd/m/Y H:i'.
      */
     public static function getGlobalSearchResultDetails(Model $record): array
     {
@@ -59,8 +59,8 @@ class ChatThreadResource extends Resource
      * Register the resource pages and their URI routes.
      *
      * @return array<string,mixed> Associative array mapping page keys to route definitions:
-     *                              - 'index' => route for listing chat threads
-     *                              - 'view'  => route for viewing a single chat thread
+     *                             - 'index' => route for listing chat threads
+     *                             - 'view'  => route for viewing a single chat thread
      */
     public static function getPages(): array
     {
@@ -114,7 +114,7 @@ class ChatThreadResource extends Resource
     /**
      * Configure and return the Filament table schema for this resource.
      *
-     * @param \Filament\Tables\Table $table The table instance to configure.
+     * @param  \Filament\Tables\Table  $table  The table instance to configure.
      * @return \Filament\Tables\Table The configured table instance.
      */
     public static function table(Table $table): Table
@@ -122,13 +122,15 @@ class ChatThreadResource extends Resource
         return ChatThreadsTable::configure($table);
     }
 
-    / **
+    /**
      * Indicates whether creating new ChatThread records is permitted.
      *
-     * @return bool `true` if creation of new ChatThread records is allowed, `false` otherwise.
+     * Defers to the ChatThreadPolicy::create method for authorization.
+     *
+     * @return bool `true` if the current user is authorized to create ChatThread records, `false` otherwise.
      */
     public static function canCreate(): bool
     {
-        return true;
+        return auth()->user()?->can('create', ChatThread::class) ?? false;
     }
 }

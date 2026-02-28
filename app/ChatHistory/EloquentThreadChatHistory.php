@@ -29,8 +29,8 @@ class EloquentThreadChatHistory implements ChatHistory
      * - numeric string: treats the identifier as an existing ChatThread ID and loads that thread (errors if not found).
      * - string: uses the string as a thread identifier and resolves the user id from an explicit integer argument, a config array (ignored, falling back to the authenticated user), or the current authenticated user.
      *
-     * @param string|SessionIdentityContract|null $identifier Session identity, existing thread ID, thread title, or null to generate a new identifier.
-     * @param mixed $userIdOrConfig Optional explicit user ID (int) or config array (ignored); when omitted the authenticated user id is used.
+     * @param  string|SessionIdentityContract|null  $identifier  Session identity, existing thread ID, thread title, or null to generate a new identifier.
+     * @param  mixed  $userIdOrConfig  Optional explicit user ID (int) or config array (ignored); when omitted the authenticated user id is used.
      *
      * @throws \RuntimeException If a required authenticated user id is not available or when a numeric thread id does not correspond to an existing ChatThread.
      */
@@ -91,8 +91,8 @@ class EloquentThreadChatHistory implements ChatHistory
      * The `$identifier` may be a numeric thread ID or a thread title. If numeric, the method first
      * attempts to find a thread by ID and user; otherwise it searches by user and title before creating.
      *
-     * @param string $identifier Thread title or numeric thread ID.
-     * @param int $userId ID of the user that owns the thread.
+     * @param  string  $identifier  Thread title or numeric thread ID.
+     * @param  int  $userId  ID of the user that owns the thread.
      * @return ChatThread The found or newly created ChatThread instance.
      */
     protected function findOrCreateThread(string $identifier, int $userId): ChatThread
@@ -129,7 +129,7 @@ class EloquentThreadChatHistory implements ChatHistory
      * from the first message. If the message metadata contains `query_generated` or `query_results`,
      * those keys are promoted to top-level columns on the stored record.
      *
-     * @param MessageInterface $message The message to persist.
+     * @param  MessageInterface  $message  The message to persist.
      */
     public function addMessage(MessageInterface $message): void
     {
@@ -196,27 +196,29 @@ class EloquentThreadChatHistory implements ChatHistory
      *
      * Merges the ChatMessage's metadata with additional fields (`db_id`, ISO8601 `created_at`) and, when present, `query_generated` and `query_results`, then returns a `UserMessage` for role `user`, an `AssistantMessage` for role `assistant`, or `null` for any other role.
      *
-     * @param ChatMessage $dbMessage The database chat message to convert.
+     * @param  ChatMessage  $dbMessage  The database chat message to convert.
      * @return MessageInterface|null `UserMessage` for role `user`, `AssistantMessage` for role `assistant`, or `null` otherwise.
      */
     protected function convertToLarAgentMessage(ChatMessage $dbMessage): ?MessageInterface
     {
-        $metadata = $dbMessage->metadata ?? [];
+        // Skip messages with empty content — the LLM API rejects them
+        if (empty($dbMessage->content)) {
+            return null;
+        }
 
+        $metadata = $dbMessage->metadata ?? [];
         if ($dbMessage->query_generated) {
             $metadata['query_generated'] = $dbMessage->query_generated;
         }
-
         if ($dbMessage->query_results) {
             $metadata['query_results'] = $dbMessage->query_results;
         }
-
         $metadata['db_id'] = $dbMessage->id;
         $metadata['created_at'] = $dbMessage->created_at?->toIso8601String();
 
         return match ($dbMessage->role) {
-            'user' => new UserMessage($dbMessage->content ?? '', $metadata),
-            'assistant' => new AssistantMessage($dbMessage->content ?? '', $metadata),
+            'user' => new UserMessage($dbMessage->content, $metadata),
+            'assistant' => new AssistantMessage($dbMessage->content, $metadata),
             default => null,
         };
     }
@@ -324,8 +326,8 @@ class EloquentThreadChatHistory implements ChatHistory
     /**
      * Create a chat history instance bound to a specific user and thread identifier.
      *
-     * @param string $identifier The thread identifier or title to use for the chat history.
-     * @param int $userId The ID of the user who owns the thread.
+     * @param  string  $identifier  The thread identifier or title to use for the chat history.
+     * @param  int  $userId  The ID of the user who owns the thread.
      * @return static A new instance associated with the given user and identifier.
      */
     public static function forUser(string $identifier, int $userId): static
@@ -336,7 +338,7 @@ class EloquentThreadChatHistory implements ChatHistory
     /**
      * Create a chat history instance for the given thread identifier.
      *
-     * @param string $identifier Thread identifier — may be a numeric thread ID, a thread title, or a session identifier.
+     * @param  string  $identifier  Thread identifier — may be a numeric thread ID, a thread title, or a session identifier.
      * @return static A new instance of EloquentThreadChatHistory for the specified identifier.
      */
     public static function for(string $identifier): static

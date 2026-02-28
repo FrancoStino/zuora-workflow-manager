@@ -13,7 +13,7 @@ class AssignWorkflowRoleOnSocialiteRegistration
      * Ensures the 'workflow_user' role and the required Workflow permissions exist (guard 'web'),
      * then attaches those permissions to the role and assigns the role to the user carried by the event.
      *
-     * @param Registered $event The Socialite registration event containing the created user.
+     * @param  Registered  $event  The Socialite registration event containing the created user.
      */
     public function handle(Registered $event): void
     {
