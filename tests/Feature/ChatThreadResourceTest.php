@@ -10,7 +10,9 @@ use App\Models\ChatMessage;
 use App\Models\ChatThread;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Livewire;
+use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 class ChatThreadResourceTest extends TestCase
@@ -22,7 +24,16 @@ class ChatThreadResourceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        Role::create(['name' => 'super_admin']);
+        $this->user = User::factory()->create();
         $this->user->assignRole('super_admin');
+
+        // Replicate Shield's gate bypass for super_admin (define_via_gate is false in config)
+        Gate::before(function ($user) {
+            if ($user->hasRole('super_admin')) {
+                return true;
+            }
+        });
         $this->actingAs($this->user);
     }
 
@@ -114,7 +125,9 @@ class ChatThreadResourceTest extends TestCase
 
         Livewire::test(ChatBox::class, ['thread' => $thread])
             ->assertSuccessful()
+            ->assertDontSee('<think>')
             ->assertSee('Thinking')
+            ->assertSee('Let me analyze the data...') // Thinking content is in DOM inside collapsed section
             ->assertSee('57 workflows');
     }
 

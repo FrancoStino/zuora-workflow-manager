@@ -121,7 +121,7 @@ class ModelsDevService
             Cache::forget(self::CACHE_KEY);
         }
 
-        return $data;
+        return $data ?? [];
     }
 
     /**

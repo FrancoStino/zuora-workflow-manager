@@ -194,7 +194,6 @@
       <path value="$PROJECT_DIR$/vendor/php-http/multipart-stream-builder" />
       <path value="$PROJECT_DIR$/vendor/php-http/discovery" />
       <path value="$PROJECT_DIR$/vendor/openai-php/client" />
-      <path value="$PROJECT_DIR$/vendor/livewire/blaze" />
     </include_path>
   </component>
   <component name="PhpProjectSharedConfiguration" php_language_level="8.5">
