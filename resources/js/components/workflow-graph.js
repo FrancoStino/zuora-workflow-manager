@@ -204,6 +204,145 @@ function createFlow(source, target, sourceAnchor = "right", targetAnchor = "left
     return link;
 }
 
+function processLinkage(linkage, findElementByTaskId) {
+    let fromElement, toElement;
+
+    // Handle Zuora linkage format
+    if (linkage.source_workflow_id !== null && linkage.source_task_id === null) {
+        // This is a start linkage (source_workflow_id present, source_task_id null)
+        fromElement = findElementByTaskId('start');
+    } else if (linkage.source_task_id !== null) {
+        // Normal task-to-task linkage
+        fromElement = findElementByTaskId(linkage.source_task_id.toString());
+    }
+
+    if (linkage.target_task_id !== null) {
+        // Link to a task
+        toElement = findElementByTaskId(linkage.target_task_id.toString());
+    }
+
+    if (fromElement && toElement) {
+        console.log('Creating link from', fromElement.taskId, 'to', toElement.taskId, 'with label:', linkage.linkage_type);
+        // Always show linkage_type label, default to empty string if not present
+        const labelText = linkage.linkage_type || "";
+        return createFlow(fromElement, toElement, "right", "left", labelText);
+    } else {
+        console.warn('Could not find elements for linkage:', linkage);
+        return null;
+    }
+}
+
+function createFallbackLinks(workflow, findElementByTaskId) {
+    const links = [];
+    const taskIds = workflow.tasks?.map(t => t.id.toString()) || [];
+    if (taskIds.length > 0) {
+        try {
+            // Start to first task
+            const startEl = findElementByTaskId('start');
+            const firstTaskEl = findElementByTaskId(taskIds[0]);
+            if (startEl && firstTaskEl) {
+                links.push(createFlow(startEl, firstTaskEl));
+            }
+
+            // Task to task
+            for (let i = 0; i < taskIds.length - 1; i++) {
+                const currentTaskEl = findElementByTaskId(taskIds[i]);
+                const nextTaskEl = findElementByTaskId(taskIds[i + 1]);
+                if (currentTaskEl && nextTaskEl) {
+                    links.push(createFlow(currentTaskEl, nextTaskEl));
+                }
+            }
+        } catch (fallbackError) {
+            console.error('Error creating fallback links:', fallbackError);
+        }
+    }
+    return links;
+}
+
+function doubleRaf(callback) {
+    requestAnimationFrame(() => {
+        requestAnimationFrame(callback);
+    });
+}
+
+function handleTaskClick(element) {
+    // Check if this is a task node (not Start or End)
+    if (element.taskData) {
+        console.log('Task clicked:', element.taskData);
+
+        // Try to find the corresponding table row and trigger the slide-over action
+        const taskId = element.taskData.id;
+        console.log('Looking for table row with task ID:', taskId);
+
+        // Try different selectors to find the table row
+        let tableRow = document.querySelector(`tr[data-id="${taskId}"]`);
+
+        if (!tableRow) {
+            // Try to find by task_id column content
+            const rows = document.querySelectorAll('table tbody tr');
+            for (const row of rows) {
+                const firstCell = row.querySelector('td:first-child');
+                if (firstCell && firstCell.textContent.trim() === taskId.toString()) {
+                    tableRow = row;
+                    break;
+                }
+            }
+        }
+
+        console.log('Found table row:', tableRow);
+
+        if (tableRow) {
+            // Find the button and click it
+            const buttons = tableRow.querySelectorAll('button');
+            console.log('Found buttons in row:', buttons);
+
+            let actionButton = null;
+            for (const button of buttons) {
+                const wireClick = button.getAttribute('wire:click');
+                console.log('Button wire:click:', wireClick);
+                if (wireClick?.includes('viewDetails')) {
+                    actionButton = button;
+                    break;
+                }
+            }
+
+            if (actionButton) {
+                console.log('Found viewDetails button, dispatching click event');
+                // Try multiple ways to trigger the click
+                try {
+                    actionButton.click();
+                } catch (e) {
+                    console.warn('Direct click failed, using dispatchEvent fallback:', e.message);
+                    actionButton.dispatchEvent(new Event('click', {bubbles: true, cancelable: true}));
+                }
+            } else {
+                console.log('viewDetails button not found, triggering click on table row');
+                tableRow.click();
+            }
+        } else {
+            // Table row not found - could show a message or do nothing
+            console.log('Table row not found, cannot open slide-over');
+        }
+    } else if (element.taskId === 'start') {
+        console.log('Start node clicked');
+    }
+}
+
+function snapAnchor(coords, endView) {
+    const bbox = endView.model.getBBox();
+    const point = bbox.pointNearestToPoint(coords);
+    const center = bbox.center();
+    const snapRadius = 10;
+    if (Math.abs(point.x - center.x) < snapRadius) {
+        point.x = center.x;
+    }
+    if (Math.abs(point.y - center.y) < snapRadius) {
+        point.y = center.y;
+    }
+    return point;
+}
+
+
 // Parse Zuora workflow data into JointJS elements (without links)
 function parseZuoraWorkflow(workflowData) {
     const elements = [];
@@ -237,7 +376,7 @@ function parseZuoraWorkflow(workflowData) {
             const sortedTasks = [...workflow.tasks].sort((a, b) => a.id - b.id);
 
             sortedTasks.forEach((task, index) => {
-                if (!task || !task.id) {
+                if (!task?.id) {
                     console.warn('Skipping invalid task at index ' + index + ':', task);
                     return;
                 }
@@ -281,47 +420,23 @@ function parseZuoraWorkflow(workflowData) {
 // Create workflow links using positioned elements
 function createWorkflowLinks(workflowData, elements) {
     const links = [];
-
     if (!workflowData || !elements || elements.length === 0) {
         return links;
     }
 
     try {
         const workflow = typeof workflowData === 'string' ? JSON.parse(workflowData) : workflowData;
-
         // Helper function to find element by taskId
         const findElementByTaskId = (taskId) => {
             return elements.find(el => el.taskId === taskId);
         };
-
         // Create links based on linkages (Zuora format)
         if (workflow.linkages && Array.isArray(workflow.linkages)) {
             workflow.linkages.forEach((linkage, index) => {
                 try {
-                    let fromElement, toElement;
-
-                    // Handle Zuora linkage format
-                    if (linkage.source_workflow_id !== null && linkage.source_task_id === null) {
-                        // This is a start linkage (source_workflow_id present, source_task_id null)
-                        fromElement = findElementByTaskId('start');
-                    } else if (linkage.source_task_id !== null) {
-                        // Normal task-to-task linkage
-                        fromElement = findElementByTaskId(linkage.source_task_id.toString());
-                    }
-
-                    if (linkage.target_task_id !== null) {
-                        // Link to a task
-                        toElement = findElementByTaskId(linkage.target_task_id.toString());
-                    }
-
-                    if (fromElement && toElement) {
-                        console.log('Creating link from', fromElement.taskId, 'to', toElement.taskId, 'with label:', linkage.linkage_type);
-                        // Always show linkage_type label, default to empty string if not present
-                        const labelText = linkage.linkage_type || "";
-                        const link = createFlow(fromElement, toElement, "right", "left", labelText);
+                    const link = processLinkage(linkage, findElementByTaskId);
+                    if (link) {
                         links.push(link);
-                    } else {
-                        console.warn('Could not find elements for linkage:', linkage);
                     }
                 } catch (linkError) {
                     console.warn('Skipping invalid linkage at index ' + index + ':', linkage, linkError);
@@ -329,36 +444,15 @@ function createWorkflowLinks(workflowData, elements) {
             });
         } else {
             // Fallback: create sequential connections
-            const taskIds = workflow.tasks?.map(t => t.id.toString()) || [];
-            if (taskIds.length > 0) {
-                try {
-                    // Start to first task
-                    const startEl = findElementByTaskId('start');
-                    const firstTaskEl = findElementByTaskId(taskIds[0]);
-                    if (startEl && firstTaskEl) {
-                        links.push(createFlow(startEl, firstTaskEl));
-                    }
-
-                    // Task to task
-                    for (let i = 0; i < taskIds.length - 1; i++) {
-                        const currentTaskEl = findElementByTaskId(taskIds[i]);
-                        const nextTaskEl = findElementByTaskId(taskIds[i + 1]);
-                        if (currentTaskEl && nextTaskEl) {
-                            links.push(createFlow(currentTaskEl, nextTaskEl));
-                        }
-                    }
-                } catch (fallbackError) {
-                    console.error('Error creating fallback links:', fallbackError);
-                }
-            }
+            links.push(...createFallbackLinks(workflow, findElementByTaskId));
         }
-
     } catch (error) {
         console.error('Error creating workflow links:', error);
     }
 
     return links;
 }
+
 
 // Initialize workflow graph
 function initWorkflowGraph(containerId, workflowData) {
@@ -556,12 +650,9 @@ function initWorkflowGraph(containerId, workflowData) {
             }
         };
 
-        // Wait for paper to be fully rendered using requestAnimationFrame
-        requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-                fitToViewport();
-            });
-        });
+        // Wait for paper to be fully rendered using doubleRaf
+        doubleRaf(fitToViewport);
+
 
         // Handle window resize with requestAnimationFrame debounce
         let resizeRafId;
@@ -590,12 +681,8 @@ function initWorkflowGraph(containerId, workflowData) {
             entries.forEach(entry => {
                 if (entry.isIntersecting && entry.intersectionRatio > 0) {
                     console.log('Container became visible, refitting...');
-                    // Use double rAF to ensure container is fully rendered
-                    requestAnimationFrame(() => {
-                        requestAnimationFrame(() => {
-                            fitToViewport();
-                        });
-                    });
+                    // Use doubleRaf to ensure container is fully rendered
+                    doubleRaf(fitToViewport);
                 }
             });
         }, {threshold: 0.1});
@@ -658,85 +745,13 @@ function initWorkflowGraph(containerId, workflowData) {
 
         // Add click event for nodes to show task details slide-over
         currentPaper.on('element:pointerclick', (cellView) => {
-            const element = cellView.model;
-
-            // Check if this is a task node (not Start or End)
-            if (element.taskData) {
-                console.log('Task clicked:', element.taskData);
-
-                // Try to find the corresponding table row and trigger the slide-over action
-                const taskId = element.taskData.id;
-                console.log('Looking for table row with task ID:', taskId);
-
-                // Try different selectors to find the table row
-                let tableRow = document.querySelector(`tr[data-id="${taskId}"]`);
-
-                if (!tableRow) {
-                    // Try to find by task_id column content
-                    const rows = document.querySelectorAll('table tbody tr');
-                    for (const row of rows) {
-                        const firstCell = row.querySelector('td:first-child');
-                        if (firstCell && firstCell.textContent.trim() === taskId.toString()) {
-                            tableRow = row;
-                            break;
-                        }
-                    }
-                }
-
-                console.log('Found table row:', tableRow);
-
-                if (tableRow) {
-                    // Find the button and click it
-                    const buttons = tableRow.querySelectorAll('button');
-                    console.log('Found buttons in row:', buttons);
-
-                    let actionButton = null;
-                    for (const button of buttons) {
-                        const wireClick = button.getAttribute('wire:click');
-                        console.log('Button wire:click:', wireClick);
-                        if (wireClick && wireClick.includes('viewDetails')) {
-                            actionButton = button;
-                            break;
-                        }
-                    }
-
-                    if (actionButton) {
-                        console.log('Found viewDetails button, dispatching click event');
-                        // Try multiple ways to trigger the click
-                        try {
-                            actionButton.click();
-                        } catch (e) {
-                            actionButton.dispatchEvent(new Event('click', {bubbles: true, cancelable: true}));
-                        }
-                    } else {
-                        console.log('viewDetails button not found, triggering click on table row');
-                        tableRow.click();
-                    }
-                } else {
-                    // Table row not found - could show a message or do nothing
-                    console.log('Table row not found, cannot open slide-over');
-                }
-            } else if (element.taskId === 'start') {
-                console.log('Start node clicked');
-            }
+            handleTaskClick(cellView.model);
         });
+
 
         currentPaper.on('link:pointerclick', (cellView) => {
             currentPaper.removeTools();
             dia.HighlighterView.removeAll(currentPaper);
-            const snapAnchor = function (coords, endView) {
-                const bbox = endView.model.getBBox();
-                const point = bbox.pointNearestToPoint(coords);
-                const center = bbox.center();
-                const snapRadius = 10;
-                if (Math.abs(point.x - center.x) < snapRadius) {
-                    point.x = center.x;
-                }
-                if (Math.abs(point.y - center.y) < snapRadius) {
-                    point.y = center.y;
-                }
-                return point;
-            };
             const toolsView = new dia.ToolsView({
                 tools: [
                     new linkTools.TargetAnchor({
@@ -765,8 +780,7 @@ function initWorkflowGraph(containerId, workflowData) {
 
         // Pan/Drag functionality
         let isPanning = false;
-        let startPanX = 0;
-        let startPanY = 0;
+
         let lastPanX = 0;
         let lastPanY = 0;
 
@@ -776,8 +790,6 @@ function initWorkflowGraph(containerId, workflowData) {
 
             // Start panning
             isPanning = true;
-            startPanX = evt.clientX;
-            startPanY = evt.clientY;
             lastPanX = evt.clientX;
             lastPanY = evt.clientY;
 
@@ -821,7 +833,7 @@ function initWorkflowGraph(containerId, workflowData) {
 
         // Mouse wheel zoom functionality
         const MIN_SCALE = 0.2;
-        const MAX_SCALE = 3.0;
+        const MAX_SCALE = 3;
         const ZOOM_STEP = 0.1;
 
         container.addEventListener('wheel', (evt) => {

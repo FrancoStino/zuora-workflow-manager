@@ -19,8 +19,7 @@ class ChatThreadPolicy
 
     public function view(AuthUser $authUser, ChatThread $chatThread): bool
     {
-        return $authUser->can('View:ChatThread')
-            && $chatThread->user_id === $authUser->getAuthIdentifier();
+        return $authUser->can('View:ChatThread');
     }
 
     public function create(AuthUser $authUser): bool
@@ -30,26 +29,22 @@ class ChatThreadPolicy
 
     public function update(AuthUser $authUser, ChatThread $chatThread): bool
     {
-        return $authUser->can('Update:ChatThread')
-            && $chatThread->user_id === $authUser->getAuthIdentifier();
+        return $authUser->can('Update:ChatThread');
     }
 
     public function delete(AuthUser $authUser, ChatThread $chatThread): bool
     {
-        return $authUser->can('Delete:ChatThread')
-            && $chatThread->user_id === $authUser->getAuthIdentifier();
+        return $authUser->can('Delete:ChatThread');
     }
 
     public function restore(AuthUser $authUser, ChatThread $chatThread): bool
     {
-        return $authUser->can('Restore:ChatThread')
-            && $chatThread->user_id === $authUser->getAuthIdentifier();
+        return $authUser->can('Restore:ChatThread');
     }
 
     public function forceDelete(AuthUser $authUser, ChatThread $chatThread): bool
     {
-        return $authUser->can('ForceDelete:ChatThread')
-            && $chatThread->user_id === $authUser->getAuthIdentifier();
+        return $authUser->can('ForceDelete:ChatThread');
     }
 
     public function forceDeleteAny(AuthUser $authUser): bool
@@ -64,8 +59,7 @@ class ChatThreadPolicy
 
     public function replicate(AuthUser $authUser, ChatThread $chatThread): bool
     {
-        return $authUser->can('Replicate:ChatThread')
-            && $chatThread->user_id === $authUser->getAuthIdentifier();
+        return $authUser->can('Replicate:ChatThread');
     }
 
     public function reorder(AuthUser $authUser): bool

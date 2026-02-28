@@ -63,9 +63,9 @@ trait HasGeneralSettingsSchema
                 ->separator(',')
                 ->reorderable()
                 // Ensure it's always an array
-                ->dehydrateStateUsing(fn ($state) => is_array($state) ? $state
+                ->dehydrateStateUsing(fn($state) => is_array($state) ? $state
                     : [])
-                ->visible(fn (Get $get) => $get('oauthEnabled')),
+                ->visible(fn(Get $get) => $get('oauthEnabled')),
 
             TextInput::make('oauthGoogleClientId')
                 ->label('Google Client ID')
@@ -73,8 +73,8 @@ trait HasGeneralSettingsSchema
                 ->placeholder('Enter Google OAuth Client ID or set GOOGLE_CLIENT_ID in .env')
                 ->helperText('Get this from Google Cloud Console. Leave empty to use .env GOOGLE_CLIENT_ID')
                 // Convert null to empty string on save
-                ->dehydrateStateUsing(fn ($state) => $state ?? '')
-                ->visible(fn (Get $get) => $get('oauthEnabled')),
+                ->dehydrateStateUsing(fn($state) => $state ?? '')
+                ->visible(fn(Get $get) => $get('oauthEnabled')),
 
             TextInput::make('oauthGoogleClientSecret')
                 ->label('Google Client Secret')
@@ -88,10 +88,10 @@ trait HasGeneralSettingsSchema
 
                     return $record?->oauthGoogleClientSecret;
                 })
-                ->placeholder(fn ($record) => $record ? '***** (already set)'
+                ->placeholder(fn($record) => $record ? '***** (already set)'
                     : null)
                 ->helperText('Get this from Google Cloud Console. Leave empty to use .env GOOGLE_CLIENT_SECRET')
-                ->visible(fn (Get $get) => $get('oauthEnabled')),
+                ->visible(fn(Get $get) => $get('oauthEnabled')),
         ];
     }
 
@@ -133,7 +133,7 @@ trait HasGeneralSettingsSchema
 
             Select::make('aiProvider')
                 ->label('AI Provider')
-                ->options(fn () => $modelsService->getProviderOptions())
+                ->options(fn() => $modelsService->getProviderOptions())
                 ->default('openai')
                 ->loadingMessage('Loading AI providers and models...')
                 ->helperText('Select the AI provider to use for chat. Models are loaded from models.dev.')
@@ -142,16 +142,17 @@ trait HasGeneralSettingsSchema
                     $modelsService,
                 ) {
                     // Reset model when provider changes
-                    $models = $modelsService->getModelOptions($state ??
+                    $models     = $modelsService->getModelOptions($state ??
                         'openai');
                     $firstModel = array_key_first($models);
                     $set('aiModel', $firstModel);
                 })
-                ->visible(fn (Get $get) => $get('aiChatEnabled')),
+                ->visible(fn(Get $get) => $get('aiChatEnabled')),
 
             TextInput::make('aiApiKey')
                 ->label('API Key')
                 ->password()
+                ->required()
                 ->revealable()
                 ->dehydrateStateUsing(function ($state, $record) {
                     if ($state) {
@@ -160,20 +161,22 @@ trait HasGeneralSettingsSchema
 
                     return $record?->aiApiKey;
                 })
-                ->placeholder(fn ($record) => $record?->aiApiKey
+                ->placeholder(fn($record)
+                    => $record?->aiApiKey
                     ? '***** (already set)' : 'Enter your API key...')
                 ->helperText('Get this from your selected provider\'s dashboard')
-                ->visible(fn (Get $get) => $get('aiChatEnabled')),
+                ->visible(fn(Get $get) => $get('aiChatEnabled')),
 
             Select::make('aiModel')
                 ->label('AI Model')
-                ->options(fn (Get $get,
-                ) => $modelsService->getModelOptions($get('aiProvider') ??
+                ->options(fn(Get $get,
+                )
+                    => $modelsService->getModelOptions($get('aiProvider') ??
                     'openai'))
                 ->default('gpt-4o-mini')
                 ->helperText('Select the model to use. Shows context window size.')
                 ->searchable()
-                ->visible(fn (Get $get) => $get('aiChatEnabled')),
+                ->visible(fn(Get $get) => $get('aiChatEnabled')),
         ];
     }
 
