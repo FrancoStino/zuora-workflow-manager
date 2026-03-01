@@ -1,4 +1,29 @@
-# [2.1.4](https://github.com/FrancoStino/zuora-workflow-manager/compare/v2.1.3...v2.1.4) (2026-01-31)
+# [3.0.0](https://github.com/FrancoStino/zuora-workflow-manager/compare/v2.1.4...v3.0.0) (2026-03-01)
+
+
+### Bug Fixes
+
+* **config:** aumenta timeout Nginx/PHP per chiamate AI lunghe ([59b9d23](https://github.com/FrancoStino/zuora-workflow-manager/commit/59b9d233c5c19d18de614453d8aa0765d0c0d571))
+
+
+### Features
+
+* **ai:** add DataAnalystAgent with MySQL tools ([eb68631](https://github.com/FrancoStino/zuora-workflow-manager/commit/eb686310d148f1f8df5b1f73accd9535640ce513))
+* **ai:** add NeuronChatService with Neuron AI framework ([aa5b927](https://github.com/FrancoStino/zuora-workflow-manager/commit/aa5b9270e210790a071db88a858a2d7e354fb6db))
+* **ai:** increase HTTP timeout to 120s in DataAnalystAgent ([8182df0](https://github.com/FrancoStino/zuora-workflow-manager/commit/8182df00005a8d354c4f4a562ba9d1eeeb76d438))
+* **ai:** install neuron-core/neuron-ai framework ([8626287](https://github.com/FrancoStino/zuora-workflow-manager/commit/8626287c1cfd3bb26c78615f18f99f8d2a0d7c6d))
+* **chat:** add streaming support to NeuronChatService ([e593aff](https://github.com/FrancoStino/zuora-workflow-manager/commit/e593aff81d7b3c28ba3defc9b528f17652ec9712))
+* **chat:** integrate streaming in ChatBox Livewire component ([ecd44f8](https://github.com/FrancoStino/zuora-workflow-manager/commit/ecd44f85fc91057c5a59f247c9f43e31e0a887c7))
+* Complete laragent migration - all tests passing ([3418f49](https://github.com/FrancoStino/zuora-workflow-manager/commit/3418f49845a9271cf520632b0c89d46be3564261))
+* Complete NeuronAI to LarAgent migration ([56f8541](https://github.com/FrancoStino/zuora-workflow-manager/commit/56f8541557304db620ab9ba55511d6407de65918))
+* **config:** update feature flag config in example and service provider ([289bee1](https://github.com/FrancoStino/zuora-workflow-manager/commit/289bee1ca8fa297bf19310a0d8e770bf5beaae66))
+* **db:** create ai_accessible_schema view for AI security ([ca2e5be](https://github.com/FrancoStino/zuora-workflow-manager/commit/ca2e5be979b887b89071b7a572c825ede635e48a))
+* **support:** add LoggedPDO with query logging and write protection ([35badf6](https://github.com/FrancoStino/zuora-workflow-manager/commit/35badf679c42c64af1096e0c913cadc2cbde5a92))
+* **ui:** implementa layout full-height e migliora styling tabelle ([685f00b](https://github.com/FrancoStino/zuora-workflow-manager/commit/685f00b0951ba955c2dfc2d5a6d3a71314dc34ae))
+
+
+
+## [2.1.4](https://github.com/FrancoStino/zuora-workflow-manager/compare/v2.1.3...v2.1.4) (2026-01-31)
 
 
 
