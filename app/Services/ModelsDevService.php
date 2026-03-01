@@ -14,7 +14,7 @@ class ModelsDevService
 
     private const int CACHE_TTL_HOURS = 24;
 
-    private const string CACHE_KEY = 'models_dev_api';
+    private const string CACHE_KEY = 'models_dev_providers';
 
     /**
      * Provide provider options keyed by provider ID for select inputs.
@@ -43,13 +43,33 @@ class ModelsDevService
      * Providers without models or without any chat-capable models are excluded. The
      * resulting collection is sorted by provider `name`.
      *
+     * Results are cached using the file store for CACHE_TTL_HOURS to avoid database
+     * column size limits that can corrupt large serialized payloads.
+     *
      * @return Collection<array> The collection of provider arrays described above.
      */
     public function getProviders(): Collection
     {
+        try {
+            $cached = $this->cacheStore()->get(self::CACHE_KEY);
+
+            if (is_array($cached) && ! empty($cached)) {
+                return collect($cached);
+            }
+        } catch (Exception $e) {
+            Log::warning('ModelsDevService: Corrupted cache detected, clearing', [
+                'error' => $e->getMessage(),
+            ]);
+            $this->clearCache();
+        }
+
         $data = $this->fetchData();
 
-        return collect($data)
+        if (empty($data)) {
+            return collect();
+        }
+
+        $providers = collect($data)
             ->map(function (array $provider, string $providerId) {
                 // Skip providers without models
                 if (empty($provider['models'])) {
@@ -76,52 +96,51 @@ class ModelsDevService
             ->filter()
             ->sortBy('name')
             ->values();
+
+        // Cache the processed (much smaller) result using file store
+        if ($providers->isNotEmpty()) {
+            try {
+                $this->cacheStore()->put(
+                    self::CACHE_KEY,
+                    $providers->toArray(),
+                    now()->addHours(self::CACHE_TTL_HOURS)
+                );
+            } catch (Exception $e) {
+                Log::warning('ModelsDevService: Failed to write cache', [
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        return $providers;
     }
 
     /**
-     * Retrieve models.dev API data and cache it under CACHE_KEY for CACHE_TTL_HOURS.
+     * Fetch raw data from the models.dev API without caching.
      *
-     * Attempts an HTTP GET to API_URL; on success returns the decoded JSON as an associative array.
-     * On non-successful responses or exceptions returns an empty array.
-     *
-     * @return array The decoded API data as an associative array, or an empty array if the request failed or returned no JSON.
+     * @return array The decoded API data as an associative array, or an empty array on failure.
      */
     private function fetchData(): array
     {
-        $data = Cache::remember(self::CACHE_KEY,
-            now()->addHours(self::CACHE_TTL_HOURS), function () {
-                try {
-                    $response = Http::timeout(30)->get(self::API_URL);
-                    if ($response->successful()) {
-                        $data = $response->json() ?? [];
-                        // Only cache non-empty successful responses
-                        if (empty($data)) {
-                            return null;
-                        }
+        try {
+            $response = Http::timeout(30)->get(self::API_URL);
 
-                        return $data;
-                    }
-                    Log::warning('ModelsDevService: Failed to fetch models.dev API',
-                        [
-                            'status' => $response->status(),
-                        ]);
+            if ($response->successful()) {
+                return $response->json() ?? [];
+            }
 
-                    return null;
-                } catch (Exception $e) {
-                    Log::error('ModelsDevService: Exception fetching models.dev API',
-                        [
-                            'error' => $e->getMessage(),
-                        ]);
+            Log::warning('ModelsDevService: Failed to fetch models.dev API', [
+                'status' => $response->status(),
+            ]);
 
-                    return null;
-                }
-            });
-        // Don't cache failures — forget the key so next call retries immediately
-        if ($data === null) {
-            Cache::forget(self::CACHE_KEY);
+            return [];
+        } catch (Exception $e) {
+            Log::error('ModelsDevService: Exception fetching models.dev API', [
+                'error' => $e->getMessage(),
+            ]);
+
+            return [];
         }
-
-        return $data ?? [];
     }
 
     /**
@@ -238,10 +257,21 @@ class ModelsDevService
     }
 
     /**
-     * Clears the cached models.dev API data stored under the service cache key.
+     * Clears the cached models.dev processed provider data.
      */
     public function clearCache(): void
     {
-        Cache::forget(self::CACHE_KEY);
+        $this->cacheStore()->forget(self::CACHE_KEY);
+    }
+
+    /**
+     * Get the cache store instance used for models.dev data.
+     *
+     * Uses the file store to avoid database column size limits (max_allowed_packet)
+     * that can silently truncate large serialized payloads and cause unserialize errors.
+     */
+    private function cacheStore(): \Illuminate\Contracts\Cache\Repository
+    {
+        return Cache::store('file');
     }
 }
