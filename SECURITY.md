@@ -39,8 +39,9 @@ When reporting a vulnerability, please include:
 
 | Version | Supported         |
 |---------|-------------------|
-| 2.0+    | ✅ Fully supported |
-| 1.0+    | ❌ Not supported   |
+| 3.x     | ✅ Fully supported |
+| 2.x     | ❌ Not supported   |
+| 1.x     | ❌ Not supported   |
 | 0.x     | ❌ Not supported   |
 
 ## Security Headers

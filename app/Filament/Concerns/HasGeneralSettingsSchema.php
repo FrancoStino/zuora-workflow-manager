@@ -2,6 +2,8 @@
 
 namespace App\Filament\Concerns;
 
+use App\Services\ModelsDevService;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -12,11 +14,17 @@ use Filament\Support\Icons\Heroicon;
 
 trait HasGeneralSettingsSchema
 {
+    /**
+     * Builds the form schema for general settings by composing sections for OAuth, AI chat, and maintenance.
+     *
+     * @return Section[] An ordered array of Section objects for the general settings form.
+     */
     public function getGeneralSettingsSchema(): array
     {
         return [
             //            $this->getSiteInformationSection(),
             $this->getOAuthSection(),
+            $this->getAiSection(),
             $this->getMaintenanceSection(),
         ];
     }
@@ -30,6 +38,14 @@ trait HasGeneralSettingsSchema
             ->schema($this->getOAuthFields());
     }
 
+    /**
+     * Builds the Filament form field definitions for OAuth configuration.
+     *
+     * The returned schema includes controls to enable/disable OAuth, constrain allowed email
+     * domains, and configure Google OAuth client ID and secret.
+     *
+     * @return array An array of Filament form components comprising the OAuth settings fields.
+     */
     public function getOAuthFields(): array
     {
         return [
@@ -47,7 +63,8 @@ trait HasGeneralSettingsSchema
                 ->separator(',')
                 ->reorderable()
                 // Ensure it's always an array
-                ->dehydrateStateUsing(fn ($state) => is_array($state) ? $state : [])
+                ->dehydrateStateUsing(fn ($state) => is_array($state) ? $state
+                    : [])
                 ->visible(fn (Get $get) => $get('oauthEnabled')),
 
             TextInput::make('oauthGoogleClientId')
@@ -71,12 +88,101 @@ trait HasGeneralSettingsSchema
 
                     return $record?->oauthGoogleClientSecret;
                 })
-                ->placeholder(fn ($record) => $record ? '***** (già impostato)' : null)
+                ->placeholder(fn ($record) => $record ? '***** (already set)'
+                    : null)
                 ->helperText('Get this from Google Cloud Console. Leave empty to use .env GOOGLE_CLIENT_SECRET')
                 ->visible(fn (Get $get) => $get('oauthEnabled')),
         ];
     }
 
+    /**
+     * Builds the "AI Chat Configuration" settings section for the general settings form.
+     *
+     * This section contains fields for enabling AI chat, selecting a provider and model, and configuring the provider API key.
+     *
+     * @return \Filament\Forms\Components\Section The configured Filament Section for AI chat settings.
+     */
+    public function getAiSection(): Section
+    {
+        return Section::make('AI Chat Configuration')
+            ->description('Configure AI provider settings for the database chat feature')
+            ->icon(Heroicon::OutlinedChatBubbleLeftRight)
+            ->columnSpanFull()
+            ->schema($this->getAiFields());
+    }
+
+    /**
+     * Build and return the form fields for configuring AI chat settings.
+     *
+     * The returned schema includes an enable toggle, provider selector (options loaded from ModelsDevService),
+     * API key input (preserves existing stored value when left blank), and model selector (options loaded
+     * based on the selected provider). Visibility and defaults are configured so fields appear only when AI chat is enabled.
+     *
+     * @return array Array of Filament form components comprising the AI chat configuration fields.
+     */
+    public function getAiFields(): array
+    {
+        $modelsService = app(ModelsDevService::class);
+
+        return [
+            Toggle::make('aiChatEnabled')
+                ->label('Enable AI Chat')
+                ->helperText('Enable/disable AI-powered database chat')
+                ->columnSpanFull()
+                ->live(),
+
+            Select::make('aiProvider')
+                ->label('AI Provider')
+                ->options(fn () => $modelsService->getProviderOptions())
+                ->default('openai')
+                ->loadingMessage('Loading AI providers and models...')
+                ->helperText('Select the AI provider to use for chat. Models are loaded from models.dev.')
+                ->live()
+                ->afterStateUpdated(function ($state, callable $set) use (
+                    $modelsService,
+                ) {
+                    // Reset model when provider changes
+                    $models = $modelsService->getModelOptions($state ??
+                        'openai');
+                    $firstModel = array_key_first($models);
+                    $set('aiModel', $firstModel);
+                })
+                ->visible(fn (Get $get) => $get('aiChatEnabled')),
+
+            TextInput::make('aiApiKey')
+                ->label('API Key')
+                ->password()
+                ->required()
+                ->revealable()
+                ->dehydrateStateUsing(function ($state, $record) {
+                    if ($state) {
+                        return $state;
+                    }
+
+                    return $record?->aiApiKey;
+                })
+                ->placeholder(fn ($record) => $record?->aiApiKey
+                    ? '***** (already set)' : 'Enter your API key...')
+                ->helperText('Get this from your selected provider\'s dashboard')
+                ->visible(fn (Get $get) => $get('aiChatEnabled')),
+
+            Select::make('aiModel')
+                ->label('AI Model')
+                ->options(fn (Get $get,
+                ) => $modelsService->getModelOptions($get('aiProvider') ??
+                    'openai'))
+                ->default('gpt-4o-mini')
+                ->helperText('Select the model to use. Shows context window size.')
+                ->searchable()
+                ->visible(fn (Get $get) => $get('aiChatEnabled')),
+        ];
+    }
+
+    /**
+     * Create the "Maintenance" settings section used to control access to the application during maintenance.
+     *
+     * @return Section The configured maintenance Section instance.
+     */
     public function getMaintenanceSection(): Section
     {
         return Section::make('Maintenance')

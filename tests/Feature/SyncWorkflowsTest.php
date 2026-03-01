@@ -26,9 +26,9 @@ class SyncWorkflowsTest extends TestCase
             ->shouldReceive('listWorkflows')
             ->once()
             ->with(
-                $customer->client_id,
-                $customer->client_secret,
-                $customer->base_url,
+                $customer->zuora_client_id,
+                $customer->zuora_client_secret,
+                $customer->zuora_base_url,
                 1,
                 50
             )
@@ -56,13 +56,13 @@ class SyncWorkflowsTest extends TestCase
         $service = new WorkflowSyncService($this->zuoraServiceMock);
         $stats = $service->syncCustomerWorkflows($customer);
 
-        expect($stats['created'])->toBe(2);
-        expect($stats['updated'])->toBe(0);
-        expect($stats['total'])->toBe(2);
+        $this->assertEquals(2, $stats['created']);
+        $this->assertEquals(0, $stats['updated']);
+        $this->assertEquals(2, $stats['total']);
 
-        expect($customer->workflows()->count())->toBe(2);
-        expect(Workflow::where('zuora_id', 'wf-001')->exists())->toBeTrue();
-        expect(Workflow::where('zuora_id', 'wf-002')->exists())->toBeTrue();
+        $this->assertEquals(2, $customer->workflows()->count());
+        $this->assertTrue(Workflow::where('zuora_id', 'wf-001')->exists());
+        $this->assertTrue(Workflow::where('zuora_id', 'wf-002')->exists());
     }
 
     public function test_sync_customer_workflows_handles_pagination(): void
@@ -73,19 +73,19 @@ class SyncWorkflowsTest extends TestCase
         $this->zuoraServiceMock
             ->shouldReceive('listWorkflows')
             ->once()
-            ->with($customer->client_id, $customer->client_secret, $customer->base_url, 1, 50)
+            ->with($customer->zuora_client_id, $customer->zuora_client_secret, $customer->zuora_base_url, 1, 50)
             ->andReturn([
                 'data' => [
                     ['id' => 'wf-001', 'name' => self::WORKFLOW_NAME_1, 'state' => 'Active', 'createdAt' => now(), 'updatedAt' => now()],
                 ],
-                'pagination' => ['hasMore' => true],
+                'pagination' => ['next_page' => 2],
             ]);
 
         // Seconda pagina
         $this->zuoraServiceMock
             ->shouldReceive('listWorkflows')
             ->once()
-            ->with($customer->client_id, $customer->client_secret, $customer->base_url, 2, 50)
+            ->with($customer->zuora_client_id, $customer->zuora_client_secret, $customer->zuora_base_url, 2, 50)
             ->andReturn([
                 'data' => [
                     ['id' => 'wf-002', 'name' => 'Workflow 2', 'state' => 'Inactive', 'createdAt' => now(), 'updatedAt' => now()],
@@ -96,8 +96,8 @@ class SyncWorkflowsTest extends TestCase
         $service = new WorkflowSyncService($this->zuoraServiceMock);
         $stats = $service->syncCustomerWorkflows($customer);
 
-        expect($stats['total'])->toBe(2);
-        expect($customer->workflows()->count())->toBe(2);
+        $this->assertEquals(2, $stats['total']);
+        $this->assertEquals(2, $customer->workflows()->count());
     }
 
     public function test_sync_customer_workflows_deletes_stale_workflows(): void
@@ -126,9 +126,9 @@ class SyncWorkflowsTest extends TestCase
         $service = new WorkflowSyncService($this->zuoraServiceMock);
         $stats = $service->syncCustomerWorkflows($customer);
 
-        expect($stats['deleted'])->toBe(1);
-        expect(Workflow::where('zuora_id', 'wf-old')->exists())->toBeFalse();
-        expect(Workflow::where('zuora_id', 'wf-new')->exists())->toBeTrue();
+        $this->assertEquals(1, $stats['deleted']);
+        $this->assertFalse(Workflow::where('zuora_id', 'wf-old')->exists());
+        $this->assertTrue(Workflow::where('zuora_id', 'wf-new')->exists());
     }
 
     public function test_sync_customer_workflows_job_is_queued(): void
@@ -161,7 +161,7 @@ class SyncWorkflowsTest extends TestCase
         $service->syncCustomerWorkflows($customer);
 
         $workflow = Workflow::where('zuora_id', 'wf-001')->first();
-        expect($workflow->last_synced_at)->not->toBeNull();
+        $this->assertNotNull($workflow->last_synced_at);
     }
 
     protected function setUp(): void

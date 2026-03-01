@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Task extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'workflow_id',
         'task_id',
@@ -41,6 +44,11 @@ class Task extends Model
         'zuora_org_ids' => 'array',
     ];
 
+    /**
+     * Get the workflow this task belongs to.
+     *
+     * @return BelongsTo The associated Workflow model relationship.
+     */
     public function workflow(): BelongsTo
     {
         return $this->belongsTo(Workflow::class);

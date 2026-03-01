@@ -5,8 +5,8 @@ namespace App\Filament\Resources\Workflows\Pages;
 use App\Filament\Concerns\HasWorkflowDownloadAction;
 use App\Filament\Resources\Workflows\RelationManagers\TasksRelationManager;
 use App\Filament\Resources\Workflows\WorkflowResource;
-use CodebarAg\FilamentJsonField\Infolists\Components\JsonEntry;
 use Filament\Actions\Action;
+use Filament\Infolists\Components\CodeEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Components\ViewEntry;
 use Filament\Resources\Pages\ViewRecord;
@@ -20,6 +20,7 @@ use Filament\Support\Enums\FontWeight;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Contracts\Support\Htmlable;
 use Njxqlus\Filament\Components\Infolists\RelationManager;
+use Phiki\Grammar\Grammar;
 
 class ViewWorkflow extends ViewRecord
 {
@@ -28,6 +29,16 @@ class ViewWorkflow extends ViewRecord
 
     protected static string $resource = WorkflowResource::class;
 
+    /**
+     * Builds and returns the infolist schema for the current workflow record.
+     *
+     * Ensures the related customer is loaded, binds the record to the provided
+     * schema, and configures sections for general information, associated tasks,
+     * and tabs for a JSON export and graphical workflow view.
+     *
+     * @param  Schema  $schema  The base infolist schema to configure and bind the record to.
+     * @return Schema The configured infolist schema bound to the current workflow record.
+     */
     public function infolist(Schema $schema): Schema
     {
         $this->record->loadMissing(['customer']);
@@ -64,7 +75,8 @@ class ViewWorkflow extends ViewRecord
                                         'Inactive' => Heroicon::XCircle,
                                         default => Heroicon::QuestionMarkCircle,
                                     })
-                                    ->color(fn (string $state): string => match ($state) {
+                                    ->color(fn (string $state,
+                                    ): string => match ($state) {
                                         'Active' => 'success',
                                         'Inactive' => 'danger',
                                         default => 'gray',
@@ -88,9 +100,11 @@ class ViewWorkflow extends ViewRecord
                                             return 'Never';
                                         }
 
-                                        $daysSince = $this->calculateDaysSinceSync($state);
+                                        $daysSince
+                                            = $this->calculateDaysSinceSync($state);
 
-                                        return $daysSince === 0 ? 'Today' : "$daysSince days ago";
+                                        return $daysSince === 0 ? 'Today'
+                                            : "$daysSince days ago";
                                     }),
                                 TextEntry::make('customer.name')
                                     ->label('Customer Name')
@@ -117,24 +131,35 @@ class ViewWorkflow extends ViewRecord
                         Tab::make('Workflow JSON')
                             ->icon('json')
                             ->schema([
-                                ViewEntry::make('copy_json_button')
-                                    ->hiddenLabel()
-                                    ->view('filament.components.copy-json-button', [
-                                        'jsonData' => $this->record->json_export,
+                                Section::make()
+                                    ->schema([
+                                        ViewEntry::make('copy_json_button_top')
+                                            ->view('filament.components.copy-json-button',
+                                                [
+                                                    'jsonData' => $this->record->json_export,
+                                                ]),
+                                        CodeEntry::make('json_export')
+                                            ->hiddenLabel()
+                                            ->copyable()
+                                            ->grammar(Grammar::Json)
+                                            ->formatStateUsing(fn ($state) => is_array($state) ? json_encode($state, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) : $state),
+                                        ViewEntry::make('copy_json_button_bottom')
+                                            ->view('filament.components.copy-json-button',
+                                                [
+                                                    'jsonData' => $this->record->json_export,
+                                                ]),
                                     ]),
-
-                                JsonEntry::make('json_export')
-                                    ->hiddenLabel()
-                                    ->darkTheme(),
-
                             ]),
                         Tab::make('Graphical View')
                             ->icon('workflow-square')
                             ->schema([
-                                ViewEntry::make('workflow_graph')
-                                    ->hiddenLabel()
-                                    ->view('filament.components.workflow-graph', [
-                                        'workflowData' => $this->record->json_export,
+                                Section::make()
+                                    ->schema([
+                                        ViewEntry::make('workflow_graph')
+                                            ->view('filament.components.workflow-graph',
+                                                [
+                                                    'workflowData' => $this->record->json_export,
+                                                ]),
                                     ]),
                             ]),
                     ]),

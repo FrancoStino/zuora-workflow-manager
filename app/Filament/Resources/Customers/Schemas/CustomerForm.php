@@ -8,6 +8,18 @@ use Filament\Schemas\Schema;
 
 class CustomerForm
 {
+    /**
+     * Configure a Filament form schema with fields for managing customer Zuora credentials and metadata.
+     *
+     * The configured schema includes:
+     * - `name` (text, required, max 255)
+     * - `zuora_client_id` (text, required, max 255)
+     * - `zuora_client_secret` (password, revealable, max 255; required only on create; preserves existing secret when not provided; placeholder shows "***** (already set)" when a record exists)
+     * - `zuora_base_url` (grouped select of Zuora endpoints, required)
+     *
+     * @param  Schema  $schema  The base schema to configure.
+     * @return Schema The schema instance populated with the customer form components.
+     */
     public static function configure(Schema $schema): Schema
     {
         return $schema
@@ -35,7 +47,8 @@ class CustomerForm
 
                         return $record?->zuora_client_secret;
                     })
-                    ->placeholder(fn ($record) => $record ? '***** (già impostato)' : null),
+                    ->placeholder(fn ($record) => $record ? '***** (already set)'
+                        : null),
 
                 Select::make('zuora_base_url')
                     ->label('Base URL')

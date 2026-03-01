@@ -2,38 +2,93 @@
 
 namespace App\Providers;
 
+use App\Agents\DataAnalystAgentLaragent;
+use App\Exceptions\SecurityException;
 use App\Listeners\AssignWorkflowRoleOnSocialiteRegistration;
 use App\Listeners\UpdateUserAvatarOnSocialiteLogin;
 use DutchCodingCompany\FilamentSocialite\Events\Login;
 use DutchCodingCompany\FilamentSocialite\Events\Registered;
 use Filament\Support\Facades\FilamentView;
 use Filament\View\PanelsRenderHook;
+use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
     /**
-     * Register any application services.
+     * Configure and register application-wide services.
+     *
+     * Notes that the LaragentChatService is the primary chat service and no feature flag is required.
      */
     public function register(): void
     {
-        //
+        // LaragentChatService is the primary chat service
+        // No feature flag needed - using LarAgent only
     }
 
     /**
-     * Bootstrap any application services.
+     * Bootstraps application services: registers authentication event listeners, a Filament user-menu render hook,
+     * and a pre-execution database guard that blocks AI write operations before they reach the database.
+     *
+     * When the configuration key `app.enable_ai_security_listener` is enabled (defaults to true), the
+     * pre-execution hook detects INSERT, UPDATE, or DELETE SQL statements at the start of the query,
+     * logs a critical security event with sanitized context, and prevents the operation.
+     *
+     * A post-execution listener logs AI query activity for audit purposes only.
+     *
+     * @throws SecurityException If a database write statement is detected while the AI security listener is enabled.
      */
     public function boot(): void
     {
         Event::listen(Login::class, UpdateUserAvatarOnSocialiteLogin::class);
-        Event::listen(Registered::class, UpdateUserAvatarOnSocialiteLogin::class);
-        Event::listen(Registered::class, AssignWorkflowRoleOnSocialiteRegistration::class);
+        Event::listen(Registered::class,
+            UpdateUserAvatarOnSocialiteLogin::class);
+        Event::listen(Registered::class,
+            AssignWorkflowRoleOnSocialiteRegistration::class);
 
         FilamentView::registerRenderHook(
             PanelsRenderHook::USER_MENU_BEFORE,
             fn (): string => Blade::render('<livewire:documentation-button />'),
         );
+
+        // Pre-execution guard: blocks AI write operations BEFORE they reach the database
+        DB::connection()->beforeExecuting(function (
+            string $query,
+            array $bindings,
+        ) {
+            if (! DataAnalystAgentLaragent::$isExecutingQuery) {
+                return;
+            }
+
+            if (! config('app.enable_ai_security_listener', true)) {
+                return;
+            }
+
+            if (preg_match('/^\s*(INSERT|UPDATE|DELETE)\b/i', $query)) {
+                Log::critical('SECURITY BREACH: AI attempted write', [
+                    'sql' => $query,
+                    'bindings_count' => count($bindings),
+                ]);
+
+                throw new SecurityException('AI write operations forbidden');
+            }
+        });
+
+        // Post-execution listener: audit logging only (no blocking)
+        DB::listen(function (QueryExecuted $query) {
+            if (! DataAnalystAgentLaragent::$isExecutingQuery) {
+                return;
+            }
+
+            Log::debug('AI query executed', [
+                'sql' => $query->sql,
+                'time_ms' => $query->time,
+                'bindings_count' => count($query->bindings),
+            ]);
+        });
     }
 }

@@ -59,12 +59,15 @@ class AdminPanelProvider extends PanelProvider
             ->navigationGroups([
                 'Zuora Management',
             ])
-            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
-            ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
+            ->discoverResources(in: app_path('Filament/Resources'),
+                for: 'App\Filament\Resources')
+            ->discoverPages(in: app_path('Filament/Pages'),
+                for: 'App\Filament\Pages')
             ->pages([
                 Dashboard::class,
             ])
-            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
+            ->discoverWidgets(in: app_path('Filament/Widgets'),
+                for: 'App\Filament\Widgets')
             ->widgets([
                 //                AccountWidget::class,
                 //                FilamentInfoWidget::class,
@@ -89,20 +92,25 @@ class AdminPanelProvider extends PanelProvider
             ->renderHook(
                 PanelsRenderHook::STYLES_AFTER,
                 function () {
-                    $cssFile = self::getManifest()['resources/css/workflow-graph.css']['file'] ?? 'assets/workflow-graph.css';
+                    $cssFile
+                        = self::getManifest()['resources/css/workflow-graph.css']['file']
+                        ?? 'assets/workflow-graph.css';
 
-                    return '<link rel="stylesheet" href="'.asset('build/'.$cssFile).'">';
+                    return '<link rel="stylesheet" href="'.asset('build/'
+                            .$cssFile).'">';
                 },
-                scopes: [ViewWorkflow::class]
+                scopes: [ViewWorkflow::class],
             )
             ->renderHook(
                 PanelsRenderHook::SCRIPTS_AFTER,
                 function () {
-                    $appJs = self::getManifest()['resources/js/app.js']['file'] ?? 'assets/app.js';
+                    $appJs = self::getManifest()['resources/js/app.js']['file']
+                        ?? 'assets/app.js';
 
-                    return '<script type="module" src="'.asset('build/'.$appJs).'"></script>';
+                    return '<script type="module" src="'.asset('build/'.$appJs)
+                        .'"></script>';
                 },
-                scopes: [ViewWorkflow::class]
+                scopes: [ViewWorkflow::class],
             )
             ->renderHook(
                 PanelsRenderHook::FOOTER,
@@ -128,7 +136,9 @@ class AdminPanelProvider extends PanelProvider
     public static function getManifest(): array
     {
         if (self::$manifest === null) {
-            self::$manifest = json_decode(file_get_contents(public_path('build/manifest.json')), true, 512, JSON_THROW_ON_ERROR);
+            self::$manifest
+                = json_decode(file_get_contents(public_path('build/manifest.json')),
+                    true, 512, JSON_THROW_ON_ERROR);
         }
 
         return self::$manifest;
@@ -139,14 +149,19 @@ class AdminPanelProvider extends PanelProvider
         $config = OAuthService::getGoogleOAuthConfig();
 
         config([
-            'services.google.client_id' => $config['client_id'] ?? config('services.google.client_id'),
-            'services.google.client_secret' => $config['client_secret'] ?? config('services.google.client_secret'),
-            'services.google.redirect' => $config['redirect'] ?? config('services.google.redirect'),
+            'services.google.client_id' => $config['client_id'] ??
+                config('services.google.client_id'),
+            'services.google.client_secret' => $config['client_secret'] ??
+                config('services.google.client_secret'),
+            'services.google.redirect' => $config['redirect'] ??
+                config('services.google.redirect'),
         ]);
 
         // If not enabled, disable social login
 
-        if (($config['enabled'] ?? false) && ($config['client_id'] ?? false) && ($config['client_secret'] ?? false)) {
+        if (($config['enabled'] ?? false) && ($config['client_id'] ?? false)
+            && ($config['client_secret'] ?? false)
+        ) {
             return FilamentSocialitePlugin::make()
                 ->domainAllowList(app(OAuthService::class)::getAllowedDomains())
                 ->registration()

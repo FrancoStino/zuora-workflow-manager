@@ -19,19 +19,19 @@ class SocialiteWorkflowRoleTest extends TestCase
         // Create a user
         $user = User::factory()->create();
 
-        // Mock the Socialite user
-        $mockOauthUser = \Mockery::mock();
+        // Mock the Socialite OAuth user (Laravel\Socialite\Contracts\User)
+        $mockOauthUser = \Mockery::mock(\Laravel\Socialite\Contracts\User::class);
         $mockOauthUser->shouldReceive('getAvatar')->andReturn(null);
 
-        // Create a mock SocialiteUser
+        // Create a mock SocialiteUser (Filament Socialite internal user)
         $socialiteUser = \Mockery::mock(SocialiteUser::class);
         $socialiteUser->shouldReceive('getUser')->andReturn($user);
 
-        // Create the Registered event
+        // Create the Registered event (provider, oauthUser, socialiteUser)
         $event = new Registered(
+            'google',
             $mockOauthUser,
-            $socialiteUser,
-            'google'
+            $socialiteUser
         );
 
         // Call the listener
@@ -57,16 +57,16 @@ class SocialiteWorkflowRoleTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $mockOauthUser = \Mockery::mock();
+        $mockOauthUser = \Mockery::mock(\Laravel\Socialite\Contracts\User::class);
         $mockOauthUser->shouldReceive('getAvatar')->andReturn(null);
 
         $socialiteUser = \Mockery::mock(SocialiteUser::class);
         $socialiteUser->shouldReceive('getUser')->andReturn($user);
 
         $event = new Registered(
+            'google',
             $mockOauthUser,
-            $socialiteUser,
-            'google'
+            $socialiteUser
         );
 
         $listener = new AssignWorkflowRoleOnSocialiteRegistration;
@@ -100,24 +100,24 @@ class SocialiteWorkflowRoleTest extends TestCase
         $user1 = User::factory()->create();
         $user2 = User::factory()->create();
 
-        $mockOauthUser1 = \Mockery::mock();
+        $mockOauthUser1 = \Mockery::mock(\Laravel\Socialite\Contracts\User::class);
         $mockOauthUser1->shouldReceive('getAvatar')->andReturn(null);
 
         $socialiteUser1 = \Mockery::mock(SocialiteUser::class);
         $socialiteUser1->shouldReceive('getUser')->andReturn($user1);
 
-        $event1 = new Registered($mockOauthUser1, $socialiteUser1, 'google');
+        $event1 = new Registered('google', $mockOauthUser1, $socialiteUser1);
 
         $listener = new AssignWorkflowRoleOnSocialiteRegistration;
         $listener->handle($event1);
 
-        $mockOauthUser2 = \Mockery::mock();
+        $mockOauthUser2 = \Mockery::mock(\Laravel\Socialite\Contracts\User::class);
         $mockOauthUser2->shouldReceive('getAvatar')->andReturn(null);
 
         $socialiteUser2 = \Mockery::mock(SocialiteUser::class);
         $socialiteUser2->shouldReceive('getUser')->andReturn($user2);
 
-        $event2 = new Registered($mockOauthUser2, $socialiteUser2, 'google');
+        $event2 = new Registered('google', $mockOauthUser2, $socialiteUser2);
         $listener->handle($event2);
 
         // Verify only one role exists

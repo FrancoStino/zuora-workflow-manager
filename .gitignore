@@ -26,3 +26,4 @@ Thumbs.db
 
 .gemini/
 gha-creds-*.json
+/.sisyphus/

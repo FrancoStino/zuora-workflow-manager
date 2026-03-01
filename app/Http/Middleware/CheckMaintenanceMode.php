@@ -22,15 +22,11 @@ class CheckMaintenanceMode
 
     public function handle(Request $request, Closure $next): Response
     {
-        if ($this->isExcludedRoute($request)) {
-            return $next($request);
-        }
+        $shouldBlock = ! $this->isExcludedRoute($request)
+            && $this->isMaintenanceModeEnabled()
+            && ! $this->canBypassMaintenance();
 
-        if ($this->isMaintenanceModeEnabled()) {
-            if ($this->canBypassMaintenance()) {
-                return $next($request);
-            }
-
+        if ($shouldBlock) {
             return $this->maintenanceResponse($request);
         }
 

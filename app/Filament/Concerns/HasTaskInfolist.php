@@ -2,16 +2,26 @@
 
 namespace App\Filament\Concerns;
 
-use CodebarAg\FilamentJsonField\Infolists\Components\JsonEntry;
+use Filament\Infolists\Components\CodeEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Support\Icons\Heroicon;
+use Phiki\Grammar\Grammar;
 
 trait HasTaskInfolist
 {
     private const DATETIME_FORMAT = 'd/m/Y H:i';
 
+    /**
+     * Builds the Filament infolist schema used to render a task record's information sections.
+     *
+     * The returned array contains Section configurations (General Information, Parameters, CSS Position,
+     * Tags & Assignments, Timestamps). Several sections are conditionally visible based on the record's
+     * data (parameters, css, tags, assignment). Date/time entries use self::DATETIME_FORMAT for display.
+     *
+     * @return array An array of Filament Infolist Section schemas for a task record.
+     */
     protected function getTaskInfolistSchema(): array
     {
         return [
@@ -105,9 +115,12 @@ trait HasTaskInfolist
                 ->collapsible()
                 ->collapsed()
                 ->schema([
-                    JsonEntry::make('parameters')
+                    CodeEntry::make('parameters')
                         ->hiddenLabel()
-                        ->darkTheme(),
+                        ->copyable()
+                        ->copyMessage('Copied!')
+                        ->grammar(Grammar::Json)
+                        ->formatStateUsing(fn ($state) => is_array($state) ? json_encode($state, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) : $state),
                 ]),
 
             Section::make('CSS Position')
@@ -143,9 +156,12 @@ trait HasTaskInfolist
                         ->visible(fn ($record) => ! empty($record->tags))
                         ->placeholder('No tags'),
 
-                    JsonEntry::make('assignment')
+                    CodeEntry::make('assignment')
                         ->label('Assignments')
-                        ->darkTheme()
+                        ->copyable()
+                        ->copyMessage('Copied!')
+                        ->grammar(Grammar::Json)
+                        ->formatStateUsing(fn ($state) => is_array($state) ? json_encode($state, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) : $state)
                         ->visible(fn ($record) => ! empty($record->assignment)),
                 ]),
 

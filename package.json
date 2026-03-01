@@ -4,18 +4,22 @@
   "type": "module",
   "scripts": {
     "build": "vite build",
-    "dev": "vite"
+    "dev": "vite",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:report": "playwright show-report tests/reports/playwright-report"
   },
   "devDependencies": {
-    "@tailwindcss/vite": "^4.1.18",
-    "axios": "^1.13.4",
+    "@playwright/test": "^1.58.2",
+    "@tailwindcss/vite": "^4.2.1",
+    "axios": "^1.13.5",
     "concurrently": "^9.0.1",
     "laravel-vite-plugin": "^2.1.0",
-    "tailwindcss": "^4.1.18",
+    "tailwindcss": "^4.2.1",
     "vite": "^7.3.1"
   },
   "dependencies": {
-    "@joint/core": "^4.2.3",
+    "@joint/core": "^4.2.4",
     "@joint/layout-directed-graph": "^4.2.3"
   }
 }

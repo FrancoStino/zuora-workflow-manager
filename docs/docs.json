@@ -57,6 +57,7 @@
                     "features/workflow-management",
                     "features/dashboard-widgets",
                     "features/jobs-monitoring",
+                    "features/ai-chat",
                     "features/setup-wizard",
                     "features/settings-management",
                     "features/workflow-synchronization"
