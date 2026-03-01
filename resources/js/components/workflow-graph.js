@@ -265,66 +265,75 @@ function doubleRaf(callback) {
     });
 }
 
+function findTableRowByTaskId(taskId) {
+    console.log("Looking for table row with task ID:", taskId);
+
+    // Try different selectors to find the table row
+    let tableRow = document.querySelector(`tr[data-id="${taskId}"]`);
+
+    if (!tableRow) {
+        // Try to find by task_id column content
+        const rows = document.querySelectorAll("table tbody tr");
+        for (const row of rows) {
+            const firstCell = row.querySelector("td:first-child");
+            if (firstCell && firstCell.textContent.trim() === taskId.toString()) {
+                tableRow = row;
+                break;
+            }
+        }
+    }
+
+    return tableRow;
+}
+
+function triggerViewDetailsAction(tableRow) {
+    console.log("Found table row:", tableRow);
+
+    if (!tableRow) {
+        // Table row not found - could show a message or do nothing
+        console.log("Table row not found, cannot open slide-over");
+        return;
+    }
+
+    // Find the button and click it
+    const buttons = tableRow.querySelectorAll("button");
+    console.log("Found buttons in row:", buttons);
+
+    let actionButton = null;
+    for (const button of buttons) {
+        const wireClick = button.getAttribute("wire:click");
+        console.log("Button wire:click:", wireClick);
+        if (wireClick?.includes("viewDetails")) {
+            actionButton = button;
+            break;
+        }
+    }
+
+    if (actionButton) {
+        console.log("Found viewDetails button, dispatching click event");
+        // Try multiple ways to trigger the click
+        try {
+            actionButton.click();
+        } catch (e) {
+            console.warn("Direct click failed, using dispatchEvent fallback:", e.message);
+            actionButton.dispatchEvent(new Event("click", {bubbles: true, cancelable: true}));
+        }
+    } else {
+        console.log("viewDetails button not found, triggering click on table row");
+        tableRow.click();
+    }
+}
+
 function handleTaskClick(element) {
     // Check if this is a task node (not Start or End)
     if (element.taskData) {
-        console.log('Task clicked:', element.taskData);
+        console.log("Task clicked:", element.taskData);
 
-        // Try to find the corresponding table row and trigger the slide-over action
         const taskId = element.taskData.id;
-        console.log('Looking for table row with task ID:', taskId);
-
-        // Try different selectors to find the table row
-        let tableRow = document.querySelector(`tr[data-id="${taskId}"]`);
-
-        if (!tableRow) {
-            // Try to find by task_id column content
-            const rows = document.querySelectorAll('table tbody tr');
-            for (const row of rows) {
-                const firstCell = row.querySelector('td:first-child');
-                if (firstCell && firstCell.textContent.trim() === taskId.toString()) {
-                    tableRow = row;
-                    break;
-                }
-            }
-        }
-
-        console.log('Found table row:', tableRow);
-
-        if (tableRow) {
-            // Find the button and click it
-            const buttons = tableRow.querySelectorAll('button');
-            console.log('Found buttons in row:', buttons);
-
-            let actionButton = null;
-            for (const button of buttons) {
-                const wireClick = button.getAttribute('wire:click');
-                console.log('Button wire:click:', wireClick);
-                if (wireClick?.includes('viewDetails')) {
-                    actionButton = button;
-                    break;
-                }
-            }
-
-            if (actionButton) {
-                console.log('Found viewDetails button, dispatching click event');
-                // Try multiple ways to trigger the click
-                try {
-                    actionButton.click();
-                } catch (e) {
-                    console.warn('Direct click failed, using dispatchEvent fallback:', e.message);
-                    actionButton.dispatchEvent(new Event('click', {bubbles: true, cancelable: true}));
-                }
-            } else {
-                console.log('viewDetails button not found, triggering click on table row');
-                tableRow.click();
-            }
-        } else {
-            // Table row not found - could show a message or do nothing
-            console.log('Table row not found, cannot open slide-over');
-        }
-    } else if (element.taskId === 'start') {
-        console.log('Start node clicked');
+        const tableRow = findTableRowByTaskId(taskId);
+        triggerViewDetailsAction(tableRow);
+    } else if (element.taskId === "start") {
+        console.log("Start node clicked");
     }
 }
 
@@ -341,7 +350,229 @@ function snapAnchor(coords, endView) {
     }
     return point;
 }
+function fitContentToViewport(graph, paper) {
+    const graphBBox = graph.getBBox();
+    console.log("Fitting to viewport, bbox:", graphBBox);
 
+    if (graphBBox.width > 0 && graphBBox.height > 0) {
+        paper.transformToFitContent({
+            padding: 60,
+            minScale: 0.4,
+            maxScale: 1.5,
+            verticalAlign: "middle",
+            horizontalAlign: "middle",
+            useModelGeometry: true
+        });
+        console.log("Content fitted to viewport");
+    }
+}
+
+function createResizeHandler(graph, paper) {
+    let resizeRafId;
+    let resizeTimeout;
+
+    const handler = () => {
+        if (resizeRafId) {
+            cancelAnimationFrame(resizeRafId);
+        }
+        clearTimeout(resizeTimeout);
+
+        resizeTimeout = setTimeout(() => {
+            resizeRafId = requestAnimationFrame(() => {
+                fitContentToViewport(graph, paper);
+            });
+        }, 150);
+    };
+
+    return {
+        handler,
+        cleanup: () => {
+            clearTimeout(resizeTimeout);
+            if (resizeRafId) {
+                cancelAnimationFrame(resizeRafId);
+            }
+        }
+    };
+}
+
+
+
+function setupThemeSwitcher(container) {
+    const themeSwitch = document.createElement("div");
+    themeSwitch.className = "theme-switch";
+    themeSwitch.title = "Switch between light and dark mode";
+    themeSwitch.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" viewBox="0 0 24 24" fill="none" stroke="#dde6ed" stroke-linecap="round" stroke-linejoin="round" class="light-icon"><path d="M12 18.5C15.5899 18.5 18.5 15.5899 18.5 12C18.5 8.41015 15.5899 5.5 12 5.5C8.41015 5.5 5.5 8.41015 5.5 12C5.5 15.5899 8.41015 18.5 12 18.5Z" stroke-width="1.5" /><path d="M19.14 19.14L19.01 19.01M19.01 4.99L19.14 4.86L19.01 4.99ZM4.86 19.14L4.99 19.01L4.86 19.14ZM12 2.08V2V2.08ZM12 22V21.92V22ZM2.08 12H2H2.08ZM22 12H21.92H22ZM4.99 4.99L4.86 4.86L4.99 4.99Z" stroke-width="2" /></svg><svg xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" viewBox="0 0 24 24" fill="#131e29" class="dark-icon"><path d="M12.0557 3.59974C12.2752 3.2813 12.2913 2.86484 12.0972 2.53033C11.9031 2.19582 11.5335 2.00324 11.1481 2.03579C6.02351 2.46868 2 6.76392 2 12C2 17.5228 6.5228 22 12 22C17.236 22 21.5313 17.9764 21.9642 12.8518C21.9967 12.4664 21.8041 12.0968 21.4696 11.9027C21.1351 11.7086 20.7187 11.7248 20.4002 11.9443C19.4341 12.6102 18.2641 13 17 13C13.6863 13 11 10.3137 11 6.99996C11 5.73589 11.3898 4.56587 12.0557 3.59974Z" /></svg><div class="switch"></div>`;
+    container.appendChild(themeSwitch);
+
+    themeSwitch.addEventListener("click", () => {
+        console.log("Theme switch clicked");
+        document.body.classList.toggle("light-theme");
+        console.log("Body classes:", document.body.className);
+    });
+}
+
+function setupPaperEventHandlers(paper, graph, container) {
+    const {mask: MaskHighlighter, stroke: StrokeHighlighter} = highlighters;
+
+    paper.on("cell:mouseenter", (cellView, evt) => {
+        let selector, padding;
+        if (cellView.model.isLink()) {
+            if (StrokeHighlighter.get(cellView, "selection")) return;
+            selector = {label: 0, selector: "labelBody"};
+            padding = unit / 2;
+        } else {
+            selector = "body";
+            padding = unit;
+        }
+        const frame = MaskHighlighter.add(cellView, selector, "frame", {
+            padding,
+            layer: dia.Paper.Layers.FRONT,
+            attrs: {
+                "stroke-width": 1.5,
+                "stroke-linejoin": "round"
+            }
+        });
+        frame.el.classList.add("jj-frame");
+    });
+
+    paper.on("cell:mouseleave", (cellView) => {
+        MaskHighlighter.removeAll(paper, "frame");
+    });
+
+    // Add click event for nodes to show task details slide-over
+    paper.on("element:pointerclick", (cellView) => {
+        handleTaskClick(cellView.model);
+    });
+
+    paper.on("link:pointerclick", (cellView) => {
+        paper.removeTools();
+        dia.HighlighterView.removeAll(paper);
+        const toolsView = new dia.ToolsView({
+            tools: [
+                new linkTools.TargetAnchor({
+                    snap: snapAnchor,
+                    resetAnchor: cellView.model.prop(["target", "anchor"])
+                }),
+                new linkTools.SourceAnchor({
+                    snap: snapAnchor,
+                    resetAnchor: cellView.model.prop(["source", "anchor"])
+                })
+            ]
+        });
+        toolsView.el.classList.add("jj-flow-tools");
+        cellView.addTools(toolsView);
+
+        const strokeHighlighter = StrokeHighlighter.add(
+            cellView,
+            "root",
+            "selection",
+            {
+                layer: dia.Paper.Layers.BACK
+            }
+        );
+        strokeHighlighter.el.classList.add("jj-flow-selection");
+    });
+}
+
+function setupPanDrag(paper, container) {
+    let isPanning = false;
+    let lastPanX = 0;
+    let lastPanY = 0;
+
+    paper.on("blank:pointerdown", (evt, x, y) => {
+        paper.removeTools();
+        dia.HighlighterView.removeAll(paper);
+
+        // Start panning
+        isPanning = true;
+        lastPanX = evt.clientX;
+        lastPanY = evt.clientY;
+
+        // Change cursor to grabbing
+        container.style.cursor = "grabbing";
+    });
+
+    paper.on("blank:pointermove", (evt, x, y) => {
+        if (!isPanning) return;
+
+        // Calculate the delta movement from last position
+        const deltaX = evt.clientX - lastPanX;
+        const deltaY = evt.clientY - lastPanY;
+
+        // Update last position
+        lastPanX = evt.clientX;
+        lastPanY = evt.clientY;
+
+        // Get current translation
+        const currentTranslate = paper.translate();
+
+        // Apply incremental translation
+        paper.translate(
+            currentTranslate.tx + deltaX,
+            currentTranslate.ty + deltaY
+        );
+    });
+
+    paper.on("blank:pointerup", (evt) => {
+        if (!isPanning) return;
+
+        // Stop panning
+        isPanning = false;
+
+        // Reset cursor
+        container.style.cursor = "grab";
+    });
+
+    // Set initial cursor style for blank area
+    container.style.cursor = "grab";
+}
+
+function setupWheelZoom(paper, container) {
+    const MIN_SCALE = 0.2;
+    const MAX_SCALE = 3;
+    const ZOOM_STEP = 0.1;
+
+    container.addEventListener("wheel", (evt) => {
+        evt.preventDefault();
+
+        // Get current scale
+        const currentScale = paper.scale();
+        const sx = currentScale.sx;
+
+        // Calculate new scale based on wheel direction
+        const delta = evt.deltaY > 0 ? -ZOOM_STEP : ZOOM_STEP;
+        let newScale = sx + delta;
+
+        // Clamp scale to min/max values
+        newScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, newScale));
+
+        // Get mouse position relative to the paper
+        const paperRect = container.getBoundingClientRect();
+        const mouseX = evt.clientX - paperRect.left;
+        const mouseY = evt.clientY - paperRect.top;
+
+        // Get current translation
+        const currentTranslate = paper.translate();
+
+        // Calculate the point in the graph that"s under the mouse
+        const pointBeforeZoom = {
+            x: (mouseX - currentTranslate.tx) / sx,
+            y: (mouseY - currentTranslate.ty) / sx
+        };
+
+        // Apply new scale
+        paper.scale(newScale, newScale);
+
+        // Calculate new translation to keep the point under the mouse
+        const newTranslate = {
+            tx: mouseX - pointBeforeZoom.x * newScale,
+            ty: mouseY - pointBeforeZoom.y * newScale
+        };
+
+        // Apply new translation
+        paper.translate(newTranslate.tx, newTranslate.ty);
+    }, {passive: false});
+}
 
 // Parse Zuora workflow data into JointJS elements (without links)
 function parseZuoraWorkflow(workflowData) {
@@ -633,54 +864,20 @@ function initWorkflowGraph(containerId, workflowData) {
         console.log('Graph cells:', currentGraph.getCells().length);
 
         // Function to fit content to viewport
-        const fitToViewport = () => {
-            const graphBBox = currentGraph.getBBox();
-            console.log('Fitting to viewport, bbox:', graphBBox);
-
-            if (graphBBox.width > 0 && graphBBox.height > 0) {
-                currentPaper.transformToFitContent({
-                    padding: 60,
-                    minScale: 0.4,
-                    maxScale: 1.5,
-                    verticalAlign: 'middle',
-                    horizontalAlign: 'middle',
-                    useModelGeometry: true
-                });
-                console.log('Content fitted to viewport');
-            }
-        };
+        const fitToViewport = () => fitContentToViewport(currentGraph, currentPaper);
 
         // Wait for paper to be fully rendered using doubleRaf
         doubleRaf(fitToViewport);
 
-
         // Handle window resize with requestAnimationFrame debounce
-        let resizeRafId;
-        let resizeTimeout;
-        const handleResize = () => {
-            // Cancel any pending animation frame
-            if (resizeRafId) {
-                cancelAnimationFrame(resizeRafId);
-            }
-
-            // Cancel previous timeout
-            clearTimeout(resizeTimeout);
-
-            // Wait 150ms of "silence", then use rAF for smooth animation
-            resizeTimeout = setTimeout(() => {
-                resizeRafId = requestAnimationFrame(() => {
-                    fitToViewport();
-                });
-            }, 150);
-        };
-
-        globalThis.addEventListener('resize', handleResize);
+        const {handler: handleResize, cleanup: resizeCleanup} = createResizeHandler(currentGraph, currentPaper);
+        globalThis.addEventListener("resize", handleResize);
 
         // Observe container visibility changes (for tab switching)
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting && entry.intersectionRatio > 0) {
-                    console.log('Container became visible, refitting...');
+                    console.log("Container became visible, refitting...");
                     // Use doubleRaf to ensure container is fully rendered
                     doubleRaf(fitToViewport);
                 }
@@ -691,195 +888,23 @@ function initWorkflowGraph(containerId, workflowData) {
 
         // Cleanup on destroy
         const cleanup = () => {
-            globalThis.removeEventListener('resize', handleResize);
+            globalThis.removeEventListener("resize", handleResize);
             observer.disconnect();
-            clearTimeout(resizeTimeout);
-            if (resizeRafId) {
-                cancelAnimationFrame(resizeRafId);
-            }
+            resizeCleanup();
         };
 
         // Store cleanup function for potential future use
         container._workflowCleanup = cleanup;
 
-        // Add theme switcher
-        const themeSwitch = document.createElement('div');
-        themeSwitch.className = 'theme-switch';
-        themeSwitch.title = 'Switch between light and dark mode';
-        themeSwitch.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" viewBox="0 0 24 24" fill="none" stroke="#dde6ed" stroke-linecap="round" stroke-linejoin="round" class="light-icon"><path d="M12 18.5C15.5899 18.5 18.5 15.5899 18.5 12C18.5 8.41015 15.5899 5.5 12 5.5C8.41015 5.5 5.5 8.41015 5.5 12C5.5 15.5899 8.41015 18.5 12 18.5Z" stroke-width="1.5" /><path d="M19.14 19.14L19.01 19.01M19.01 4.99L19.14 4.86L19.01 4.99ZM4.86 19.14L4.99 19.01L4.86 19.14ZM12 2.08V2V2.08ZM12 22V21.92V22ZM2.08 12H2H2.08ZM22 12H21.92H22ZM4.99 4.99L4.86 4.86L4.99 4.99Z" stroke-width="2" /></svg><svg xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" viewBox="0 0 24 24" fill="#131e29" class="dark-icon"><path d="M12.0557 3.59974C12.2752 3.2813 12.2913 2.86484 12.0972 2.53033C11.9031 2.19582 11.5335 2.00324 11.1481 2.03579C6.02351 2.46868 2 6.76392 2 12C2 17.5228 6.5228 22 12 22C17.236 22 21.5313 17.9764 21.9642 12.8518C21.9967 12.4664 21.8041 12.0968 21.4696 11.9027C21.1351 11.7086 20.7187 11.7248 20.4002 11.9443C19.4341 12.6102 18.2641 13 17 13C13.6863 13 11 10.3137 11 6.99996C11 5.73589 11.3898 4.56587 12.0557 3.59974Z" /></svg><div class="switch"></div>';
-        container.appendChild(themeSwitch);
-
-        themeSwitch.addEventListener('click', () => {
-            console.log('Theme switch clicked');
-            document.body.classList.toggle('light-theme');
-            console.log('Body classes:', document.body.className);
-        });
-
-        // Add interaction event listeners
-        const {mask: MaskHighlighter, stroke: StrokeHighlighter} = highlighters;
-
-        currentPaper.on('cell:mouseenter', (cellView, evt) => {
-            let selector, padding;
-            if (cellView.model.isLink()) {
-                if (StrokeHighlighter.get(cellView, 'selection')) return;
-                selector = {label: 0, selector: 'labelBody'};
-                padding = unit / 2;
-            } else {
-                selector = 'body';
-                padding = unit;
-            }
-            const frame = MaskHighlighter.add(cellView, selector, 'frame', {
-                padding,
-                layer: dia.Paper.Layers.FRONT,
-                attrs: {
-                    'stroke-width': 1.5,
-                    'stroke-linejoin': 'round'
-                }
-            });
-            frame.el.classList.add('jj-frame');
-        });
-
-        currentPaper.on('cell:mouseleave', (cellView) => {
-            MaskHighlighter.removeAll(currentPaper, 'frame');
-        });
-
-        // Add click event for nodes to show task details slide-over
-        currentPaper.on('element:pointerclick', (cellView) => {
-            handleTaskClick(cellView.model);
-        });
-
-
-        currentPaper.on('link:pointerclick', (cellView) => {
-            currentPaper.removeTools();
-            dia.HighlighterView.removeAll(currentPaper);
-            const toolsView = new dia.ToolsView({
-                tools: [
-                    new linkTools.TargetAnchor({
-                        snap: snapAnchor,
-                        resetAnchor: cellView.model.prop(['target', 'anchor'])
-                    }),
-                    new linkTools.SourceAnchor({
-                        snap: snapAnchor,
-                        resetAnchor: cellView.model.prop(['source', 'anchor'])
-                    })
-                ]
-            });
-            toolsView.el.classList.add('jj-flow-tools');
-            cellView.addTools(toolsView);
-
-            const strokeHighlighter = StrokeHighlighter.add(
-                cellView,
-                'root',
-                'selection',
-                {
-                    layer: dia.Paper.Layers.BACK
-                }
-            );
-            strokeHighlighter.el.classList.add('jj-flow-selection');
-        });
-
-        // Pan/Drag functionality
-        let isPanning = false;
-
-        let lastPanX = 0;
-        let lastPanY = 0;
-
-        currentPaper.on('blank:pointerdown', (evt, x, y) => {
-            currentPaper.removeTools();
-            dia.HighlighterView.removeAll(currentPaper);
-
-            // Start panning
-            isPanning = true;
-            lastPanX = evt.clientX;
-            lastPanY = evt.clientY;
-
-            // Change cursor to grabbing
-            container.style.cursor = 'grabbing';
-        });
-
-        currentPaper.on('blank:pointermove', (evt, x, y) => {
-            if (!isPanning) return;
-
-            // Calculate the delta movement from last position
-            const deltaX = evt.clientX - lastPanX;
-            const deltaY = evt.clientY - lastPanY;
-
-            // Update last position
-            lastPanX = evt.clientX;
-            lastPanY = evt.clientY;
-
-            // Get current translation
-            const currentTranslate = currentPaper.translate();
-
-            // Apply incremental translation
-            currentPaper.translate(
-                currentTranslate.tx + deltaX,
-                currentTranslate.ty + deltaY
-            );
-        });
-
-        currentPaper.on('blank:pointerup', (evt) => {
-            if (!isPanning) return;
-
-            // Stop panning
-            isPanning = false;
-
-            // Reset cursor
-            container.style.cursor = 'grab';
-        });
-
-        // Set initial cursor style for blank area
-        container.style.cursor = 'grab';
-
-        // Mouse wheel zoom functionality
-        const MIN_SCALE = 0.2;
-        const MAX_SCALE = 3;
-        const ZOOM_STEP = 0.1;
-
-        container.addEventListener('wheel', (evt) => {
-            evt.preventDefault();
-
-            // Get current scale
-            const currentScale = currentPaper.scale();
-            const sx = currentScale.sx;
-
-            // Calculate new scale based on wheel direction
-            const delta = evt.deltaY > 0 ? -ZOOM_STEP : ZOOM_STEP;
-            let newScale = sx + delta;
-
-            // Clamp scale to min/max values
-            newScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, newScale));
-
-            // Get mouse position relative to the paper
-            const paperRect = container.getBoundingClientRect();
-            const mouseX = evt.clientX - paperRect.left;
-            const mouseY = evt.clientY - paperRect.top;
-
-            // Get current translation
-            const currentTranslate = currentPaper.translate();
-
-            // Calculate the point in the graph that's under the mouse
-            const pointBeforeZoom = {
-                x: (mouseX - currentTranslate.tx) / sx,
-                y: (mouseY - currentTranslate.ty) / sx
-            };
-
-            // Apply new scale
-            currentPaper.scale(newScale, newScale);
-
-            // Calculate new translation to keep the point under the mouse
-            const newTranslate = {
-                tx: mouseX - pointBeforeZoom.x * newScale,
-                ty: mouseY - pointBeforeZoom.y * newScale
-            };
-
-            // Apply new translation
-            currentPaper.translate(newTranslate.tx, newTranslate.ty);
-        }, {passive: false});
-
-        console.log('JointJS workflow graph rendered successfully');
-        console.log('=== JOINTJS WORKFLOW GRAPH INIT END ===');
+        // Setup specialized sections
+        setupThemeSwitcher(container);
+        setupPaperEventHandlers(currentPaper, currentGraph, container);
+        setupPanDrag(currentPaper, container);
+        setupWheelZoom(currentPaper, container);
+        console.log("JointJS workflow graph rendered successfully");
+        console.log("=== JOINTJS WORKFLOW GRAPH INIT END ===");
         return {success: true};
+
     } catch (error) {
         console.error('Failed to render JointJS workflow graph:', error);
         container.innerHTML = '<div style="padding: 20px; color: red; text-align: center;">Error rendering graph: ' + error.message + '</div>';
