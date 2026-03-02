@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "41a6e1642c6891d5810799ac50d67427",
+    "content-hash": "62140d58ded802903235f808e26749d7",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -316,30 +316,30 @@
         },
         {
             "name": "blade-ui-kit/blade-icons",
-            "version": "1.8.1",
+            "version": "1.9.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/driesvints/blade-icons.git",
-                "reference": "47e7b6f43250e6404e4224db8229219cd42b543c"
+                "reference": "caa92fde675d7a651c38bf73ca582ddada56f318"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/driesvints/blade-icons/zipball/47e7b6f43250e6404e4224db8229219cd42b543c",
-                "reference": "47e7b6f43250e6404e4224db8229219cd42b543c",
+                "url": "https://api.github.com/repos/driesvints/blade-icons/zipball/caa92fde675d7a651c38bf73ca582ddada56f318",
+                "reference": "caa92fde675d7a651c38bf73ca582ddada56f318",
                 "shasum": ""
             },
             "require": {
-                "illuminate/contracts": "^8.0|^9.0|^10.0|^11.0|^12.0",
-                "illuminate/filesystem": "^8.0|^9.0|^10.0|^11.0|^12.0",
-                "illuminate/support": "^8.0|^9.0|^10.0|^11.0|^12.0",
-                "illuminate/view": "^8.0|^9.0|^10.0|^11.0|^12.0",
+                "illuminate/contracts": "^8.0|^9.0|^10.0|^11.0|^12.0|^13.0",
+                "illuminate/filesystem": "^8.0|^9.0|^10.0|^11.0|^12.0|^13.0",
+                "illuminate/support": "^8.0|^9.0|^10.0|^11.0|^12.0|^13.0",
+                "illuminate/view": "^8.0|^9.0|^10.0|^11.0|^12.0|^13.0",
                 "php": "^7.4|^8.0",
-                "symfony/console": "^5.3|^6.0|^7.0",
-                "symfony/finder": "^5.3|^6.0|^7.0"
+                "symfony/console": "^5.3|^6.0|^7.0|^8.0",
+                "symfony/finder": "^5.3|^6.0|^7.0|^8.0"
             },
             "require-dev": {
                 "mockery/mockery": "^1.5.1",
-                "orchestra/testbench": "^6.0|^7.0|^8.0|^9.0|^10.0",
+                "orchestra/testbench": "^6.0|^7.0|^8.0|^9.0|^10.0|^11.0",
                 "phpunit/phpunit": "^9.0|^10.5|^11.0"
             },
             "bin": [
@@ -393,7 +393,7 @@
                     "type": "paypal"
                 }
             ],
-            "time": "2026-01-20T09:46:32+00:00"
+            "time": "2026-02-23T10:42:23+00:00"
         },
         {
             "name": "brick/math",
@@ -5422,26 +5422,26 @@
         },
         {
             "name": "owenvoke/blade-fontawesome",
-            "version": "v3.0.0",
+            "version": "v3.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/owenvoke/blade-fontawesome.git",
-                "reference": "803da4c47c70dbac4f145ee50a66eefbbff3e8c1"
+                "reference": "d75e6de9f689aaeab89d3208244f4abebadeeba4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/owenvoke/blade-fontawesome/zipball/803da4c47c70dbac4f145ee50a66eefbbff3e8c1",
-                "reference": "803da4c47c70dbac4f145ee50a66eefbbff3e8c1",
+                "url": "https://api.github.com/repos/owenvoke/blade-fontawesome/zipball/d75e6de9f689aaeab89d3208244f4abebadeeba4",
+                "reference": "d75e6de9f689aaeab89d3208244f4abebadeeba4",
                 "shasum": ""
             },
             "require": {
                 "blade-ui-kit/blade-icons": "^1.8",
-                "illuminate/support": "^12.0",
+                "illuminate/support": "^12.0|^13.0",
                 "php": "^8.4"
             },
             "require-dev": {
                 "laravel/pint": "^1.25",
-                "orchestra/testbench": "^10.6",
+                "orchestra/testbench": "^10.6|^11.0",
                 "pestphp/pest": "^4.1",
                 "phpstan/phpstan": "^2.1",
                 "symfony/var-dumper": "^7.3"
@@ -5466,7 +5466,7 @@
             "description": "A package to easily make use of Font Awesome in your Laravel Blade views",
             "support": {
                 "issues": "https://github.com/owenvoke/blade-fontawesome/issues",
-                "source": "https://github.com/owenvoke/blade-fontawesome/tree/v3.0.0"
+                "source": "https://github.com/owenvoke/blade-fontawesome/tree/v3.2.0"
             },
             "funding": [
                 {
@@ -5478,7 +5478,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-11-05T13:01:01+00:00"
+            "time": "2026-02-23T09:42:08+00:00"
         },
         {
             "name": "paragonie/constant_time_encoding",
